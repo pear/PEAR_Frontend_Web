@@ -46,21 +46,21 @@
             <file role="php">manual.gif</file>
             <file role="php">pearsmall.gif</file>
             <file role="php">trash.gif</file>
-            
+
             <file role="php">package.jpg</file>
             <file role="php">category.jpg</file>
-            
+
             <file role="php">pkglist.png</file>
             <file role="php">pkgsearch.png</file>
-            
+
             <!-- CSS -->
             <file role="php">style.css</file>
             <file role="php">dhtml.css</file>
-            
+
             <!-- JS -->
             <file role="php">dhtml.js</file>
             <file role="php">nodhtml.js</file>
-            
+
             <!-- TEMPLATES -->
             <file role="php">bottom.inc.tpl.html</file>
             <file role="php">error.popup.tpl.html</file>
@@ -72,9 +72,18 @@
             <file role="php">start.tpl.html</file>
             <file role="php">top.inc.tpl.html</file>
             <file role="php">userDialog.tpl.html</file>
-          </dir> 
+          </dir>
         </dir>
-      </dir>	
+        <dir name="docs" role="doc">
+            <file name="example.php">
+              <replace from="@php_bin@" to="php_bin" type="pear-config"/>
+              <replace from="@bin_dir@" to="bin_dir" type="pear-config"/>
+              <replace from="@php_dir@" to="php_dir" type="pear-config"/>
+              <replace from="@pear_version@" to="version" type="package-info"/>
+              <replace from="@include_path@" to="php_dir" type="pear-config"/>
+            </file>
+        </dir>
+      </dir>
     </filelist>
     <deps>
       <dep type="pkg" rel="has">Net_UserAgent_Detect</dep>
