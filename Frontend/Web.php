@@ -872,6 +872,20 @@ class PEAR_Frontend_Web extends PEAR_Frontend
     }
 
     /**
+     * Instruct the runInstallScript method to skip a paramgroup that matches the
+     * id value passed in.
+     *
+     * This method is useful for dynamically configuring which sections of a post-install script
+     * will be run based on the user's setup, which is very useful for making flexible
+     * post-install scripts without losing the cross-Frontend ability to retrieve user input
+     * @param string
+     */
+    function skipParamgroup($id)
+    {
+        $_SESSION['_PEAR_Frontend_Web_ScriptSkipSections'][$sectionName] = true;
+    }
+
+    /**
      * @param array $xml contents of postinstallscript tag
      * @param object $script post-installation script
      * @param PEAR_PackageFile_v1|PEAR_PackageFile_v2 $pkg 
@@ -881,6 +895,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
     {
         if (!isset($_SESSION['_PEAR_Frontend_Web_ScriptCompletedPhases'])) {
             $_SESSION['_PEAR_Frontend_Web_ScriptCompletedPhases'] = array();
+            $_SESSION['_PEAR_Frontend_Web_ScriptSkipSections'] = array();
         }
         if (isset($_SESSION['_PEAR_Frontend_Web_ScriptObj'])) {
             foreach ($_SESSION['_PEAR_Frontend_Web_ScriptObj'] as $name => $val) {
@@ -900,6 +915,9 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                 $xml['paramgroup'][0] = array($xml['paramgroup']);
             }
             foreach ($xml['paramgroup'] as $i => $group) {
+                if (isset($_SESSION['_PEAR_Frontend_Web_ScriptSkipSections'][$group['id']])) {
+                    continue;
+                }
                 if (isset($_SESSION['_PEAR_Frontend_Web_ScriptSection'])) {
                     if ($i < $_SESSION['_PEAR_Frontend_Web_ScriptSection']) {
                         $lastgroup = $group;
@@ -946,8 +964,10 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                 if (!isset($answers)) {
                     $answers = array();
                 }
-                $answers = array_merge($answers,
-                    $this->confirmDialog($group['param'], $pkg->getPackage()));
+                if (isset($group['param'])) {
+                    $answers = array_merge($answers,
+                        $this->confirmDialog($group['param'], $pkg->getPackage()));
+                }
                 if ($answers) {
                     array_unshift($_SESSION['_PEAR_Frontend_Web_ScriptCompletedPhases'],
                         $group['id']);
@@ -983,6 +1003,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
         unset($_SESSION['_PEAR_Frontend_Web_answers']);
         unset($_SESSION['_PEAR_Frontend_Web_ScriptSection']);
         unset($_SESSION['_PEAR_Frontend_Web_ScriptCompletedPhases']);
+        unset($_SESSION['_PEAR_Frontend_Web_ScriptSkipSections']);
     }
 
     /**
