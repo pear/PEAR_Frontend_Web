@@ -169,13 +169,14 @@ class PEAR_Frontend_Web extends PEAR
      * @param mixed   $eobj  PEAR_Error object or string containing the error message
      * @param string  $title (optional) title of the page
      * @param string  $img   (optional) iconhandle for this page
+     * @param boolean $popup (optional) popuperror or normal?
      *
      * @access public
      * 
      * @return null does not return anything, but exit the script
      */
      
-    function displayError($eobj, $title = 'Error', $img = 'error')
+    function displayError($eobj, $title = 'Error', $img = 'error', $popup = false)
     {
         $msg = '';
         if (isset($GLOBALS['_PEAR_Frontend_Web_log']) && trim($GLOBALS['_PEAR_Frontend_Web_log']))
@@ -188,7 +189,8 @@ class PEAR_Frontend_Web extends PEAR
             
         $msg = nl2br($msg."\n");
 
-        $tpl = $this->_initTemplate("error.tpl.html", $title, $img);
+        $tplfile = ($popup ? "error.popup.tpl.html" : "error.tpl.html");
+        $tpl = $this->_initTemplate($tplfile, $title, $img);
         
         $tpl->setVariable("Error", $msg);
         $command_map = array(
@@ -222,7 +224,12 @@ class PEAR_Frontend_Web extends PEAR
 
     function displayErrorImg($eobj)
     {
-        $_SESSION['_PEAR_Frontend_Web_LastError'] = $eobj;
+        $msg = '';
+        if (isset($GLOBALS['_PEAR_Frontend_Web_log']) && trim($GLOBALS['_PEAR_Frontend_Web_log']))
+            $msg = trim($GLOBALS['_PEAR_Frontend_Web_log'])."\n\n";
+            
+        $_SESSION['_PEAR_Frontend_Web_LastError']     = $eobj;
+        $_SESSION['_PEAR_Frontend_Web_LastError_log'] = $msg;
         echo '<script language="javascript">';
         printf('window.open("%s?command=show-last-error", "PEAR", "width=600, height=400");', 
             $_SERVER["PHP_SELF"]);

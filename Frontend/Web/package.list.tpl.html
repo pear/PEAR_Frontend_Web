@@ -1,4 +1,5 @@
 <!-- INCLUDE header.inc.tpl.html -->
+<!-- INCLUDE top.inc.tpl.html -->
     <script language="javascript">
     <!--
         function getElem(name)
@@ -32,7 +33,37 @@
         {
             getElem(pkg+'_installed').innerHTML = '';
         }
-    
+        
+        function displayInstall(pkg)
+        {
+            html = '<a href="{InstallerURL}?command=install&pkg='+pkg+'" ';
+            html = html + 'id="'+pkg+'_href" onClick="return perform(\''+pkg+'\');">';
+            html = html + '<img src="{InstallerURL}?img=install" border="0">';
+            html = html + '</a>';
+
+            getElem(pkg+'_install').innerHTML = html;
+        };
+
+        function hideInstall(pkg)
+        {
+            getElem(pkg+'_install').innerHTML = '';
+        };
+
+        function displayDelete(pkg)
+        {
+            html = '<a href="{InstallerURL}?command=uninstall&pkg='+pkg+'" ';
+            html = html + 'id="'+pkg+'_href" onClick="return deletePkg(\''+pkg+'\');">';
+            html = html + '<img src="{InstallerURL}?img=uninstall" border="0">';
+            html = html + '</a>';
+
+            getElem(pkg+'_uninstall').innerHTML = html;
+        };
+
+        function hideDelete(pkg)
+        {
+            getElem(pkg+'_uninstall').innerHTML = '';
+        };
+
     -->
     </script>
     <TABLE border="0" width="670">
@@ -134,10 +165,10 @@
         <div id="{Package}_latest">{Latest}</div>
       </TD>
       <TD valign="top" width="15">
-        {Install}
+        <div id="{Package}_install">{Install}</div>
       </TD>
       <TD valign="top" width="18">
-        {Delete}
+        <div id="{Package}_uninstall">{Delete}</div>
       </TD>
       <TD valign="top">
         {InfoExt}
@@ -168,4 +199,5 @@
       </TD>
     </TR>
     </TABLE>
+<!-- INCLUDE bottom.inc.tpl.html -->
 <!-- INCLUDE footer.inc.tpl.html -->
