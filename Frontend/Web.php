@@ -323,8 +323,6 @@ class PEAR_Frontend_Web extends PEAR
             'upgrades'     => 'list avail. upgrades',
             );
 
-        unset($modes[$_GET['mode']]);
-
         $i = 1;
         foreach($modes as $mode => $text) {
             $tpl->setVariable('mode' . $i , !empty($mode) ? '&mode='.$mode : '');
