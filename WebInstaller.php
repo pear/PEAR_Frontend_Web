@@ -83,7 +83,7 @@
         installPackage($dir,'PEAR/.registry/Net_UserAgent_Detect.reg');
         installPackage($dir,'PEAR/.registry/Pager.reg');
         installPackage($dir,'PEAR/.registry/PEAR.reg');
-        installPackage($dir,'PEAR/.registry/PEAR_Frontent_Web.reg');
+        installPackage($dir,'PEAR/.registry/PEAR_Frontend_Web.reg');
         installPackage($dir,'PEAR/.registry/XML_RPC.reg');
     };
     
