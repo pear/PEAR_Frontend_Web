@@ -67,25 +67,21 @@
         $ok = $cmd->run('config-set', array(), array('test_dir', $dir.'test'));
         
         // Register packages
-        function installPackage($dir, $filename) {
-            $data = unserialize(implode('',file($dir.$filename)));
-            if (is_array($data['filelist']))
-            foreach($data['filelist'] as $key => $value) {
-                if ($value['role'] == "php")
-                    $data['filelist'][$key] = str_replace('{dir}',$dir, $data['filelist'][$key]);
+        $packages = array(
+            'Archive_Tar', 'Console_Getopt', 'HTML_Template_IT',
+            'Net_UserAgent_Detect', 'Pager', 'PEAR',
+            'PEAR_Frontend_Web', 'XML_RPC');
+        $reg = new PEAR_Registry($dir.'PEAR');
+        foreach($packages as $pkg) {
+            $info = $reg->packageInfo($pkg);
+            foreach($info['filelist'] as $fileName => $fileInfo) {
+                if($fileInfo['role'] == "php") {
+                    $info['filelist'][$fileName]['installed_as'] = 
+                        str_replace('{dir}',$dir, $fileInfo['installed_as']);
+                };
             };
-            $fp = fopen($dir.$filename, 'w');
-            fwrite($fp, serialize($data));
-            fclose($fp);
+            $reg->updatePackage($pkg, $info, false);
         };
-        installPackage($dir,'PEAR/.registry/Archive_Tar.reg');
-        installPackage($dir,'PEAR/.registry/Console_Getopt.reg');
-        installPackage($dir,'PEAR/.registry/HTML_Template_IT.reg');
-        installPackage($dir,'PEAR/.registry/Net_UserAgent_Detect.reg');
-        installPackage($dir,'PEAR/.registry/Pager.reg');
-        installPackage($dir,'PEAR/.registry/PEAR.reg');
-        installPackage($dir,'PEAR/.registry/PEAR_Frontend_Web.reg');
-        installPackage($dir,'PEAR/.registry/XML_RPC.reg');
     };
     
     // Handle some diffrent Commands
