@@ -769,8 +769,13 @@ class PEAR_Frontend_Web extends PEAR
             readfile(dirname(__FILE__).'/Web/'.$file);
             exit;
         case 'image':
+            $filename = dirname(__FILE__).'/Web/'.$file['file'];
             Header("Content-Type: image/".$file['type']);
-            readfile(dirname(__FILE__).'/Web/'.$file['file']);
+            Header("Expires: ".gmdate("D, d M Y H:i:s \G\M\T", time() + 60*60*24*100));
+            Header("Last-Modified: ".gmdate("D, d M Y H:i:s \G\M\T", filemtime($filename)));
+            Header("Cache-Control: public");
+            Header("Pragma: ");
+            readfile($filename);
             exit;
         case 'js':
             Header("Content-Type: text/javascript");
