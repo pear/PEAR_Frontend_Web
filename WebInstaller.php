@@ -50,13 +50,14 @@
     $opts    = array();
     $params  = array();
     $URL = 'http://'.$_SERVER['HTTP_HOST'].$_SERVER['PHP_SELF'];
+    $dir = substr(dirname(__FILE__), 0, -strlen('PEAR/PEAR')); // strip PEAR/PEAR
+    $_ENV['TMPDIR'] = $_ENV['TEMP'] = $dir.'/tmp';
     
     if (!file_exists($pear_user_config)) {
         // I think PEAR_Frontend_Web is running for the first time!
         // Install it properly ...
             
         // First of all set some config-vars:
-        $dir = substr(dirname(__FILE__), 0, -strlen('PEAR/PEAR')); // strip PEAR/PEAR
         $cmd = PEAR_Command::factory('config-set', $config);
         $ok = $cmd->run('config-set', array(), array('php_dir',  $dir.'PEAR'));
         $ok = $cmd->run('config-set', array(), array('doc_dir',  $dir.'docs'));
