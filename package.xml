@@ -67,7 +67,7 @@
             <file role="php">header.inc.tpl.html</file>
             <file role="php">package.info.tpl.html</file>
             <file role="php">package.list.tpl.html</file>
-            <file role="php">progress.tpl.html</file>
+            <file role="php">start.tpl.html</file>
             <file role="php">userDialog.tpl.html</file>
           </dir> 
         </dir>

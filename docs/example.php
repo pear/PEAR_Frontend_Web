@@ -30,7 +30,8 @@
     ini_set('include_path', implode($seperator, $include_path));
 
     // Configfile
-    $pear_user_config    = dirname(__FILE__)."/pear.conf";
+    $pear_user_config = dirname(__FILE__)."/pear.conf";
+    $useDHTML         = true;
     
     // Include WebInstaller
     require_once("PEAR/WebInstaller.php");

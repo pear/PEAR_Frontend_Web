@@ -1,16 +1,52 @@
 <!-- INCLUDE header.inc.tpl.html -->
+    <script language="javascript">
+    <!--
+        function getElem(name)
+        {
+            return document.getElementById(name);
+        };
+
+        function perform(pkg)
+        {
+            url        = getElem(pkg+'_href').href + '&dhtml=1';
+            iframe     = getElem(pkg+'_status');
+            iframe.src = url;
+            
+            return false;
+        };
+        
+        function deletePkg(pkg)
+        {
+            if (!confirm('Do you really want to uninstall "'+pkg+'"?'))
+                return false;
+            
+            return perform(pkg);
+        }
+        
+        function newestVersion(pkg)
+        {
+            getElem(pkg+'_installed').innerHTML = getElem(pkg+'_latest').innerHTML;
+        }
+
+        function deleteVersion(pkg)
+        {
+            getElem(pkg+'_installed').innerHTML = '';
+        }
+    
+    -->
+    </script>
     <TABLE border="0" width="670">
     <TR>
       <TD width="20">
       </TD>
       <TD width="200" align="left">
-        <a href="{InstallerURL}{mode1}" class="green">[ {mode1text} ]</a>
+        <a href="{InstallerURL}?command=list-all{mode1}" class="green">[ {mode1text} ]</a>
       </TD>
       <TD width="250" align="center">
-        <a href="{InstallerURL}{mode2}" class="green">[ {mode2text} ]</a>
+        <a href="{InstallerURL}?command=list-all{mode2}" class="green">[ {mode2text} ]</a>
       </TD>
       <TD width="200" align="right">
-        <a href="{InstallerURL}{mode3}" class="green">[ {mode3text} ]</a>
+        <a href="{InstallerURL}?command=list-all{mode3}" class="green">[ {mode3text} ]</a>
       </TD>
     </TR>
     </TABLE>
@@ -46,7 +82,7 @@
     </TABLE>
     <TABLE border="0" id="__{categoryName}" class="DHTML_Category">
     <TR>
-      <TD width="50" valign="top">
+      <TD width="50" valign="top" colspan="2">
       </TD>
       <TD valign="top">
         
@@ -78,8 +114,12 @@
     </TR>
     <!-- BEGIN Row -->
     <TR>
-      <TD width="50" valign="top">
+      <TD width="1" valign="top">
         <a name="{Package}">
+      </TD>
+      <TD width="49" valign="top" align="right">
+        <iframe id="{Package}_status" height="20" 
+            width="20" scrolling="no" frameborder="0" marginheight="0" marginwidth="0"></iframe>
       </TD>
       <TD valign="top">
         <img src="{ImgPackage}" border="0">
@@ -88,10 +128,10 @@
         {Package}
       </TD>
       <TD width="50" valign="top">
-        {Installed}
+        <div id="{Package}_installed">{Installed}</div>
       </TD>
       <TD width="50" valign="top">
-        {Version}
+        <div id="{Package}_latest">{Latest}</div>
       </TD>
       <TD valign="top" width="15">
         {Install}

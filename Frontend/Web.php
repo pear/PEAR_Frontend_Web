@@ -105,51 +105,12 @@ class PEAR_Frontend_Web extends PEAR
 
     // }}}
     
-    function addQueueItem($command, $pkg)
-    {   
-        $remote    = new PEAR_Remote($this->config);
-        $reg       = new PEAR_Registry($this->config->get('php_dir'));
-        $latest    = $remote->call('package.listAll', true);
-        $latest    = $latest[$pkg];
-        $installed = $reg->packageInfo($pkg);
-    
-        $action = $command;
-        if ($action == 'upgrade') {
-            $action.=' to';
-        };
-    
-        $_SESSION['_PEAR_Frontend_Web_queue'][$pkg] = array(
-            'action' => $action,
-            'command' => $command,
-            'latest' => $latest,
-            'installed' => $installed,
-            );
-//        var_dump($_SESSION);
-    }
-    
-    function displayQueue()
+    function displayStart()
     {
-        $tpl = $this->_initTemplate("progress.tpl.html", $title, $img);
-    
-        $commands = array();
-        foreach($_SESSION['_PEAR_Frontend_Web_queue'] as $pkg => $info) {
-            $tpl->setCurrentBlock('Package');
-            $tpl->setVariable('PackageName', $pkg);
-            if ($info['action'] != 'uninstall') {
-                $tpl->setVariable('VersionLatest', $info['latest']['stable']);
-            };
-            $tpl->setVariable('VersionInstalled', $info['installed']['version']);
-            $tpl->setVariable('Action', $info['action']);
-            $tpl->setVariable('_InstallerURL', $_SERVER['PHP_SELF']);
-            $tpl->parseCurrentBlock();
-            $commands[] = $info['command'];
-        };
-        $tpl->setCurrentBlock();
-        $tpl->setVariable('Packages', implode('", "', array_keys($_SESSION['_PEAR_Frontend_Web_queue'])));
-        $tpl->setVariable('Commands', implode('", "', $commands));
+        $tpl = $this->_initTemplate("start.tpl.html", 'PEAR Installer');
+        $tpl->setVariable('Version', '0.1');
         $tpl->show();
-        
-        return true;
+        exit;
     }
     
     /**
@@ -261,8 +222,12 @@ class PEAR_Frontend_Web extends PEAR
 
     function displayErrorImg($eobj)
     {
-        Header('Content-Type: image/gif');
-        readfile(dirname(__FILE__).'/Web/install_fail.gif');
+        $_SESSION['_PEAR_Frontend_Web_LastError'] = $eobj;
+        echo '<script language="javascript">';
+        printf('window.open("%s?command=show-last-error", "PEAR", "width=600, height=400");', 
+            $_SERVER["PHP_SELF"]);
+        echo ' </script>';
+        printf('<img src="%s?img=install_fail" border="0">', $_SERVER['PHP_SELF']);
         exit;
     }
 
@@ -307,8 +272,7 @@ class PEAR_Frontend_Web extends PEAR
             $_GET['mode'] = '';
         if (isset($_GET['command']) && $_GET['command'] == 'search')
             $links['current'] .= '&redirect=search&0='.$_REQUEST[0].'&1='.$_REQUEST[1];
-            
-        
+                    
         $modes = array(
             'installed'    => 'list installed packages',
             ''             => 'list all packages',
@@ -319,7 +283,7 @@ class PEAR_Frontend_Web extends PEAR
         
         $i = 1;
         foreach($modes as $mode => $text) {
-            $tpl->setVariable('mode'.$i, ((!empty($mode)) ? '?mode='.$mode : ''));
+            $tpl->setVariable('mode'.$i, ((!empty($mode)) ? '&mode='.$mode : ''));
             $tpl->setVariable('mode'.$i.'text', $text);
             $i++;
         };
@@ -345,38 +309,42 @@ class PEAR_Frontend_Web extends PEAR
                     'info' => '<img src="'.$_SERVER["PHP_SELF"].'?img=info" border="0" alt="info">',
                     'infoExt' => '<img src="'.$_SERVER["PHP_SELF"].'?img=infoplus" border="0" alt="extended info">',
                     );
+                $urls   = array(
+                    'install' => sprintf('%s?command=install&pkg=%s%s',
+                        $_SERVER["PHP_SELF"], $pkgName, $links['current']),
+                    'uninstall' => sprintf('%s?command=uninstall&pkg=%s%s',
+                        $_SERVER["PHP_SELF"], $pkgName, $links['current']),
+                    'upgrade' => sprintf('%s?command=upgrade&pkg=%s%s',
+                        $_SERVER["PHP_SELF"], $pkgName, $links['current']),
+                    'info' => sprintf('%s?command=remote-info&pkg=%s',
+                        $_SERVER["PHP_SELF"], $pkgName),
+                    'infoExt' => sprintf('%s?package=%s',
+                        'http://pear.php.net/package-info.php', $row[0]),
+                    );
+                    
                 $compare = version_compare($pkgVersionLatest, $pkgVersionInstalled);
+                $id = 'id="'.$pkgName.'_href"';
                 if (!$pkgVersionInstalled || $pkgVersionInstalled == "- no -") {
-                    $inst = sprintf(
-                        '<a href="%s?command=install&pkg=%s%s">%s</a>',
-                        $_SERVER["PHP_SELF"], $pkgName, $links['current'], $images['install']);
+                    $inst = sprintf('<a href="%s" onClick="return perform(\'%s\');" %s>%s</a>', 
+                        $urls['install'], $pkgName, $id, $images['install']);
                     $del = '';
                 } else if ($compare == 1) {
-                    $inst = sprintf(
-                        '<a href="%s?command=upgrade&pkg=%s%s">%s</a>',
-                        $_SERVER["PHP_SELF"], $pkgName, $links['current'], $images['upgrade']);
-                    $del = sprintf(
-                        '<a href="%s?command=uninstall&pkg=%s%s" %s>%s</a>',
-                        $_SERVER["PHP_SELF"], $pkgName, $links['current'], 
-                        'onClick="return confirm(\'Do you really want to uninstall \\\''.$row[0].'\\\'?\')"',
-                        $images['uninstall']);
+                    $inst = sprintf('<a href="%s" onClick="return perform(\'%s\');" %s>%s</a>', 
+                        $urls['upgrade'], $pkgName, $id, $images['upgrade']);
+                    $del = sprintf('<a href="%s" onClick="return deletePkg(\'%s\');" %s >%s</a>',
+                        $urls['uninstall'], $pkgName, $id, $images['uninstall']);
                 } else {
-                    $del = sprintf(
-                        '<a href="%s?command=uninstall&pkg=%s%s" %s>%s</a>',
-                        $_SERVER["PHP_SELF"], $pkgName, $links['current'], 
-                        'onClick="return confirm(\'Do you really want to uninstall \\\''.$row[0].'\\\'?\')"',
-                        $images['uninstall']);
+                    $del = sprintf('<a href="%s" onClick="return deletePkg(\'%s\');" %s >%s</a>',
+                        $urls['uninstall'], $pkgName, $id, $images['uninstall']);
                     $inst = '';
                 };
-                $info=sprintf('<a href="%s?command=remote-info&pkg=%s">%s</a>',
-                    $_SERVER["PHP_SELF"], $pkgName, $images['info']);
-                $infoExt=sprintf('<a href="%s?package=%s">%s</a>',
-                    'http://pear.php.net/package-info.php', $row[0], $images['infoExt']);
+                $info    = sprintf('<a href="%s">%s</a>', $urls['info'],    $images['info']);
+                $infoExt = sprintf('<a href="%s">%s</a>', $urls['infoExt'], $images['infoExt']);
                         
                 if (in_array($pkgName, $this->_no_delete_pkgs))
                     $del = '';
                         
-                $tpl->setVariable("Version", $pkgVersionLatest);
+                $tpl->setVariable("Latest", $pkgVersionLatest);
                 $tpl->setVariable("Installed", $pkgVersionInstalled);
                 $tpl->setVariable("Install", $inst);
                 $tpl->setVariable("Delete", $del);
@@ -686,6 +654,14 @@ class PEAR_Frontend_Web extends PEAR
                 "install_wait" => array(
                     "type" => "gif",
                     "file" => "install_wait.gif",
+                    ),
+                "install_ok" => array(
+                    "type" => "gif",
+                    "file" => "install_ok.gif",
+                    ),
+                "install_fail" => array(
+                    "type" => "gif",
+                    "file" => "install_fail.gif",
                     ),
                 "uninstall" => array(
                     "type" => "gif",

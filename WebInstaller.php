@@ -19,8 +19,17 @@
   $Id$
 */
     define('PEAR_Frontend_Web',1);
-    define('USE_DHTML_PROGRESS', false);
     @session_start();
+
+    if (!isset($_SESSION['_PEAR_Frontend_Web_js'])) {
+        $_SESSION['_PEAR_Frontend_Web_js'] = false;
+        printf('<script language="javascript"><!-- location.href="%s?command=list-all&enableJS=1"; --></script>',
+            $_SERVER['PHP_SELF']);
+    };
+    if (isset($_GET['enableJS']) && $_GET['enableJS'] == 1) {
+        $_SESSION['_PEAR_Frontend_Web_js'] = true;
+    };
+    define('USE_DHTML_PROGRESS', ($useDHTML && $_SESSION['_PEAR_Frontend_Web_js']));
 
     // Include needed files
     require_once 'PEAR.php';
@@ -94,12 +103,7 @@
         case 'install':
         case 'uninstall':
         case 'upgrade':
-            if (USE_DHTML_PROGRESS && !isset($_GET['perform'])) {
-                $ui->addQueueItem($_GET['command'], $_GET['pkg']);
-                $ui->displayQueue();
-                exit;
-            };
-            if (USE_DHTML_PROGRESS) {
+            if (USE_DHTML_PROGRESS && isset($_GET['dhtml'])) {
                 PEAR::setErrorHandling(PEAR_ERROR_CALLBACK, array($ui, "displayErrorImg"));
             };
             
@@ -109,9 +113,10 @@
             $ok = $cmd->run($command, $opts, $params);
             
             // success
-            if (USE_DHTML_PROGRESS) {
-                Header('Content-Type: image/gif');
-                readfile(dirname(__FILE__).'/Frontend/Web/install_ok.gif');
+            if (USE_DHTML_PROGRESS && isset($_GET['dhtml'])) {
+                $js   = sprintf('<script language="javascript"> newestVersion(%s); </script>', $_GET["pkg"]);
+                $html = sprintf('<img src="%s?img=install_ok" border="0">', $_SERVER['PHP_SELF']);
+                echo $js.$html;
                 exit;
             };
             
@@ -120,7 +125,7 @@
             } elseif (isset($_GET['redirect']) && $_GET['redirect'] == 'search') {
                 $URL .= '?command=search&userDialogResult=get&0='.$_GET["0"].'&1='.$_GET["1"];
             } else {
-                $URL .= '?pageID='.$_GET['pageID'].'#'.$_GET["pkg"];
+                $URL .= '?command=list-all&pageID='.$_GET['pageID'].'#'.$_GET["pkg"];
             };
             Header("Location: ".$URL);
             exit;
@@ -158,6 +163,18 @@
             $URL .= '?command=config-show';
             Header("Location: ".$URL);
             exit;
+        case 'list-all':
+            $command = $_GET["command"];
+            $params = array();
+            if (isset($_GET["mode"]))
+                $opts['mode'] = $_GET["mode"];
+            $cmd = PEAR_Command::factory($command, $config);
+            $ok = $cmd->run($command, $opts, $params);
+        
+            exit;
+        case 'show-last-error':
+            $ui->displayError($_SESSION['_PEAR_Frontend_Web_LastError']);
+            exit;
         default:
             $command = $_GET["command"];
             $cmd = PEAR_Command::factory($command, $config);
@@ -168,13 +185,6 @@
             exit;
         }
     };
-    
-    // If no other command is specified, the standard command 'list-all' is called
-    $command = "list-all";
-    $params = array();
-    if (isset($_GET["mode"]))
-        $opts['mode'] = $_GET["mode"];
-    $cmd = PEAR_Command::factory($command, $config);
-    $ok = $cmd->run($command, $opts, $params);
-    
+  
+    $ui->displayStart();
 ?>
