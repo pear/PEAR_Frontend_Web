@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<!DOCTYPE package SYSTEM "../package.dtd">
+<package version="1.0">
+  <name>PEAR_Frontend_Web</name>
+  <summary>HTML (Web) PEAR Package Manager</summary>
+  <description>Web Interface to the PEAR Package Manager
+</description>
+  <license>PHP License</license>
+  <maintainers>
+    <maintainer>
+      <user>dickmann</user>
+      <role>lead</role>
+      <name>Christian Dickmann</name>
+      <email>alan@akbkhome.com</email>
+    </maintainer>
+    <maintainer>
+      <user>ssb</user>
+      <role>helper</role>
+      <name>Stig Sæther Bakken</name>
+      <email>stig@php.net</email>
+    </maintainer>
+  </maintainers>
+  <release>
+    <version>0.1</version>
+    <date>2002-05-27</date>
+    <notes>First release</notes>
+    <state>alpha</state>
+    <filelist>
+      <dir name="/" baseinstalldir="PEAR">
+      	<file role="php">WebInstaller.php</file>
+      	<dir name="Frontend" baseinstalldir="PEAR/Frontend">
+          <file role="php">Web.php</file>
+          <dir name="Web" baseinstalldir="PEAR/Frontend/Web">
+            <file role="php">error.gif</file>
+            <file role="php">pearsmall.gif</file>
+            <file role="php">trash.gif</file>
+            <file role="php">install.gif</file>
+            <file role="php">info.gif</file>
+            <file role="php">infoplus.gif</file>
+            <file role="php">package.jpg</file>
+            <file role="php">category.jpg</file>
+            <file role="php">pkglist.gif</file>
+            <file role="php">config.gif</file>
+            <file role="php">style.css</file>
+            <file role="php">userDialog.tpl.html</file>
+            <file role="php">package.list.tpl.html</file>
+            <file role="php">header.inc.tpl.html</file>
+            <file role="php">footer.inc.tpl.html</file>
+            <file role="php">error.tpl.html</file>
+          </dir> 
+        </dir>
+      </dir>	
+    </filelist>
+  </release>
+</package>

@@ -103,9 +103,9 @@ class PEAR_Frontend_CLI extends PEAR
     }
 
     // }}}
-    // {{{ userDialog(prompt, [type], [default])
+    // {{{ _userDialog(prompt, [type], [default])
 
-    function userDialog($prompt, $type = 'text', $default = '')
+    function _userDialog($prompt, $type = 'text', $default = '')
     {
         if ($type == 'password') {
             system('stty -echo');
@@ -115,6 +115,7 @@ class PEAR_Frontend_CLI extends PEAR
             print "[$default] ";
         }
         print ": ";
+        
         $fp = fopen("php://stdin", "r");
         $line = fgets($fp, 2048);
         fclose($fp);
@@ -126,6 +127,21 @@ class PEAR_Frontend_CLI extends PEAR
             return $default;
         }
         return $line;
+    }
+
+    // }}}
+    // {{{ userDialog(command, prompts, [types], [defaults])
+
+    function userDialog($command, $prompts, $types = array(), $defaults = array())
+    {
+        $result = array();
+        foreach($prompts as $key => $prompt) {
+            $type    = ((isset($types[$key]))    ? $types[$key]    : 'text');
+            $default = ((isset($defaults[$key])) ? $defaults[$key] : '');
+            $result[] = $this->_userDialog($prompt, $type, $default);
+        };
+    
+        return $result;
     }
 
     // }}}

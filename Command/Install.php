@@ -166,6 +166,7 @@ specified at once.
                 return $this->raiseError("$command failed");
             }
         }
+        return true;
     }
 
     function doUninstall($command, $options, $params)
