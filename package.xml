@@ -2,8 +2,8 @@
 <!DOCTYPE package SYSTEM "http://pear.php.net/dtd/package-1.0">
 <package version="1.0">
   <name>PEAR_Frontend_Web</name>
-  <summary>HTML (Web) PEAR Package Manager</summary>
-  <description>Web Interface to the PEAR Package Manager
+  <summary>HTML (Web) PEAR Installer</summary>
+  <description>Web Interface to the PEAR Installer
 </description>
   <license>PHP License</license>
   <maintainers>
@@ -20,22 +20,30 @@
       <email>pajoye@pearfr.org</email>
     </maintainer>
     <maintainer>
+      <user>cellog</user>
+      <role>developer</role>
+      <name>Gregory Beaver</name>
+      <email>cellog@php.net</email>
+    </maintainer>
+    <maintainer>
       <user>ssb</user>
       <role>helper</role>
-      <name>Stig Sæther Bakken</name>
+      <name>Stig Bakken</name>
       <email>stig@php.net</email>
     </maintainer>
   </maintainers>
   <release>
-    <version>0.4</version>
-    <date>2003-06-07</date>
-    <notes>Bugfixes release:
-- Remove Pager dep
-- Should work well on non apache system (ie IIS)
-- The 'installed packages' is now the entry page
-  (no more remote connection during startup)
+    <version>0.5.0</version>
+    <date>2004-01-22</date>
+    <notes>Major features addition: channel support
+Also, support for post-install scripts on install, and package.xml 2.0
 </notes>
     <state>beta</state>
+    <deps>
+      <dep type="pkg" rel="has">Net_UserAgent_Detect</dep>
+      <dep type="pkg" rel="has">HTML_Template_IT</dep>
+      <dep type="pkg" rel="ge" version="1.4.0a1">PEAR</dep>
+    </deps>
     <filelist>
       <dir name="/" baseinstalldir="PEAR">
       	<file role="php">WebInstaller.php</file>
@@ -74,10 +82,13 @@
 
             <!-- TEMPLATES -->
             <file role="php">bottom.inc.tpl.html</file>
+            <file role="php">channel.info.tpl.html</file>
+            <file role="php">channel.list.tpl.html</file>
             <file role="php">error.popup.tpl.html</file>
             <file role="php">error.tpl.html</file>
             <file role="php">footer.inc.tpl.html</file>
             <file role="php">header.inc.tpl.html</file>
+            <file role="php">info.tpl.html</file>
             <file role="php">package.info.tpl.html</file>
             <file role="php">package.list.tpl.html</file>
             <file role="php">start.tpl.html</file>
@@ -96,10 +107,6 @@
         </dir>
       </dir>
     </filelist>
-    <deps>
-      <dep type="pkg" rel="has">Net_UserAgent_Detect</dep>
-      <dep type="pkg" rel="has">HTML_Template_IT</dep>
-    </deps>
   </release>
   <changelog>
     <release>
@@ -109,6 +116,16 @@
 - Fix a bug while using both CLI and Web installer
   (Invalid characters, bug #23516)
 - Installs correctly the CLI tools
+</notes>
+    </release>
+    <release>
+    <version>0.4</version>
+    <date>2003-06-07</date>
+    <notes>Bugfixes release:
+- Remove Pager dep
+- Should work well on non apache system (ie IIS)
+- The 'installed packages' is now the entry page
+  (no more remote connection during startup)
 </notes>
     </release>
   </changelog>
