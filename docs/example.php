@@ -14,6 +14,13 @@
  *
  * by Christian Dickmann <dickmann@php.net>
  */
+if (!getenv('PHP_PEAR_SYSCONF_DIR')) {
+    // Use this config instead of the global one
+    if (is_file(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'pear.conf')) {
+        putenv('PHP_PEAR_SYSCONF_DIR=' . dirname(__FILE__));
+    }
+}
+
 if ($env=getenv('PHP_PEAR_INSTALL_DIR')) {
     define("PHP_PEAR_INSTALL_DIR",$env);
 } else {
@@ -40,6 +47,7 @@ if (OS_WINDOWS) {
 
 ini_set('include_path', '@include_path@');
 $useDHTML         = true;
+
 // Include WebInstaller
 require_once("PEAR/WebInstaller.php");
 ?>
