@@ -310,7 +310,7 @@ class PEAR_Frontend_Web extends PEAR
             $links['next'] = '';
         }
 
-        $links['current'] = '&from=' . $paging_data['from']  . '&mode='.$_GET['mode'];
+        $links['current'] = '&from=' . $paging_data['from']  . '&mode=' . $mode;
 
         if (isset($_GET['command']) && $_GET['command'] == 'search') {
             $links['current'] .= '&redirect=search&0='.$_REQUEST[0].'&1='.$_REQUEST[1];
