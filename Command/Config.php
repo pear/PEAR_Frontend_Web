@@ -88,7 +88,7 @@ in.  The default layer is "user".
         }
         $keys = $this->config->getKeys();
         sort($keys);
-        $this->ui->startTable(array('caption' => 'Configuration:'));
+        $data = array('caption' => 'Configuration:');
         foreach ($keys as $key) {
             $type = $this->config->getType($key);
             $value = $this->config->get($key, @$params[0]);
@@ -104,9 +104,9 @@ in.  The default layer is "user".
             } elseif ($value === true) {
                 $value = 'true';
             }
-            $this->ui->tableRow(array($key, $value));
+            $data['data'][] = array($key, $value);
         }
-        $this->ui->endTable();
+        $this->ui->outputData($data, $command);
         return true;
     }
 
@@ -121,10 +121,10 @@ in.  The default layer is "user".
         if (sizeof($params) < 1 || sizeof($params) > 2) {
             $failmsg .= "config-get expects 1 or 2 parameters";
         } elseif (sizeof($params) == 1) {
-            $this->ui->displayLine("$params[0] = " . $this->config->get($params[0]));
+            $this->ui->outputData("$params[0] = " . $this->config->get($params[0]), $command);
         } else {
-            $this->ui->displayLine("($params[1])$params[0] = " .
-                                   $this->config->get($params[0], $params[1]));
+            $data = "($params[1])$params[0] = " .$this->config->get($params[0], $params[1]);
+            $this->ui->outputData($data, $command);
         }
         return true;
     }

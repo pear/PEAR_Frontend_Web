@@ -127,6 +127,7 @@ Run regression tests with PHP\'s regression testing script (run-tests.php).',
 List all depencies the package has.'
                                         ),    
         );
+    var $output;
 
     /**
      * PEAR_Command_Package constructor.
@@ -141,15 +142,15 @@ List all depencies the package has.'
     function _displayValidationResults($err, $warn, $strict = false)
     {
         foreach ($err as $e) {
-            $this->ui->displayLine("Error: $e");
+            $this->output .= "Error: $e\n";
         }
         foreach ($warn as $w) {
-            $this->ui->displayLine("Warning: $w");
+            $this->output .= "Warning: $w\n";
         }
-        $this->ui->displayLine(sprintf('Validation: %d error(s), %d warning(s)',
-                                       sizeof($err), sizeof($warn)));
+        $this->output .= sprintf('Validation: %d error(s), %d warning(s)'."\n",
+                                       sizeof($err), sizeof($warn));
         if ($strict && sizeof($err) > 0) {
-            $this->ui->displayLine("Fix these errors and try again.");
+            $this->output .= "Fix these errors and try again.";
             return false;
         }
         return true;
@@ -157,6 +158,7 @@ List all depencies the package has.'
 
     function doPackage($command, $options, $params)
     {
+        $this->output = '';
         include_once 'PEAR/Packager.php';
         $pkginfofile = isset($params[0]) ? $params[0] : 'package.xml';
         ob_start();
@@ -167,27 +169,30 @@ List all depencies the package has.'
         $err = $warn = array();
         $packager->validatePackageInfo($pkginfofile, $err, $warn);
         if (!$this->_displayValidationResults($err, $warn, true)) {
+            $this->ui->outputData($this->output, $command);
             return;
         }
         $compress = empty($options['Z']) ? true : false;
         $result = $packager->Package($pkginfofile, $compress);
-        $output = ob_get_contents();
+        $this->output .= ob_get_contents();
         ob_end_clean();
         if (PEAR::isError($result)) {
+            $this->ui->outputData($this->output, $command);
             return $this->raiseError($result);
         }
         // Don't want output, only the package file name just created
         if (isset($options['n'])) {
-            $this->ui->displayLine($result);
+            $this->output .= $result."\n";
             return;
         }
         $lines = explode("\n", $output);
         foreach ($lines as $line) {
-            $this->ui->displayLine($line);
+            $this->output .= $line."n";
         }
         if (PEAR::isError($result)) {
-            $this->ui->displayLine("Package failed: ".$result->getMessage());
+            $this->output .= "Package failed: ".$result->getMessage();
         }
+        $this->ui->outputData($this->output, $command);
         return true;
     }
 
@@ -257,18 +262,20 @@ List all depencies the package has.'
             }
         }
         $caption = 'About ' . basename($params[0]);
-        $this->ui->startTable(array('caption' => $caption,
-                                    'border' => true));
+        $data = array(
+            'caption' => $caption,
+            'border' => true);
         foreach ($info as $key => $value) {
             $key = ucwords(str_replace('_', ' ', $key));
-            $this->ui->tableRow(array($key, $value), null, array(1 => array('wrap' => 55)));
+            $data['data'][] = array($key, $value);
         }
-        $this->ui->endTable();
+        $this->ui->outputData($data, $command);
         return true;
     }
 
     function doPackageValidate($command, $options, $params)
     {
+        $this->output = '';
         if (sizeof($params) < 1) {
             $params[0] = "package.xml";
         }
@@ -289,11 +296,14 @@ List all depencies the package has.'
         }
         $obj->validatePackageInfo($info, $err, $warn);
         $this->_displayValidationResults($err, $warn);
+        $this->ui->outputData($this->output, $command);
         return true;
     }
 
     function doCvsTag($command, $options, $params)
     {
+        $this->output = '';
+        $_cmd = $command;
         if (sizeof($params) < 1) {
             $help = $this->getHelp($command);
             return $this->raiseError("$command: missing parameter: $help[0]");
@@ -306,6 +316,7 @@ List all depencies the package has.'
         $err = $warn = array();
         $obj->validatePackageInfo($info, $err, $warn);
         if (!$this->_displayValidationResults($err, $warn, true)) {
+            $this->ui->outputData($this->output, $command);
             break;
         }
         $version = $info['version'];
@@ -330,14 +341,15 @@ List all depencies the package has.'
         foreach ($files as $file) {
             $command .= ' ' . escapeshellarg($file);
         }
-        $this->ui->displayLine("+ $command");
+        $this->output .= "+ $command\n";
         if (empty($options['n'])) {
             $fp = popen($command, "r");
             while ($line = fgets($fp, 1024)) {
-                $this->ui->displayLine(rtrim($line));
+                $this->output .= rtrim($line)."\n";
             }
             pclose($fp);
         }
+        $this->ui->outputData($this->output, $_cmd);
         return true;
     }
 
@@ -374,9 +386,11 @@ List all depencies the package has.'
         }
 
         if (is_array($info['release_deps'])) {
-            $this->ui->startTable(array('caption' => 'Dependencies for ' . $info['package'],
-                                        'border' => true));
-            $this->ui->tableRow(array("Type", "Name", "Relation", "Version"));
+            $data = array(
+                'caption' => 'Dependencies for ' . $info['package'],
+                'border' => true,
+                'headline' => array("Type", "Name", "Relation", "Version"),
+                );
 
             foreach ($info['release_deps'] as $d) {
 
@@ -404,15 +418,15 @@ List all depencies the package has.'
                     $version = '';
                 }
 
-                $this->ui->tableRow(array($type, $name, $rel, $version), null, array(1 => array('wrap' => 55)));
+                $data['data'][] = array($type, $name, $rel, $version);
             }
 
-            $this->ui->endTable();
+            $this->ui->outputData($data, $command);
             return true;
         }
 
         // Fallback
-        $this->ui->displayLine("This package does not have any dependencies.");
+        $this->ui->outputData("This package does not have any dependencies.", $command);
     }
 }
 ?>

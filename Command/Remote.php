@@ -114,22 +114,18 @@ version of DB is 1.2, the downloaded file will be DB-1.2.tgz.',
             return $this->raiseError($available);
         }
         $i = $j = 0;
-        $this->ui->startTable(
-            array('caption' => 'Available packages:',
-                  'border' => true));
-//        print_r($available);
+        $data = array(
+            'caption' => 'Available packages:',
+            'border' => true,
+            'headline' => array('Package', 'Version'),
+            );
         foreach ($available as $name => $info) {
-            if ($i++ % 20 == 0) {
-                $this->ui->tableRow(
-                    array('Package', 'Version'),
-                    array('bold' => true));
-            }
-            $this->ui->tableRow(array($name, $info['stable']));
+            $data['data'][] = array($name, $info['stable']);
         }
-        if ($i == 0) {
-            $this->ui->tableRow(array('(no packages installed yet)'));
+        if (count($available)==0) {
+            $data = '(no packages installed yet)';
         }
-        $this->ui->endTable();
+        $this->ui->outputData($data, $command);
         return true;
     }
 
@@ -148,6 +144,7 @@ version of DB is 1.2, the downloaded file will be DB-1.2.tgz.',
         $data = array(
             'caption' => 'All packages:',
             'border' => true,
+            'headline' => array('Package', 'Latest', 'Local'),
             );
                   
         foreach ($available as $name => $info) {
@@ -159,9 +156,8 @@ version of DB is 1.2, the downloaded file will be DB-1.2.tgz.',
             $data['data'][$info['category']][] = array(
                 $name, 
                 $info['stable'], 
-                $info['category'], 
-                $desc,
                 $installed['version'],
+                $desc,
                 );
         }
         $this->ui->outputData($data, $command);
@@ -190,7 +186,7 @@ version of DB is 1.2, the downloaded file will be DB-1.2.tgz.',
             return $this->raiseError($saved);
         }
         $fname = basename($saved);
-        $this->ui->displayLine("File $fname downloaded ($this->bytes_downloaded bytes)");
+        $this->ui->outputData("File $fname downloaded ($this->bytes_downloaded bytes)", $command);
         return true;
     }
 
@@ -226,10 +222,11 @@ version of DB is 1.2, the downloaded file will be DB-1.2.tgz.',
         }
         $reg = new PEAR_Registry($this->config->get('php_dir'));
         $inst = array_flip($reg->listPackages());
-        $this->ui->startTable(array('caption' => $caption,
-                                    'border' => 1));
-        $this->ui->tableRow(array('Package', 'Version', 'Size'),
-                            array('bold' => true));
+        $data = array(
+            'caption' => $caption,
+            'border' => 1,
+            'headline' => array('Package', 'Version', 'Size'),
+            );
         foreach ($latest as $package => $info) {
             if (!isset($inst[$package])) {
                 // skip packages we don't have installed
@@ -250,9 +247,9 @@ version of DB is 1.2, the downloaded file will be DB-1.2.tgz.',
             } else {
                 $fs = "  -"; // XXX center instead
             }
-            $this->ui->tableRow(array($package, $version, $fs));
+            $data['data'][] = array($package, $version, $fs);
         }
-        $this->ui->endTable();
+        $this->ui->outputData($data, $command);
         return true;
     }
 

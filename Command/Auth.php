@@ -87,7 +87,7 @@ password from your user configuration.',
         if (empty($username)) {
             $username = @$_ENV['USER'];
         }
-        $this->ui->displayLine("Logging in to $server.");
+        $this->ui->outputData("Logging in to $server.", $command);
         
         list($username, $password) = $this->ui->userDialog(
             $command,
@@ -105,10 +105,10 @@ password from your user configuration.',
         $ok = $remote->call('logintest');
         $remote->popExpect();
         if ($ok === true) {
-            $this->ui->displayLine("Logged in.");
+            $this->ui->outputData("Logged in.", $command);
             $this->config->store();
         } else {
-            $this->ui->displayLine("Login failed!");
+            return $this->raiseError("Login failed!");
         }
 
     }
@@ -130,7 +130,7 @@ password from your user configuration.',
     function doLogout($command, $options, $params)
     {
         $server = $this->config->get('master_server');
-        $this->ui->displayLine("Logging out from $server.");
+        $this->ui->outputData("Logging out from $server.", $command);
         $this->config->remove('username');
         $this->config->remove('password');
         $this->config->store();

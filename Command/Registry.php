@@ -67,24 +67,20 @@ Tests if a package is installed in the system. Will exit(1) if it is not.
             $installed = $reg->packageInfo();
             
             $i = $j = 0;
-            $this->ui->startTable(
-                array('caption' => 'Installed packages:',
-                      'border' => true));
+            $data = array(
+                'caption' => 'Installed packages:',
+                'border' => true,
+                'headline' => array('Package', 'Version', 'State')
+                );
             foreach ($installed as $package) {
-                if ($i++ % 20 == 0) {
-                    $this->ui->tableRow(
-                        array('Package', 'Version', 'State'),
-                        array('bold' => true));
-                }
-                echo $package['package']."\n";
-                $this->ui->tableRow(array($package['package'],
+                $data['data'][] = array($package['package'],
                                           $package['version'],
-                                          @$package['release_state']));
+                                          @$package['release_state']);
             }
-            if ($i == 0) {
-                $this->ui->tableRow(array('(no packages installed)'));
+            if (count($installed)==0) {
+                $data = '(no packages installed)';
             }
-            $this->ui->endTable();
+            $this->ui->outputData($data, $command);
         } else {
             if (file_exists($params[0]) && !is_dir($params[0])) {
                 include_once "PEAR/Common.php";
@@ -109,15 +105,16 @@ Tests if a package is installed in the system. Will exit(1) if it is not.
             } else {
                 $caption = 'Contents of ' . basename($params[0]);
             }
-            $this->ui->startTable(array('caption' => $caption,
-                                        'border' => true));
-            $this->ui->tableRow($headings, array('bold' => true));
+            $data = array(
+                'caption' => $caption,
+                'border' => true,
+                'headline' => $headings);
             foreach ($list as $file => $att) {
                 if ($installed) {
                     if (empty($att['installed_as'])) {
                         continue;
                     }
-                    $this->ui->tableRow(array($att['role'], $att['installed_as']));
+                    $data['data'][] = array($att['role'], $att['installed_as']);
                 } else {
                     if (isset($att['baseinstalldir'])) {
                         $dest = $att['baseinstalldir'] . DIRECTORY_SEPARATOR .
@@ -144,10 +141,10 @@ Tests if a package is installed in the system. Will exit(1) if it is not.
                     }
                     $dest = preg_replace('!/+!', '/', $dest);
                     $file = preg_replace('!/+!', '/', $file);
-                    $this->ui->tableRow(array($file, $dest));
+                    $data['data'][] = array($file, $dest);
                 }
             }
-            $this->ui->endTable();
+            $this->ui->outputData($data, $command);
 
             
         }

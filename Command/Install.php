@@ -160,7 +160,7 @@ specified at once.
             if (is_array($info)) {
                 if ($this->config->get('verbose') > 0) {
                     $label = "$info[package] $info[version]";
-                    $this->ui->displayLine("$command ok: $label");
+                    $this->ui->outputData("$command ok: $label", $command);
                 }
             } else {
                 return $this->raiseError("$command failed");
@@ -176,7 +176,7 @@ specified at once.
         foreach ($params as $pkg) {
             if ($this->installer->uninstall($pkg, $options)) {
                 if ($this->config->get('verbose') > 0) {
-                    $this->ui->displayLine("uninstall ok");
+                    $this->ui->outputData("uninstall ok", $command);
                 }
             } else {
                 return $this->raiseError("uninstall failed");

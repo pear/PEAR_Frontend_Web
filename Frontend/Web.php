@@ -16,7 +16,7 @@
   | Author: Christian Dickmann <dickmann@php.net>                        |
   +----------------------------------------------------------------------+
 
-  $id$
+  $Id$
 */
 
 require_once "PEAR.php";
@@ -35,7 +35,8 @@ class PEAR_Frontend_Web extends PEAR
     var $lp = ''; // line prefix
     var $tpl;
     var $table;
-
+    var $data = array();
+    
     var $params = array();
 
     // }}}
@@ -66,7 +67,22 @@ class PEAR_Frontend_Web extends PEAR
 
     function displayError($eobj)
     {
-        return $this->displayLine($eobj->getMessage());
+        $msg = $eobj->getMessage();
+        $msg = nl2br($msg);
+
+        $tpl = new IntegratedTemplate(dirname(__FILE__)."/Web");
+        $tpl->loadTemplateFile("error.tpl.html");
+        $tpl->setVariable("InstallerURL", $_SERVER["PHP_SELF"]);
+        $tpl->setVariable("ImgPEAR", $_SERVER["PHP_SELF"].'?img=pear');
+        $tpl->setVariable("ImgError", $_SERVER["PHP_SELF"].'?img=error');
+        
+        $tpl->setVariable("Error", $msg);
+        if (isset($_GET['command']))
+            $tpl->setVariable("param", '?command='.$_GET['command']);
+        
+        $tpl->show();
+        exit;
+        return true;
     }
 
     // }}}
@@ -129,8 +145,8 @@ class PEAR_Frontend_Web extends PEAR
             {
                 $tpl->setCurrentBlock("Row");
                 $tpl->setVariable("ImgPackage", $_SERVER["PHP_SELF"].'?img=package');
-                $compare = version_compare($row[1], $row[4]);
-                if (!$row[4]) {
+                $compare = version_compare($row[1], $row[2]);
+                if (!$row[2]) {
                     $inst = sprintf('<a href="%s?install=%s"><img src="%s?img=install" border="0"></a>',
                         $_SERVER["PHP_SELF"], $row[0], $_SERVER["PHP_SELF"]);
                     $del = '';
@@ -148,7 +164,7 @@ class PEAR_Frontend_Web extends PEAR
                     $_SERVER["PHP_SELF"], $row[0], $row[0], $_SERVER["PHP_SELF"]);
                         
                 $tpl->setVariable("Version", $row[1]);
-                $tpl->setVariable("Installed", $row[4]);
+                $tpl->setVariable("Installed", $row[2]);
                 $tpl->setVariable("Install", $inst);
                 $tpl->setVariable("Delete", $del);
                 $tpl->setVariable("Info", $info);
@@ -171,7 +187,24 @@ class PEAR_Frontend_Web extends PEAR
         {
         case 'list-all':
             return $this->outputListAll($data);
+        case 'install':
+        case 'uninstall':
+            return true;
+        case 'login':
+            if ($_SERVER["REQUEST_METHOD"] == "POST")
+                break;
+            else
+                $this->data[$command] = $data;
+            return true;
+        case 'logout':
+        case 'package':
+            echo $data;
+            break;
+        default:
+            echo $data;
         };
+        
+        return true;
     }
 
     function userDialog($command, $prompts, $types = array(), $defaults = array())
@@ -190,6 +223,7 @@ class PEAR_Frontend_Web extends PEAR
         $tpl->setVariable("ImgPEAR", $_SERVER["PHP_SELF"].'?img=pear');
         $tpl->setVariable("InstallerURL", $_SERVER["PHP_SELF"]);
         $tpl->setVariable("Command", $command);
+        $tpl->setVariable("Headline", nl2br($this->data[$command]));
     
         if (is_array($prompts))
         {
