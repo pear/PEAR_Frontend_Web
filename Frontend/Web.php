@@ -320,8 +320,8 @@ class PEAR_Frontend_Web extends PEAR
                     'install' => '<img src="'.$_SERVER["PHP_SELF"].'?img=install" width="13" height="13" border="0" alt="install">',
                     'uninstall' => '<img src="'.$_SERVER["PHP_SELF"].'?img=uninstall" width="18" height="17"  border="0" alt="uninstall">',
                     'upgrade' => '<img src="'.$_SERVER["PHP_SELF"].'?img=install" width="13" height="13" border="0" alt="upgrade">',
-                    'info' => '<img src="'.$_SERVER["PHP_SELF"].'?img=info"  width="16" height="19" border="0" alt="info">',
-                    'infoExt' => '<img src="'.$_SERVER["PHP_SELF"].'?img=infoplus"  width="19" height="19" border="0" alt="extended info">',
+                    'info' => '<img src="'.$_SERVER["PHP_SELF"].'?img=info"  width="17" height="19" border="0" alt="info">',
+                    'infoExt' => '<img src="'.$_SERVER["PHP_SELF"].'?img=infoplus"  width="18" height="19" border="0" alt="extended info">',
                     );
                 $urls   = array(
                     'install' => sprintf('%s?command=install&pkg=%s%s',
