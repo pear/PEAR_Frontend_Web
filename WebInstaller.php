@@ -19,6 +19,7 @@
   $Id$
 */
     define('PEAR_Frontend_Web',1);
+    define('USE_DHTML_PROGRESS', false);
     @session_start();
 
     // Include needed files
@@ -28,6 +29,7 @@
     require_once 'PEAR/Command.php';
 
     // Init PEAR Installer Code and WebFrontend
+    $config  = $GLOBALS['_PEAR_Frontend_Web_config'] = &PEAR_Config::singleton($pear_user_config, '');
     PEAR_Command::setFrontendType("Web");
     $ui = &PEAR_Command::getFrontendObject();
     PEAR::setErrorHandling(PEAR_ERROR_CALLBACK, array($ui, "displayFatalError"));
@@ -45,7 +47,6 @@
 
         
 
-    $config  = &PEAR_Config::singleton($pear_user_config, '');
     $verbose = $config->get("verbose");
     $cmdopts = array();
     $opts    = array();
@@ -93,10 +94,26 @@
         case 'install':
         case 'uninstall':
         case 'upgrade':
+            if (USE_DHTML_PROGRESS && !isset($_GET['perform'])) {
+                $ui->addQueueItem($_GET['command'], $_GET['pkg']);
+                $ui->displayQueue();
+                exit;
+            };
+            if (USE_DHTML_PROGRESS) {
+                PEAR::setErrorHandling(PEAR_ERROR_CALLBACK, array($ui, "displayErrorImg"));
+            };
+            
             $command = $_GET["command"];
             $params = array($_GET["pkg"]);
             $cmd = PEAR_Command::factory($command, $config);
             $ok = $cmd->run($command, $opts, $params);
+            
+            // success
+            if (USE_DHTML_PROGRESS) {
+                Header('Content-Type: image/gif');
+                readfile(dirname(__FILE__).'/Frontend/Web/install_ok.gif');
+                exit;
+            };
             
             if (isset($_GET['redirect']) && $_GET['redirect'] == 'info') {
                 $URL .= '?command=remote-info&pkg='.$_GET["pkg"];

@@ -22,9 +22,9 @@
   </maintainers>
   <release>
     <version>0.1</version>
-    <date>2002-05-27</date>
+    <date>2002-06-29</date>
     <notes>First release</notes>
-    <state>alpha</state>
+    <state>beta</state>
     <filelist>
       <dir name="/" baseinstalldir="PEAR">
       	<file role="php">WebInstaller.php</file>
@@ -32,19 +32,24 @@
           <file role="php">Web.php</file>
           <dir name="Web">
             <!-- Images -->
+            <file role="php">config.gif</file>
             <file role="php">download.gif</file>
-            <file role="php">manual.gif</file>
             <file role="php">error.gif</file>
-            <file role="php">pearsmall.gif</file>
-            <file role="php">trash.gif</file>
-            <file role="php">install.gif</file>
             <file role="php">info.gif</file>
             <file role="php">infoplus.gif</file>
-            <file role="php">package.jpg</file>
-            <file role="php">category.jpg</file>
-            <file role="php">config.gif</file>
+            <file role="php">install.gif</file>
+            <file role="php">install_fail.gif</file>
+            <file role="php">install_ok.gif</file>
+            <file role="php">install_wait.gif</file>
             <file role="php">login.gif</file>
             <file role="php">logout.gif</file>
+            <file role="php">manual.gif</file>
+            <file role="php">pearsmall.gif</file>
+            <file role="php">trash.gif</file>
+            
+            <file role="php">package.jpg</file>
+            <file role="php">category.jpg</file>
+            
             <file role="php">pkglist.png</file>
             <file role="php">pkgsearch.png</file>
             
@@ -57,12 +62,13 @@
             <file role="php">nodhtml.js</file>
             
             <!-- TEMPLATES -->
-            <file role="php">userDialog.tpl.html</file>
-            <file role="php">package.list.tpl.html</file>
-            <file role="php">package.info.tpl.html</file>
-            <file role="php">header.inc.tpl.html</file>
-            <file role="php">footer.inc.tpl.html</file>
             <file role="php">error.tpl.html</file>
+            <file role="php">footer.inc.tpl.html</file>
+            <file role="php">header.inc.tpl.html</file>
+            <file role="php">package.info.tpl.html</file>
+            <file role="php">package.list.tpl.html</file>
+            <file role="php">progress.tpl.html</file>
+            <file role="php">userDialog.tpl.html</file>
           </dir> 
         </dir>
       </dir>	

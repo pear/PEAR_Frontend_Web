@@ -20,6 +20,7 @@
 */
 
 require_once "PEAR.php";
+require_once "PEAR/Remote.php";
 require_once "HTML/Template/IT.php";
 require_once "Net/UserAgent/Detect.php";
 require_once "Pager/Pager.php";
@@ -57,13 +58,24 @@ class PEAR_Frontend_Web extends PEAR
     var $_data = array();
     
     // }}}
+    var $config;
 
+    var $_no_delete_pkgs = array(
+        'PEAR',
+        'PEAR_Frontend_Web',
+        'Archive_Tar',
+        'Console_Getopt',
+        'XML_RPC',
+        'Net_UserAgent_Detect',
+        'Pager');
+        
     // {{{ constructor
 
     function PEAR_Frontend_Web()
     {
         parent::PEAR();
         $GLOBALS['_PEAR_Frontend_Web_log'] = '';
+        $this->config = $GLOBALS['_PEAR_Frontend_Web_config'];
     }
 
     // }}}
@@ -92,6 +104,53 @@ class PEAR_Frontend_Web extends PEAR
     }
 
     // }}}
+    
+    function addQueueItem($command, $pkg)
+    {   
+        $remote    = new PEAR_Remote($this->config);
+        $reg       = new PEAR_Registry($this->config->get('php_dir'));
+        $latest    = $remote->call('package.listAll', true);
+        $latest    = $latest[$pkg];
+        $installed = $reg->packageInfo($pkg);
+    
+        $action = $command;
+        if ($action == 'upgrade') {
+            $action.=' to';
+        };
+    
+        $_SESSION['_PEAR_Frontend_Web_queue'][$pkg] = array(
+            'action' => $action,
+            'command' => $command,
+            'latest' => $latest,
+            'installed' => $installed,
+            );
+//        var_dump($_SESSION);
+    }
+    
+    function displayQueue()
+    {
+        $tpl = $this->_initTemplate("progress.tpl.html", $title, $img);
+    
+        $commands = array();
+        foreach($_SESSION['_PEAR_Frontend_Web_queue'] as $pkg => $info) {
+            $tpl->setCurrentBlock('Package');
+            $tpl->setVariable('PackageName', $pkg);
+            if ($info['action'] != 'uninstall') {
+                $tpl->setVariable('VersionLatest', $info['latest']['stable']);
+            };
+            $tpl->setVariable('VersionInstalled', $info['installed']['version']);
+            $tpl->setVariable('Action', $info['action']);
+            $tpl->setVariable('_InstallerURL', $_SERVER['PHP_SELF']);
+            $tpl->parseCurrentBlock();
+            $commands[] = $info['command'];
+        };
+        $tpl->setCurrentBlock();
+        $tpl->setVariable('Packages', implode('", "', array_keys($_SESSION['_PEAR_Frontend_Web_queue'])));
+        $tpl->setVariable('Commands', implode('", "', $commands));
+        $tpl->show();
+        
+        return true;
+    }
     
     /**
      * Initialize a TemplateObject, add a title, and icon and add JS and CSS for DHTML 
@@ -200,6 +259,13 @@ class PEAR_Frontend_Web extends PEAR
         $this->displayError($eobj, $title, $img);
     }
 
+    function displayErrorImg($eobj)
+    {
+        Header('Content-Type: image/gif');
+        readfile(dirname(__FILE__).'/Web/install_fail.gif');
+        exit;
+    }
+
     // }}}
     
     /**
@@ -234,7 +300,7 @@ class PEAR_Frontend_Web extends PEAR
         $links = $pager->getLinks();
         list($from, $to) = $pager->getOffsetByPageId();
         // Generate Linkinformation to redirect to _this_ page after performing an action
-        $links['current'] = '&pageID='.$pager->getCurrentPage();
+        $links['current'] = '&pageID='.$pager->getCurrentPageID();
         if (isset($_GET['mode']))
             $links['current'] .= '&mode='.$_GET['mode'];
         else
@@ -307,7 +373,7 @@ class PEAR_Frontend_Web extends PEAR
                 $infoExt=sprintf('<a href="%s?package=%s">%s</a>',
                     'http://pear.php.net/package-info.php', $row[0], $images['infoExt']);
                         
-                if ($pkgName == 'PEAR' || $pkgName == 'Archive_Tar')
+                if (in_array($pkgName, $this->_no_delete_pkgs))
                     $del = '';
                         
                 $tpl->setVariable("Version", $pkgVersionLatest);
@@ -369,27 +435,31 @@ class PEAR_Frontend_Web extends PEAR
             $opt_text[] = sprintf(
                 '<a href="%s?command=upgrade&pkg=%s&redirect=info" class="green">Upgrade package</a>',
                 $_SERVER["PHP_SELF"], $data['name'], $_SERVER["PHP_SELF"]);
-            $opt_img[] = sprintf(
-                '<a href="%s?command=uninstall&pkg=%s&redirect=info" %s><img src="%s?img=uninstall" border="0" alt="uninstall"></a>',
-                $_SERVER["PHP_SELF"], $data['name'], 
-                'onClick="return confirm(\'Do you really want to uninstall \\\''.$data['name'].'\\\'?\')"',
-                $_SERVER["PHP_SELF"]);
-            $opt_text[] = sprintf(
-                '<a href="%s?command=uninstall&pkg=%s&redirect=info" class="green" %s>Uninstall package</a>',
-                $_SERVER["PHP_SELF"], $data['name'], 
-                'onClick="return confirm(\'Do you really want to uninstall \\\''.$data['name'].'\\\'?\')"',
-                $_SERVER["PHP_SELF"]);
+            if (!in_array($data['name'], $this->_no_delete_pkgs)) {
+                $opt_img[] = sprintf(
+                    '<a href="%s?command=uninstall&pkg=%s&redirect=info" %s><img src="%s?img=uninstall" border="0" alt="uninstall"></a>',
+                    $_SERVER["PHP_SELF"], $data['name'], 
+                    'onClick="return confirm(\'Do you really want to uninstall \\\''.$data['name'].'\\\'?\')"',
+                    $_SERVER["PHP_SELF"]);
+                $opt_text[] = sprintf(
+                    '<a href="%s?command=uninstall&pkg=%s&redirect=info" class="green" %s>Uninstall package</a>',
+                    $_SERVER["PHP_SELF"], $data['name'], 
+                    'onClick="return confirm(\'Do you really want to uninstall \\\''.$data['name'].'\\\'?\')"',
+                    $_SERVER["PHP_SELF"]);
+           };
         } else {
-            $opt_img[] = sprintf(
-                '<a href="%s?command=uninstall&pkg=%s&redirect=info" %s><img src="%s?img=uninstall" border="0" alt="uninstall"></a>',
-                $_SERVER["PHP_SELF"], $data['name'], 
-                'onClick="return confirm(\'Do you really want to uninstall \\\''.$data['name'].'\\\'?\')"',
-                $_SERVER["PHP_SELF"]);
-            $opt_text[] = sprintf(
-                '<a href="%s?command=uninstall&pkg=%s&redirect=info" class="green" %s>Uninstall package</a>',
-                $_SERVER["PHP_SELF"], $data['name'], 
-                'onClick="return confirm(\'Do you really want to uninstall \\\''.$data['name'].'\\\'?\')"',
-                $_SERVER["PHP_SELF"]);
+            if (!in_array($data['name'], $this->_no_delete_pkgs)) {
+                $opt_img[] = sprintf(
+                    '<a href="%s?command=uninstall&pkg=%s&redirect=info" %s><img src="%s?img=uninstall" border="0" alt="uninstall"></a>',
+                    $_SERVER["PHP_SELF"], $data['name'], 
+                    'onClick="return confirm(\'Do you really want to uninstall \\\''.$data['name'].'\\\'?\')"',
+                    $_SERVER["PHP_SELF"]);
+                $opt_text[] = sprintf(
+                    '<a href="%s?command=uninstall&pkg=%s&redirect=info" class="green" %s>Uninstall package</a>',
+                    $_SERVER["PHP_SELF"], $data['name'], 
+                    'onClick="return confirm(\'Do you really want to uninstall \\\''.$data['name'].'\\\'?\')"',
+                    $_SERVER["PHP_SELF"]);
+           };
         };
 
         if (isset($opt_img[0]))
@@ -612,6 +682,10 @@ class PEAR_Frontend_Web extends PEAR
                 "install" => array(
                     "type" => "gif",
                     "file" => "install.gif",
+                    ),
+                "install_wait" => array(
+                    "type" => "gif",
+                    "file" => "install_wait.gif",
                     ),
                 "uninstall" => array(
                     "type" => "gif",
