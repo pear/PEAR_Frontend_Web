@@ -72,14 +72,17 @@
     <TR>
       <TD width="20">
       </TD>
-      <TD width="200" align="left">
+      <TD width="175" align="left">
         <a href="{InstallerURL}?command=list-all{mode1}" class="green">[ {mode1text} ]</a>
       </TD>
-      <TD width="250" align="center">
+      <TD width="175" align="center">
         <a href="{InstallerURL}?command=list-all{mode2}" class="green">[ {mode2text} ]</a>
       </TD>
-      <TD width="200" align="right">
+      <TD width="175" align="right">
         <a href="{InstallerURL}?command=list-all{mode3}" class="green">[ {mode3text} ]</a>
+      </TD>
+      <TD width="175" align="right">
+        <a href="{InstallerURL}?command=list-all{mode4}" class="green">[ {mode4text} ]</a>
       </TD>
     </TR>
     </TABLE>
@@ -120,6 +123,9 @@
       <TD valign="top">
         
       </TD>
+      <TD width="100" valign="top">
+        <b>Channel</b>
+      </TD>
       <TD width="150" valign="top">
         <b>PackageName</b>
       </TD>
@@ -127,7 +133,7 @@
         <b>Local</b>
       </TD>
       <TD width="50" valign="top">
-        <b>Latest</b>
+        <b>Stable/(Latest)</b>
       </TD>
       <TD valign="top" width="15">
         
@@ -156,6 +162,9 @@
       </TD>
       <TD valign="top">
         <img src="{InstallerURL}?img=package" width="12" height="12" border="0">
+      </TD>
+      <TD width="100" valign="top">
+        {Channel}
       </TD>
       <TD width="150" valign="top">
         {Package}
@@ -200,6 +209,21 @@
         {Next}
       </TD>
     </TR>
+    </TABLE>
+    <TABLE>
+     <TR>
+      <TD>
+        <span class="green">[Advanced Users] Install a local package or remote non-PEAR package</span>
+      </TD>
+     </TR>
+     <TR>
+      <TD valign="top">
+        <FORM name="nonstandardpackage">
+         <INPUT type="hidden" name="command" value="install">
+         <INPUT type="hidden" name="redirect" value="info">
+         <img src="{InstallerURL}?img=package" width="12" height="12" border="0" alt="non-standard package"><INPUT type="text" size="50" name="pkg"><INPUT type="submit" name="sub" value="Install">
+      </TD>
+     </TR>
     </TABLE>
 <!-- INCLUDE bottom.inc.tpl.html -->
 <!-- INCLUDE footer.inc.tpl.html -->

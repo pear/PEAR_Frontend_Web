@@ -29,21 +29,29 @@ if (isset($_GET['enableJS']) && $_GET['enableJS'] == 1) {
     $_SESSION['_PEAR_Frontend_Web_js'] = true;
 }
 define('USE_DHTML_PROGRESS', (@$useDHTML && $_SESSION['_PEAR_Frontend_Web_js']));
-if (!isset($pear_user_config)) {
-     $pear_user_config = PEAR_CONFIG_SYSCONFDIR . "/pear.conf";
-}
 
 // Include needed files
-require_once 'PEAR.php';
+require_once 'PEAR/Frontend.php';
 require_once 'PEAR/Registry.php';
 require_once 'PEAR/Config.php';
 require_once 'PEAR/Command.php';
 
+if (!isset($pear_user_config)) {
+    if (OS_WINDOWS) {
+        $pear_user_config = PEAR_CONFIG_SYSCONFDIR . '/pear.ini';
+    } else {
+        $pear_user_config = PEAR_CONFIG_SYSCONFDIR . '/pear.conf';
+    }
+}
+
+// moving this here allows startup messages and errors to work properly
+PEAR_Frontend::setFrontendClass('PEAR_Frontend_Web');
 // Init PEAR Installer Code and WebFrontend
-$config  = $GLOBALS['_PEAR_Frontend_Web_config'] = &PEAR_Config::singleton($pear_user_config, '');
-PEAR_Command::setFrontendType("Web");
+$GLOBALS['_PEAR_Frontend_Web_config'] = &PEAR_Config::singleton($pear_user_config, '');
+$config  = &$GLOBALS['_PEAR_Frontend_Web_config'];
 
 $ui = &PEAR_Command::getFrontendObject();
+$ui->setConfig($config);
 
 PEAR::setErrorHandling(PEAR_ERROR_CALLBACK, array($ui, "displayFatalError"));
 
@@ -68,7 +76,7 @@ $dir = substr(dirname(__FILE__), 0, -strlen('PEAR/PEAR')); // strip PEAR/PEAR
 
 $_ENV['TMPDIR'] = $_ENV['TEMP'] = $dir.'tmp';
 
-if (false && !file_exists($pear_user_config)) {
+if (!file_exists($pear_user_config)) {
     // I think PEAR_Frontend_Web is running for the first time!
     // Install it properly ...
 
@@ -82,6 +90,8 @@ if (false && !file_exists($pear_user_config)) {
     $ok = $cmd->run('config-set', array(), array('test_dir', $dir.'test'));
     $ok = $cmd->run('config-set', array(), array('cache_dir', $dir.'cache'));
     $ok = $cmd->run('config-set', array(), array('cache_ttl', 300));
+    $ok = $cmd->run('config-set', array(), array('default_channel', 'pear.php.net'));
+    $ok = $cmd->run('config-set', array(), array('preferred_mirror', 'pear.php.net'));
 
     // Register packages
     $packages = array(
@@ -94,7 +104,7 @@ if (false && !file_exists($pear_user_config)) {
                                 'PEAR_Frontend_Web',
                                 'XML_RPC'
                         );
-    $reg = new PEAR_Registry($dir.'PEAR');
+    $reg = &$config->getRegistry();
     if (!file_exists($dir.'PEAR/.registry')) {
         PEAR::raiseError('Directory "'.$dir.'PEAR/.registry" does not exist. please check your installation');
     }
@@ -122,6 +132,9 @@ if (isset($_GET["command"])) {
             }
 
             $command = $_GET["command"];
+            if (strpos($_GET['pkg'], '\\\\') !== false) {
+                $_GET['pkg'] = stripslashes($_GET['pkg']);
+            }
             $params = array($_GET["pkg"]);
             $cmd = PEAR_Command::factory($command, $config);
             $ok = $cmd->run($command, $opts, $params);
@@ -152,6 +165,34 @@ if (isset($_GET["command"])) {
                 $URL .= '?command=list-all&pageID='.$_GET['pageID'].'#'.$_GET["pkg"];
             }
             Header("Location: ".$URL);
+            exit;
+        case 'installscript' :
+            if (!isset($_SESSION['_PEAR_Frontend_Web_Script'])) {
+                return PEAR::raiseError('ERROR: install scripts can only be called from installation');
+            }
+            include_once $_SESSION['_PEAR_Frontend_Web_ScriptFile'];
+            $oldscript = $_SESSION['_PEAR_Frontend_Web_Script'];
+            $script = new $_SESSION['_PEAR_Frontend_Web_ScriptClass'];
+            require_once 'PEAR/PackageFile/v2.php';
+            $pkgfile = &new PEAR_PackageFile_v2;
+            $pkgfile->setConfig($config);
+            $pkgfile->fromArray($_SESSION['_PEAR_Frontend_Web_ScriptPkgFile']);
+            foreach (get_object_vars($oldscript) as $name => $val) {
+                $script->$name = $val;
+            }
+            $script->init($config, $ui);
+            if (method_exists($script, '__wakeup')) {
+                $script->__wakeup();
+            }
+            $xml = $_SESSION['_PEAR_Frontend_Web_Xml'];
+            $installtype = $_SESSION['_PEAR_Frontend_Web_Installtype'];
+            $ui->_installScript = true;
+            $ui->startSession();
+            $ui->runInstallScript($xml, $script, $installtype, $pkgfile);
+            $ui->finishOutput($pkgfile->getPackage() . ' Install Script',
+                array('link' => $URL .
+                '?command=remote-info&pkg='.$pkgfile->getPackage(),
+                    'text' => 'Click for ' .$pkgfile->getPackage() . ' Information'));
             exit;
         case 'remote-info':
             $command = $_GET["command"];
@@ -195,6 +236,57 @@ if (isset($_GET["command"])) {
             $cmd = PEAR_Command::factory($command, $config);
             $ok = $cmd->run($command, $opts, $params);
 
+            exit;
+        case 'channel-info':
+            $command = $_GET["command"];
+            $params = array();
+            if (isset($_GET["chan"]))
+                $params[] = $_GET["chan"];
+            $cmd = PEAR_Command::factory($command, $config);
+            $ok = $cmd->run($command, $opts, $params);
+
+            exit;
+        case 'channel-discover':
+            $command = $_GET["command"];
+            $params = array();
+            if (isset($_GET["chan"]))
+                $params[] = $_GET["chan"];
+            $cmd = PEAR_Command::factory($command, $config);
+            $ui->startSession();
+            $ok = $cmd->run($command, $opts, $params);
+
+            $ui->finishOutput('Channel Discovery', array('link' =>
+                $_SERVER['PHP_SELF'] . '?command=channel-info&chan=' . urlencode($_GET['chan']),
+                'text' => 'Click Here for ' . htmlspecialchars($_GET['chan']) . ' Information'));
+            exit;
+        case 'channel-delete':
+            $command = $_GET["command"];
+            $params = array();
+            if (isset($_GET["chan"]))
+                $params[] = $_GET["chan"];
+            $cmd = PEAR_Command::factory($command, $config);
+            $ui->startSession();
+            $ok = $cmd->run($command, $opts, $params);
+
+            $ui->finishOutput('Channel Deletion');
+            exit;
+        case 'list-channels':
+            $command = $_GET["command"];
+            $params = array();
+            $cmd = PEAR_Command::factory($command, $config);
+            $ok = $cmd->run($command, $opts, $params);
+
+            exit;
+        case 'update-channels':
+            $command = $_GET["command"];
+            $params = array();
+            $cmd = PEAR_Command::factory($command, $config);
+            $ui->startSession();
+            $ok = $cmd->run($command, $opts, $params);
+
+            $ui->finishOutput('Update Channel List', array('link' =>
+                $_SERVER['PHP_SELF'] . '?command=list-channels',
+                'text' => 'Click here to list all channels'));
             exit;
         case 'show-last-error':
             $GLOBALS['_PEAR_Frontend_Web_log'] = $_SESSION['_PEAR_Frontend_Web_LastError_log'];

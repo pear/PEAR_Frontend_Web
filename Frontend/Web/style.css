@@ -52,6 +52,11 @@ td.package_info_title {
     font-weight: bold;
 }    
 
+td.channel_info_title {
+    color: #006600;
+    font-weight: bold;
+}    
+
 th.others {
     color: #006600;
     text-align: left;
