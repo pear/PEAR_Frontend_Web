@@ -44,6 +44,7 @@
     $verbose = $config->get("verbose");
     $cmdopts = array();
     $opts    = array();
+    $params  = array();
     $URL = 'http://'.$_SERVER['HTTP_HOST'].$_SERVER['PHP_SELF'];
     
     
@@ -60,10 +61,6 @@
             $cmd = PEAR_Command::factory($command, $config);
             $ok = $cmd->run($command, $opts, $params);
             
-            if (!$ok) {
-                PEAR::raiseError('');
-            };
-            
             $URL .= '?pageID='.$_GET['pageID'].'#'.$_GET["pkg"];
             Header("Location: ".$URL);
             exit;
@@ -73,9 +70,6 @@
             $cmd = PEAR_Command::factory($command, $config);
             $ok = $cmd->run($command, $opts, $params);
             
-            if (!$ok) {
-                PEAR::raiseError('');
-            };
             exit;
         case 'search':
             list($name, $description) = $ui->userDialog('search',
@@ -89,9 +83,6 @@
             $cmd = PEAR_Command::factory($command, $config);
             $ok = $cmd->run($command, $opts, $params);
             
-            if (!$ok) {
-                PEAR::raiseError('');
-            };
             exit;
         case 'config-show':
             $cmd = PEAR_Command::factory($command, $config);
@@ -119,8 +110,8 @@
     // If no other command is specified, the standard command 'list-all' is called
     $command = "list-all";
     $params = array();
-    if (isset($_GET["info"]))
-        $params[$_GET["info"]] = 1;
+    if (isset($_GET["mode"]))
+        $opts['mode'] = $_GET["mode"];
     $cmd = PEAR_Command::factory($command, $config);
     $ok = $cmd->run($command, $opts, $params);
     

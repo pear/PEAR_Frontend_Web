@@ -21,7 +21,7 @@
         '.',
         dirname(__FILE__).'/pear',
         );
-    ini_set('include_path', implode(':', $include_path);
+    ini_set('include_path', implode(':', $include_path));
 
     // Configfile
     $pear_user_config    = dirname(__FILE__)."/pear.conf";

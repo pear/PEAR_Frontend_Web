@@ -11,7 +11,7 @@
       <user>dickmann</user>
       <role>lead</role>
       <name>Christian Dickmann</name>
-      <email>alan@akbkhome.com</email>
+      <email>dickmann@php.net</email>
     </maintainer>
     <maintainer>
       <user>ssb</user>
@@ -65,5 +65,9 @@
         </dir>
       </dir>	
     </filelist>
+    <deps>
+      <dep type="pkg" rel="has">Net_UserAgent_Detect</dep>
+      <dep type="pkg" rel="has">HTML_Template_IT</dep>
+    </deps>
   </release>
 </package>

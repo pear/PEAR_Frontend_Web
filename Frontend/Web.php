@@ -20,7 +20,7 @@
 */
 
 require_once "PEAR.php";
-require_once "HTML/IT.php";
+require_once "HTML/Template/IT.php";
 require_once "Net/UserAgent/Detect.php";
 require_once "Pager/Pager.php";
 
@@ -49,6 +49,13 @@ class PEAR_Frontend_Web extends PEAR
      */
     var $type = 'Web';
 
+    /**
+     * Container, where values can be saved temporary
+     * @var array
+     * @access private
+     */
+    var $_data = array();
+    
     // }}}
 
     // {{{ constructor
@@ -56,6 +63,7 @@ class PEAR_Frontend_Web extends PEAR
     function PEAR_Frontend_Web()
     {
         parent::PEAR();
+        $GLOBALS['_PEAR_Frontend_Web_log'] = '';
     }
 
     // }}}
@@ -100,7 +108,7 @@ class PEAR_Frontend_Web extends PEAR
     
     function _initTemplate($file, $title = '', $icon = '', $useDHTML = true)
     {
-        $tpl = new IntegratedTemplate(dirname(__FILE__)."/Web");
+        $tpl = new HTML_Template_IT(dirname(__FILE__)."/Web");
         $tpl->loadTemplateFile($file);
         $tpl->setVariable("InstallerURL", $_SERVER["PHP_SELF"]);
         $tpl->setVariable("ImgPEAR", $_SERVER["PHP_SELF"].'?img=pear');
@@ -150,7 +158,7 @@ class PEAR_Frontend_Web extends PEAR
     function displayError($eobj, $title = 'Error', $img = 'error')
     {
         $msg = '';
-        if (trim($GLOBALS['_PEAR_Frontend_Web_log']))
+        if (isset($GLOBALS['_PEAR_Frontend_Web_log']) && trim($GLOBALS['_PEAR_Frontend_Web_log']))
             $msg = trim($GLOBALS['_PEAR_Frontend_Web_log'])."\n\n";
             
         if (PEAR::isError($eobj))
@@ -222,6 +230,24 @@ class PEAR_Frontend_Web extends PEAR
         $links = $pager->getLinks();
         list($from, $to) = $pager->getOffsetByPageId();
         $links['current'] = '&pageID='.$pager->getCurrentPage();
+        if (isset($_GET['mode']))
+            $links['current'] .= '&mode='.$_GET['mode'];
+        else
+            $_GET['mode'] = '';
+        $modes = array(
+            'installed'    => 'list installed packages',
+            ''             => 'list all packages',
+            'notinstalled' => 'list not installed packages',
+            'upgrades'     => 'list avail. upgrades',
+            );
+        unset($modes[$_GET['mode']]);
+        
+        $i = 1;
+        foreach($modes as $mode => $text) {
+            $tpl->setVariable('mode'.$i, ((!empty($mode)) ? '?mode='.$mode : ''));
+            $tpl->setVariable('mode'.$i.'text', $text);
+            $i++;
+        };
         
         $tpl->setVariable('Prev', $links['back']);
         $tpl->setVariable('Next', $links['next']);
@@ -299,55 +325,56 @@ class PEAR_Frontend_Web extends PEAR
         $tpl->setVariable("Latest", $data['stable']);
         $tpl->setVariable("Installed", $data['installed']);
         $tpl->setVariable("Package", $data['name']);
-        $tpl->setVariable("Licence", $data['licence']);
+        $tpl->setVariable("License", $data['license']);
         $tpl->setVariable("Category", $data['category']);
         $tpl->setVariable("Summary", nl2br($data['summary']));
         $tpl->setVariable("Description", nl2br($data['description']));
 
         $compare = version_compare($data['stable'], $data['installed']);
+        $opt_img = array();
+        $opt_text = array();
         if (!$data['installed']) {
-            $opt_img_1 = sprintf(
+            $opt_img[] = sprintf(
                 '<a href="%s?command=install&pkg=%s"><img src="%s?img=install" border="0" alt="install"></a>',
                 $_SERVER["PHP_SELF"], $data['name'], $_SERVER["PHP_SELF"]);
-            $opt_text_1 = sprintf(
+            $opt_text[] = sprintf(
                 '<a href="%s?command=install&pkg=%s" class="green">Install</a>',
                 $_SERVER["PHP_SELF"], $data['name'], $_SERVER["PHP_SELF"]);
-            $opt_img_2 = '';
         } else if ($compare == 1) {
-            $opt_img_1 = sprintf(
+            $opt_img[] = sprintf(
                 '<a href="%s?command=upgrade&pkg=%s"><img src="%s?img=install" border="0" alt="upgrade"></a><br>',
                 $_SERVER["PHP_SELF"], $data['name'], $_SERVER["PHP_SELF"]);
-            $opt_text_1 = sprintf(
+            $opt_text[] = sprintf(
                 '<a href="%s?command=upgrade&pkg=%s" class="green">Upgrade</a>',
                 $_SERVER["PHP_SELF"], $data['name'], $_SERVER["PHP_SELF"]);
-            $opt_img_2 = sprintf(
+            $opt_img[] = sprintf(
                 '<a href="%s?command=uninstall&pkg=%s"><img src="%s?img=uninstall" border="0" alt="uninstall"></a>',
                 $_SERVER["PHP_SELF"], $data['name'], $_SERVER["PHP_SELF"]);
-            $opt_text_2 = sprintf(
+            $opt_text[] = sprintf(
                 '<a href="%s?command=uninstall&pkg=%s" class="green">Delete</a>',
                 $_SERVER["PHP_SELF"], $data['name'], $_SERVER["PHP_SELF"]);
         } else {
-            $opt_img_1 = sprintf(
+            $opt_img[] = sprintf(
                 '<a href="%s?command=uninstall&pkg=%s"><img src="%s?img=uninstall" border="0" alt="uninstall"></a>',
                 $_SERVER["PHP_SELF"], $data['name'], $_SERVER["PHP_SELF"]);
-            $opt_text_1 = sprintf(
+            $opt_text[] = sprintf(
                 '<a href="%s?command=uninstall&pkg=%s" class="green">Delete</a>',
                 $_SERVER["PHP_SELF"], $data['name'], $_SERVER["PHP_SELF"]);
-            $opt_img_2 = '';
         };
 
-        if ($opt_img_1)
+        if (isset($opt_img[0]))
         {
-            $tpl->setVariable("Opt_Img_1", $opt_img_1);
-            $tpl->setVariable("Opt_Text_1", $opt_text_1);
+            $tpl->setVariable("Opt_Img_1", $opt_img[0]);
+            $tpl->setVariable("Opt_Text_1", $opt_text[0]);
         };
-        if ($opt_img_2)
+        if (isset($opt_img[1]))
         {
-            $tpl->setVariable("Opt_Img_2", $opt_img_2);
-            $tpl->setVariable("Opt_Text_2", $opt_text_2);
+            $tpl->setVariable("Opt_Img_2", $opt_img[1]);
+            $tpl->setVariable("Opt_Text_2", $opt_text[1]);
         };
         
         $tpl->show();
+        return true;
     }
     
     /**
@@ -390,7 +417,7 @@ class PEAR_Frontend_Web extends PEAR
             return true;
         case 'login':
             if ($_SERVER["REQUEST_METHOD"] != "POST")
-                $this->data[$command] = $data;
+                $this->_data[$command] = $data;
             return true;
         case 'logout':
             $this->displayError($data, 'Logout', 'logout');
@@ -446,7 +473,8 @@ class PEAR_Frontend_Web extends PEAR
     
         $tpl = $this->_initTemplate("userDialog.tpl.html", $title, $icon);
         $tpl->setVariable("Command", $command);
-        $tpl->setVariable("Headline", nl2br($this->data[$command]));
+        if (isset($this->_data[$command]))
+            $tpl->setVariable("Headline", nl2br($this->_data[$command]));
     
         if (is_array($prompts))
         {
@@ -459,10 +487,11 @@ class PEAR_Frontend_Web extends PEAR
             
             foreach($prompts as $key => $prompt) {
                 $tpl->setCurrentBlock("InputField");
-                $type = (isset($types[$key]) ? $types[$key] : 'text');
+                $type    = (isset($types[$key])    ? $types[$key]    : 'text');
+                $default = (isset($defaults[$key]) ? $defaults[$key] : '');
                 $tpl->setVariable("prompt", $prompt);
                 $tpl->setVariable("name", $key);
-                $tpl->setVariable("default", $defaults[$key]);
+                $tpl->setVariable("default", $default);
                 $tpl->setVariable("type", $type);
                 if ($maxlen > 25)
                     $tpl->setVariable("width", 'width="275"');
