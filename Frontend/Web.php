@@ -160,7 +160,7 @@ class PEAR_Frontend_Web extends PEAR
         
         if (!isset($_SESSION['_PEAR_Frontend_Web_js']) || $_SESSION['_PEAR_Frontend_Web_js'] == false) {
             $tpl->setCurrentBlock('JSEnable');
-            $tpl->setVariable('RedirectURL', $_SERVER['REQUEST_URI'].'&enableJS=1');
+            $tpl->setVariable('RedirectURL', $_SERVER['REQUEST_URI']. (!empty($_GET) ? '&' : '?') .'enableJS=1');
             $tpl->parseCurrentBlock();
             $tpl->setCurrentBlock();
         };
