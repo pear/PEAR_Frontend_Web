@@ -9,9 +9,20 @@
     {
         $images = array(
             "style" => "style.css",
+            "dhtml" => "dhtml.css",
             );
         Header("Content-Type: text/css");
         readfile(dirname(__FILE__).'/Frontend/Web/'.$images[$_GET["css"]]);
+        exit;
+    };
+    if (isset($_GET["js"]))
+    {
+        $js = array(
+            "dhtml" => "dhtml.js",
+            "nodhtml" => "nodhtml.js",
+            );
+        Header("Content-Type: text/js");
+        readfile(dirname(__FILE__).'/Frontend/Web/'.$js[$_GET["js"]]);
         exit;
     };
     if (isset($_GET["img"]))
@@ -32,6 +43,10 @@
             "pkglist" => array(
                 "type" => "png",
                 "file" => "pkglist.png",
+                ),
+            "pkgsearch" => array(
+                "type" => "png",
+                "file" => "pkgsearch.png",
                 ),
             "package" => array(
                 "type" => "jpeg",
@@ -103,6 +118,30 @@
             
             $URL .= '#'.$_GET["pkg"];
             Header("Location: ".$URL);
+            exit;
+        case 'remote-info':
+            $command = $_GET["command"];
+            $params = array($_GET["pkg"]);
+            $cmd = PEAR_Command::factory($command, $config);
+            $ok = $cmd->run($command, $opts, $params);
+            
+            if (!$ok) {
+                PEAR::raiseError('');
+            };
+            exit;
+        case 'search':
+            list($name, $description) = $ui->userDialog('search',
+                array('Package Name', 'Package Info'),
+                array(), array(), 'Package Search', 'pkgsearch');
+            
+            $command = $_GET["command"];
+            $params = array($name, $description);
+            $cmd = PEAR_Command::factory($command, $config);
+            $ok = $cmd->run($command, $opts, $params);
+            
+            if (!$ok) {
+                PEAR::raiseError('');
+            };
             exit;
         case 'config-show':
             $cmd = PEAR_Command::factory($command, $config);

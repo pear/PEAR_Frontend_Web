@@ -1,18 +1,18 @@
 <!-- INCLUDE header.inc.tpl.html -->
     <!-- BEGIN Category -->
-    <TABLE border="0">
+    <TABLE border="0" onClick="expandCategory('__{categoryName}');" class="DHTML_Category_Expand" >
     <TR>
       <TD width="20">
       </TD>
       <TD>
-        <img src="{ImgCategory}" border="0">
+        <img src="{ImgCategory}" border="0" alt="{categoryName}">
       </TD>
       <TD>
         <b>{categoryName}</b>
       </TD>
     </TR>
     </TABLE>
-    <TABLE border="0">
+    <TABLE border="0" id="__{categoryName}" class="DHTML_Category">
     <TR>
       <TD width="50" valign="top">
       </TD>

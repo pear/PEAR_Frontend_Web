@@ -3,6 +3,8 @@
 <head>
  <title>PEAR :: Installer :: {Title}</title>
  <link rel="stylesheet" href="{InstallerURL}?css=style" />
+ {DHTMLcss}
+ <script language="javascript" src="{InstallerURL}?js={JS}"></script>
  <meta name="description" content="This is the Web Interface of the PEAR Installer" />
 </head>
 
@@ -51,6 +53,11 @@
          Package Management
        </a>
        <br><br><br>
+       <a href="{InstallerURL}?command=search">
+         <img src="{InstallerURL}?img=pkgsearch" border="0" alt="Package Search"><br>
+         Package Search
+       </a>
+       <br><br><br>
        <a href="{InstallerURL}?command=config-show">
          <img src="{InstallerURL}?img=config" border="0" alt="Configuration"><br>
          Configuration
@@ -81,7 +88,7 @@
            <TD valign="middle" width="10">
            </TD>
            <TD valign="middle">
-             <img src="{InstallerURL}?img={_Icon}" border="0" alt="{_Icon}">
+             <img src="{_InstallerURL}?img={_Icon}" border="0" alt="{_Icon}">
            </TD>
            <TD valign="middle" width="5">
            </TD>

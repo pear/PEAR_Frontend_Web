@@ -1,4 +1,4 @@
-a:normal {
+a {
     color:#000000; 
     text-decoration: none;
 }
@@ -12,6 +12,23 @@ a:active {
 }
 a:hover {
     color:#000000; 
+    text-decoration: underline;
+}
+
+a.green {
+    color:#006600; 
+    text-decoration: none;
+}
+a.green:visited {
+    color:#006600; 
+    text-decoration: none;
+}
+a.green:active {
+    color:#006600; 
+    text-decoration: none;
+}
+a.green:hover {
+    color:#006600; 
     text-decoration: underline;
 }
 
@@ -29,6 +46,11 @@ th.pack {
     background: #009933;
     text-align: right;
 }
+
+td.package_info_title {
+    color: #006600;
+    font-weight: bold;
+}    
 
 th.others {
     color: #006600;

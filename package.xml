@@ -31,6 +31,7 @@
       	<dir name="Frontend" baseinstalldir="PEAR/Frontend">
           <file role="php">Web.php</file>
           <dir name="Web" baseinstalldir="PEAR/Frontend/Web">
+            <!-- Images -->
             <file role="php">error.gif</file>
             <file role="php">pearsmall.gif</file>
             <file role="php">trash.gif</file>
@@ -39,13 +40,24 @@
             <file role="php">infoplus.gif</file>
             <file role="php">package.jpg</file>
             <file role="php">category.jpg</file>
-            <file role="php">pkglist.png</file>
             <file role="php">config.gif</file>
             <file role="php">login.gif</file>
             <file role="php">logout.gif</file>
+            <file role="php">pkglist.png</file>
+            <file role="php">pkgsearch.png</file>
+            
+            <!-- CSS -->
             <file role="php">style.css</file>
+            <file role="php">dhtml.css</file>
+            
+            <!-- JS -->
+            <file role="php">dhtml.js</file>
+            <file role="php">nodhtml.js</file>
+            
+            <!-- TEMPLATES -->
             <file role="php">userDialog.tpl.html</file>
             <file role="php">package.list.tpl.html</file>
+            <file role="php">package.info.tpl.html</file>
             <file role="php">header.inc.tpl.html</file>
             <file role="php">footer.inc.tpl.html</file>
             <file role="php">error.tpl.html</file>
