@@ -27,7 +27,11 @@
     if (isset($_GET['enableJS']) && $_GET['enableJS'] == 1) {
         $_SESSION['_PEAR_Frontend_Web_js'] = true;
     };
-    define('USE_DHTML_PROGRESS', ($useDHTML && $_SESSION['_PEAR_Frontend_Web_js']));
+    define('USE_DHTML_PROGRESS', (@$useDHTML && $_SESSION['_PEAR_Frontend_Web_js']));
+    if (!isset($pear_user_config)) {
+         $pear_user_config = dirname(__FILE__)."/pear.conf";
+    };
+
 
     // Include needed files
     require_once 'PEAR.php';

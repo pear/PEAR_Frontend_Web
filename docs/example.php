@@ -24,7 +24,7 @@
     
     // Rebuild Includepath (optional)
     $include_path = array(
-        '.',
+//        '.', // disabled to avoid conflict with PEAR::Config
         dirname(__FILE__).'/PEAR',
         );
     ini_set('include_path', implode($seperator, $include_path));
