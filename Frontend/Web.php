@@ -24,6 +24,20 @@ require_once "HTML/IT.php";
 require_once "Net/UserAgent/Detect.php";
 require_once "Pager/Pager.php";
 
+/**
+* PEAR_Frontend_Web is a HTML based Webfrontend for the PEAR Installer
+*
+* The Webfrontend provides basic functionality of the Installer, such as
+* a package list grouped by categories, a search mask, the possibility
+* to install/upgrade/uninstall packages and some minor things.
+* PEAR_Frontend_Web makes use of the PEAR::HTML_IT Template engine which
+* provides the possibillity to skin the Installer.
+*
+* @author  Christian Dickmann <dickmann@php.net>
+* @package PEAR_Frontend_Web
+* @access  private
+*/
+
 class PEAR_Frontend_Web extends PEAR
 {
     // {{{ properties
@@ -34,13 +48,6 @@ class PEAR_Frontend_Web extends PEAR
      * @access public
      */
     var $type = 'Web';
-    var $lp = ''; // line prefix
-    var $tpl;
-    var $table;
-    var $data = array();
-    var $_log;
-    
-    var $params = array();
 
     // }}}
 
@@ -58,12 +65,12 @@ class PEAR_Frontend_Web extends PEAR
 
     function displayLine($text)
     {
-//        print "$this->lp$text<br>\n";
+        trigger_error("Frontend::display deprecated", E_USER_ERROR);
     }
 
     function display($text)
     {
-        print $text;
+        trigger_error("Frontend::display deprecated", E_USER_ERROR);
     }
 
     // }}}
@@ -72,25 +79,7 @@ class PEAR_Frontend_Web extends PEAR
 
     function userConfirm($prompt, $default = 'yes')
     {
-        static $positives = array('y', 'yes', 'on', '1');
-        static $negatives = array('n', 'no', 'off', '0');
-        print "$this->lp$prompt [$default] : ";
-        $fp = fopen("php://stdin", "r");
-        $line = fgets($fp, 2048);
-        fclose($fp);
-        $answer = strtolower(trim($line));
-        if (empty($answer)) {
-            $answer = $default;
-        }
-        if (in_array($answer, $positives)) {
-            return true;
-        }
-        if (in_array($answer, $negatives)) {
-            return false;
-        }
-        if (in_array($default, $positives)) {
-            return true;
-        }
+        trigger_error("Frontend::display deprecated", E_USER_ERROR);
         return false;
     }
 
@@ -175,9 +164,9 @@ class PEAR_Frontend_Web extends PEAR
         
         $tpl->setVariable("Error", $msg);
         $command_map = array(
-            "install" => "list-all",
+            "install"   => "list-all",
             "uninstall" => "list-all",
-            "upgrade" => "list-all",
+            "upgrade"   => "list-all",
             );
         if (isset($_GET['command'])) {
             if (isset($command_map[$_GET['command']]))
@@ -187,7 +176,6 @@ class PEAR_Frontend_Web extends PEAR
         
         $tpl->show();
         exit;
-        return true;
     }
 
     // }}}
@@ -202,7 +190,6 @@ class PEAR_Frontend_Web extends PEAR
     function displayFatalError($eobj, $title = 'Error', $img = 'error')
     {
         $this->displayError($eobj, $title, $img);
-        exit(1);
     }
 
     // }}}
@@ -298,7 +285,7 @@ class PEAR_Frontend_Web extends PEAR
     /**
      * Output details of one package
      * 
-     * @param array   $data     array containing all information about the package
+     * @param array $data array containing all information about the package
      *
      * @access private
      * 
@@ -361,10 +348,6 @@ class PEAR_Frontend_Web extends PEAR
         };
         
         $tpl->show();
-    
-    
-    
-    
     }
     
     /**
@@ -442,6 +425,7 @@ class PEAR_Frontend_Web extends PEAR
      
     function userDialog($command, $prompts, $types = array(), $defaults = array(), $title = '', $icon = '')
     {
+        // If this is an POST Request, we can return the userinput
         if (isset($_GET["command"]) && $_GET["command"]==$command
             && $_SERVER["REQUEST_METHOD"] == "POST")
         {
@@ -451,6 +435,7 @@ class PEAR_Frontend_Web extends PEAR
             return $result;
         };
         
+        // Assign title and icon to some commands
         switch ($command)
         {
         case 'login':
@@ -466,15 +451,13 @@ class PEAR_Frontend_Web extends PEAR
         if (is_array($prompts))
         {
             $maxlen = 0;
-            foreach($prompts as $key => $prompt)
-            {
+            foreach($prompts as $key => $prompt) {
                 if (strlen($prompt) > $maxlen) {
                     $maxlen = strlen($prompt);
                 };
             };
             
-            foreach($prompts as $key => $prompt)
-            {
+            foreach($prompts as $key => $prompt) {
                 $tpl->setCurrentBlock("InputField");
                 $type = (isset($types[$key]) ? $types[$key] : 'text');
                 $tpl->setVariable("prompt", $prompt);
@@ -505,6 +488,102 @@ class PEAR_Frontend_Web extends PEAR
     {
         $GLOBALS['_PEAR_Frontend_Web_log'] .= $text."\n";
         return true;
+    }
+
+    /**
+     * Sends the required file along with Headers and exits the script
+     * 
+     * @param string $handle handle of the requested file
+     * @param string $group  group of the requested file
+     *
+     * @access public
+     * 
+     * @return null nothing, because script exits
+     */
+     
+    function outputFrontendFile($handle, $group)
+    {
+        $handles = array(
+            "css" => array(
+                "style" => "style.css",
+                "dhtml" => "dhtml.css",
+                ),
+            "js" => array(    
+                "dhtml" => "dhtml.js",
+                "nodhtml" => "nodhtml.js",
+                ),
+            "image" => array(
+                "logout" => array(
+                    "type" => "gif",
+                    "file" => "logout.gif",
+                    ),
+                "login" => array(
+                    "type" => "gif",
+                    "file" => "login.gif",
+                    ),
+                "config" => array(
+                    "type" => "gif",
+                    "file" => "config.gif",
+                    ),
+                "pkglist" => array(
+                    "type" => "png",
+                    "file" => "pkglist.png",
+                    ),
+                "pkgsearch" => array(
+                    "type" => "png",
+                    "file" => "pkgsearch.png",
+                    ),
+                "package" => array(
+                    "type" => "jpeg",
+                    "file" => "package.jpg",
+                    ),
+                "category" => array(
+                    "type" => "jpeg",
+                    "file" => "category.jpg",
+                    ),
+                "install" => array(
+                    "type" => "gif",
+                    "file" => "install.gif",
+                    ),
+                "uninstall" => array(
+                    "type" => "gif",
+                    "file" => "trash.gif",
+                    ),
+                "info" => array(
+                    "type" => "gif",
+                    "file" => "info.gif",
+                    ),
+                "infoplus" => array(
+                    "type" => "gif",
+                    "file" => "infoplus.gif",
+                    ),
+                "pear" => array(
+                    "type" => "gif",
+                    "file" => "pearsmall.gif",
+                    ),
+                "error" => array(
+                    "type" => "gif",
+                    "file" => "error.gif",
+                    ),
+                ),
+            );
+            
+        $file = $handles[$group][$handle];
+        switch ($group)
+        {
+        case 'css':
+            Header("Content-Type: text/css");
+            readfile(dirname(__FILE__).'/Web/'.$file);
+            exit;
+        case 'image':
+            Header("Content-Type: image/".$file['type']);
+            readfile(dirname(__FILE__).'/Web/'.$file['file']);
+            exit;
+        case 'js':
+            Header("Content-Type: text/javascript");
+            readfile(dirname(__FILE__).'/Web/'.$file);
+            exit;
+        };
     }
 
     // }}}
