@@ -1,0 +1,18 @@
+<!-- INCLUDE header.inc.tpl.html -->
+    <form action="{InstallerURL}?command={Command}" method="post">
+      <TABLE border="0">
+      <!-- BEGIN InputField -->
+      <TR>
+        <TD>
+          <b>{prompt}:</b>
+        </TD>
+        <TD>
+          <input type="{type}" name="{prompt}" value="{default}">
+        </TD>
+      </TR>
+      <!-- END InputField -->
+      </TABLE>
+      <input type="submit" value="Go!">
+    </form>
+</BODY>
+</HTML>

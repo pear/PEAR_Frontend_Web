@@ -1,0 +1,50 @@
+<!-- INCLUDE header.inc.tpl.html -->
+    <!-- BEGIN Category -->
+    <TABLE border="0">
+    <TR>
+      <TD width="20">
+      </TD>
+      <TD>
+        <img src="{ImgCategory}" border="0">
+      </TD>
+      <TD>
+        <b>{categoryName}</b>
+      </TD>
+    </TR>
+    </TABLE>
+    <TABLE border="0">
+    <!-- BEGIN Row -->
+    <TR>{x}
+      <TD width="50" valign="top">
+        <a name="{Package}">
+      </TD>
+      <TD valign="top">
+        <img src="{ImgPackage}" border="0">
+      </TD>
+      <TD width="150" valign="top">
+        {Package}
+      </TD>
+      <TD width="50" valign="top">
+        {Version}
+      </TD>
+      <TD width="50" valign="top">
+        {Installed}
+      </TD>
+      <TD valign="top" width="15">
+        {Install}
+      </TD>
+      <TD valign="top" width="18">
+        {Delete}
+      </TD>
+      <TD valign="top">
+        {Info}
+      </TD>
+      <TD width="300" valign="top">
+        {Summary}
+      </TD>
+    </TR>
+    <!-- END Row -->
+    </TABLE>
+    <!-- END Category -->
+</BODY>
+</HTML>
