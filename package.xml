@@ -39,8 +39,10 @@
             <file role="php">infoplus.gif</file>
             <file role="php">package.jpg</file>
             <file role="php">category.jpg</file>
-            <file role="php">pkglist.gif</file>
+            <file role="php">pkglist.png</file>
             <file role="php">config.gif</file>
+            <file role="php">login.gif</file>
+            <file role="php">logout.gif</file>
             <file role="php">style.css</file>
             <file role="php">userDialog.tpl.html</file>
             <file role="php">package.list.tpl.html</file>

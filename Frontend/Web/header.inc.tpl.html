@@ -47,13 +47,23 @@
      <td style="font-size: 90%" align="center" width="200">
        <br><br>
        <a href="{InstallerURL}">
-         <img src="{InstallerURL}?img=pkglist" border="0"><br>
+         <img src="{InstallerURL}?img=pkglist" border="0" alt="Package Management"><br>
          Package Management
        </a>
        <br><br><br>
        <a href="{InstallerURL}?command=config-show">
-         <img src="{InstallerURL}?img=config" border="0"><br>
+         <img src="{InstallerURL}?img=config" border="0" alt="Configuration"><br>
          Configuration
+       </a>
+       <br><br><br>
+       <a href="{InstallerURL}?command=login">
+         <img src="{InstallerURL}?img=login" border="0" alt="Login"><br>
+         Login
+       </a>
+       <br><br><br>
+       <a href="{InstallerURL}?command=logout">
+         <img src="{InstallerURL}?img=logout" border="0" alt="Logout"><br>
+         Logout
        </a>
        
      </td>
@@ -65,3 +75,20 @@
    <table width="100%" cellpadding="10" cellspacing="0">
     <tr>
      <td valign="top">
+       <!-- BEGIN TitleBlock -->
+       <TABLE border="0" cellpadding="5">
+         <TR>
+           <TD valign="middle" width="10">
+           </TD>
+           <TD valign="middle">
+             <img src="{InstallerURL}?img={_Icon}" border="0" alt="{_Icon}">
+           </TD>
+           <TD valign="middle" width="5">
+           </TD>
+           <TD valign="middle">
+             <span class="title">{_Title}</span>
+           </TD>
+         </TR>
+       </TABLE>
+       <br>
+       <!-- END TitleBlock -->

@@ -17,13 +17,21 @@
     if (isset($_GET["img"]))
     {
         $images = array(
+            "logout" => array(
+                "type" => "gif",
+                "file" => "logout.gif",
+                ),
+            "login" => array(
+                "type" => "gif",
+                "file" => "login.gif",
+                ),
             "config" => array(
                 "type" => "gif",
                 "file" => "config.gif",
                 ),
             "pkglist" => array(
-                "type" => "gif",
-                "file" => "pkglist.gif",
+                "type" => "png",
+                "file" => "pkglist.png",
                 ),
             "package" => array(
                 "type" => "jpeg",
@@ -107,6 +115,13 @@
             };
             
             $URL .= '?command=config-show';
+            Header("Location: ".$URL);
+            exit;
+        default:
+            $cmd = PEAR_Command::factory($command, $config);
+            $res = $cmd->run($command, $opts, $params);
+            
+            $URL .= '?command='.$_GET["command"];
             Header("Location: ".$URL);
             exit;
         }
