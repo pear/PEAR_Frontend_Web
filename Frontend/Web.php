@@ -255,6 +255,7 @@ class PEAR_Frontend_Web extends PEAR
         $tpl->setVariable('PagerTo', $to);
         $tpl->setVariable('PagerCount', $pager->numItems());
 
+        if (is_array($data['data']))
         foreach($data['data'] as $category => $packages)
         {
             foreach($packages as $row)

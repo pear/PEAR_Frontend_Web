@@ -25,7 +25,7 @@
 
     // Configfile
     $pear_user_config    = dirname(__FILE__)."/pear.conf";
-
+    
     // Include WebInstaller
     require_once("PEAR/WebInstaller.php");
 ?>

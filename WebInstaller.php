@@ -41,7 +41,9 @@
     if (isset($_GET["img"])) {
         $ui->outputFrontendFile($_GET["img"], 'image');
     };
-  
+
+        
+
     $config  = &PEAR_Config::singleton($pear_user_config, '');
     $verbose = $config->get("verbose");
     $cmdopts = array();
@@ -49,6 +51,41 @@
     $params  = array();
     $URL = 'http://'.$_SERVER['HTTP_HOST'].$_SERVER['PHP_SELF'];
     
+    if (!file_exists($pear_user_config)) {
+        // I think PEAR_Frontend_Web is running for the first time!
+        // Install it properly ...
+            
+        // First of all set some config-vars:
+        $dir = substr(dirname(__FILE__), 0, -strlen('PEAR/PEAR')); // strip PEAR/PEAR
+        $cmd = PEAR_Command::factory('config-set', $config);
+        $ok = $cmd->run('config-set', array(), array('php_dir',  $dir.'PEAR'));
+        $ok = $cmd->run('config-set', array(), array('doc_dir',  $dir.'docs'));
+        $ok = $cmd->run('config-set', array(), array('ext_dir',  $dir.'ext'));
+        $ok = $cmd->run('config-set', array(), array('bin_dir',  $dir.'bin'));
+        $ok = $cmd->run('config-set', array(), array('data_dir', $dir.'data'));
+        $ok = $cmd->run('config-set', array(), array('test_dir', $dir.'test'));
+        
+        // Register packages
+        function installPackage($dir, $filename) {
+            $data = unserialize(implode('',file($dir.$filename)));
+            if (is_array($data['filelist']))
+            foreach($data['filelist'] as $key => $value) {
+                if ($value['role'] == "php")
+                    $data['filelist'][$key] = str_replace('/var/www/pear/go-pear/pear-web/',$dir, $data['filelist'][$key]);
+            };
+            $fp = fopen($dir.$filename, 'w');
+            fwrite($fp, serialize($data));
+            fclose($fp);
+        };
+        installPackage($dir,'PEAR/.registry/Archive_Tar.reg');
+        installPackage($dir,'PEAR/.registry/Console_Getopt.reg');
+        installPackage($dir,'PEAR/.registry/HTML_Template_IT.reg');
+        installPackage($dir,'PEAR/.registry/Net_UserAgent_Detect.reg');
+        installPackage($dir,'PEAR/.registry/Pager.reg');
+        installPackage($dir,'PEAR/.registry/PEAR.reg');
+        installPackage($dir,'PEAR/.registry/PEAR_Frontent_Web.reg');
+        installPackage($dir,'PEAR/.registry/XML_RPC.reg');
+    };
     
     // Handle some diffrent Commands
     if (isset($_GET["command"]))
