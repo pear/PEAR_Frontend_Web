@@ -116,7 +116,7 @@
                 PEAR::raiseError('');
             };
             
-            $URL .= '#'.$_GET["pkg"];
+            $URL .= '?pageID='.$_GET['pageID'].'#'.$_GET["pkg"];
             Header("Location: ".$URL);
             exit;
         case 'remote-info':

@@ -22,6 +22,7 @@
 require_once "PEAR.php";
 require_once "HTML/IT.php";
 require_once "Net/UserAgent/Detect.php";
+require_once "Pager/Pager.php";
 
 class PEAR_Frontend_Web extends PEAR
 {
@@ -52,6 +53,7 @@ class PEAR_Frontend_Web extends PEAR
 
     // }}}
 
+    // XXX some methods from CLI following. should be deleted in the near future
     // {{{ displayLine(text)
 
     function displayLine($text)
@@ -65,8 +67,49 @@ class PEAR_Frontend_Web extends PEAR
     }
 
     // }}}
-    // {{{ displayError(eobj)
-    function initTemplate($file, $title = '', $icon = '', $useDHTML = true)
+
+    // {{{ userConfirm(prompt, [default])
+
+    function userConfirm($prompt, $default = 'yes')
+    {
+        static $positives = array('y', 'yes', 'on', '1');
+        static $negatives = array('n', 'no', 'off', '0');
+        print "$this->lp$prompt [$default] : ";
+        $fp = fopen("php://stdin", "r");
+        $line = fgets($fp, 2048);
+        fclose($fp);
+        $answer = strtolower(trim($line));
+        if (empty($answer)) {
+            $answer = $default;
+        }
+        if (in_array($answer, $positives)) {
+            return true;
+        }
+        if (in_array($answer, $negatives)) {
+            return false;
+        }
+        if (in_array($default, $positives)) {
+            return true;
+        }
+        return false;
+    }
+
+    // }}}
+    
+    /**
+     * Initialize a TemplateObject, add a title, and icon and add JS and CSS for DHTML 
+     *
+     * @param string  $file     filename of the template file
+     * @param string  $title    (optional) title of the page
+     * @param string  $icon     (optional) iconhandle for this page
+     * @param boolean $useDHTML (optional) add JS and CSS for DHTML-features
+     *
+     * @access private
+     *
+     * @return object Object of HTML/IT - Template - Class
+     */
+    
+    function _initTemplate($file, $title = '', $icon = '', $useDHTML = true)
     {
         $tpl = new IntegratedTemplate(dirname(__FILE__)."/Web");
         $tpl->loadTemplateFile($file);
@@ -101,6 +144,20 @@ class PEAR_Frontend_Web extends PEAR
         return $tpl;
     }
     
+    // {{{ displayError(eobj)
+    
+    /**
+     * Display an error page
+     * 
+     * @param mixed   $eobj  PEAR_Error object or string containing the error message
+     * @param string  $title (optional) title of the page
+     * @param string  $img   (optional) iconhandle for this page
+     *
+     * @access public
+     * 
+     * @return null does not return anything, but exit the script
+     */
+     
     function displayError($eobj, $title = 'Error', $img = 'error')
     {
         $msg = '';
@@ -114,7 +171,7 @@ class PEAR_Frontend_Web extends PEAR
             
         $msg = nl2br($msg."\n");
 
-        $tpl = $this->initTemplate("error.tpl.html", $title, $img);
+        $tpl = $this->_initTemplate("error.tpl.html", $title, $img);
         
         $tpl->setVariable("Error", $msg);
         $command_map = array(
@@ -136,6 +193,12 @@ class PEAR_Frontend_Web extends PEAR
     // }}}
     // {{{ displayFatalError(eobj)
 
+    /**
+     * Alias for PEAR_Frontend_Web::displayError()
+     * 
+     * @see PEAR_Frontend_Web::displayError()
+     */
+
     function displayFatalError($eobj, $title = 'Error', $img = 'error')
     {
         $this->displayError($eobj, $title, $img);
@@ -143,38 +206,42 @@ class PEAR_Frontend_Web extends PEAR
     }
 
     // }}}
-    // {{{ userConfirm(prompt, [default])
-
-    function userConfirm($prompt, $default = 'yes')
-    {
-        static $positives = array('y', 'yes', 'on', '1');
-        static $negatives = array('n', 'no', 'off', '0');
-        print "$this->lp$prompt [$default] : ";
-        $fp = fopen("php://stdin", "r");
-        $line = fgets($fp, 2048);
-        fclose($fp);
-        $answer = strtolower(trim($line));
-        if (empty($answer)) {
-            $answer = $default;
-        }
-        if (in_array($answer, $positives)) {
-            return true;
-        }
-        if (in_array($answer, $negatives)) {
-            return false;
-        }
-        if (in_array($default, $positives)) {
-            return true;
-        }
-        return false;
-    }
-
-    // }}}
     
-    function _outputListAll($data, $title = 'Install / Upgrade / Remove PEAR Packages', $img = 'pkglist', $useDHTML = true)
+    /**
+     * Output a list of packages, grouped by categories. Uses Paging
+     * 
+     * @param array   $data     array containing all data to display the list
+     * @param string  $title    (optional) title of the page
+     * @param string  $img      (optional) iconhandle for this page
+     * @param boolean $useDHTML (optional) add JS and CSS for DHTML-features
+     * @param boolean $paging   (optional) use Paging or not 
+     *
+     * @access private
+     * 
+     * @return boolean true (yep. i am an optimist)
+     */
+
+    function _outputListAll($data, $title = 'Install / Upgrade / Remove PEAR Packages', $img = 'pkglist', $useDHTML = false, $paging = true)
     {
-        $tpl = $this->initTemplate("package.list.tpl.html", $title, $img, $useDHTML);
+        $tpl = $this->_initTemplate("package.list.tpl.html", $title, $img, $useDHTML);
         
+        // Use PEAR::Pager to page Packages
+        $pager =& new Pager(array(
+            'itemData'  => $data['data'],
+            'perPage'   => ($paging ? 5 : count($data['data'])),
+            'linkClass' => 'green',
+            ));
+        $data['data'] = $pager->getPageData();
+        $links = $pager->getLinks();
+        list($from, $to) = $pager->getOffsetByPageId();
+        $links['current'] = '&pageID='.$pager->getCurrentPage();
+        
+        $tpl->setVariable('Prev', $links['back']);
+        $tpl->setVariable('Next', $links['next']);
+        $tpl->setVariable('PagerFrom', $from);
+        $tpl->setVariable('PagerTo', $to);
+        $tpl->setVariable('PagerCount', $pager->numItems());
+
         foreach($data['data'] as $category => $packages)
         {
             foreach($packages as $row)
@@ -184,20 +251,20 @@ class PEAR_Frontend_Web extends PEAR
                 $compare = version_compare($row[1], $row[2]);
                 if (!$row[2]) {
                     $inst = sprintf(
-                        '<a href="%s?command=install&pkg=%s"><img src="%s?img=install" border="0" alt="install"></a>',
-                        $_SERVER["PHP_SELF"], $row[0], $_SERVER["PHP_SELF"]);
+                        '<a href="%s?command=install&pkg=%s%s"><img src="%s?img=install" border="0" alt="install"></a>',
+                        $_SERVER["PHP_SELF"], $row[0], $links['current'], $_SERVER["PHP_SELF"]);
                     $del = '';
                 } else if ($compare == 1) {
                     $inst = sprintf(
-                        '<a href="%s?command=upgrade&pkg=%s"><img src="%s?img=install" border="0" alt="upgrade"></a>',
-                        $_SERVER["PHP_SELF"], $row[0], $_SERVER["PHP_SELF"]);
+                        '<a href="%s?command=upgrade&pkg=%s%s"><img src="%s?img=install" border="0" alt="upgrade"></a>',
+                        $_SERVER["PHP_SELF"], $row[0], $links['current'], $_SERVER["PHP_SELF"]);
                     $del = sprintf(
-                        '<a href="%s?command=uninstall&pkg=%s"><img src="%s?img=uninstall" border="0" alt="uninstall"></a>',
-                        $_SERVER["PHP_SELF"], $row[0], $_SERVER["PHP_SELF"]);
+                        '<a href="%s?command=uninstall&pkg=%s%s"><img src="%s?img=uninstall" border="0" alt="uninstall"></a>',
+                        $_SERVER["PHP_SELF"], $row[0], $links['current'], $_SERVER["PHP_SELF"]);
                 } else {
                     $del = sprintf(
-                        '<a href="%s?command=uninstall&pkg=%s"><img src="%s?img=uninstall" border="0" alt="uninstall"></a>',
-                        $_SERVER["PHP_SELF"], $row[0], $_SERVER["PHP_SELF"]);
+                        '<a href="%s?command=uninstall&pkg=%s%s"><img src="%s?img=uninstall" border="0" alt="uninstall"></a>',
+                        $_SERVER["PHP_SELF"], $row[0], $links['current'], $_SERVER["PHP_SELF"]);
                     $inst = '';
                 };
                 $info=sprintf('<a href="%s?command=remote-info&pkg=%s"><img src="%s?img=info" border="0" alt="info"></a>',
@@ -224,12 +291,23 @@ class PEAR_Frontend_Web extends PEAR
             $tpl->parseCurrentBlock();
         };
         $tpl->show();
-    
+        
+        return true;
     }
     
+    /**
+     * Output details of one package
+     * 
+     * @param array   $data     array containing all information about the package
+     *
+     * @access private
+     * 
+     * @return boolean true (yep. i am an optimist)
+     */
+
     function _outputPackageInfo($data)
     {
-        $tpl = $this->initTemplate("package.info.tpl.html", 'Package Management :: '.$data['name'], 'pkglist');
+        $tpl = $this->_initTemplate("package.info.tpl.html", 'Package Management :: '.$data['name'], 'pkglist');
         
         $tpl->setVariable("Latest", $data['stable']);
         $tpl->setVariable("Installed", $data['installed']);
@@ -289,6 +367,17 @@ class PEAR_Frontend_Web extends PEAR
     
     }
     
+    /**
+     * Output all kinds of data depending on the command which called this method
+     * 
+     * @param mixed  $data    datastructure containing the information to display
+     * @param string $command command from which this method was called
+     *
+     * @access public
+     * 
+     * @return mixed highly depends on the command
+     */
+     
     function outputData($data, $command)
     {
         switch ($command)
@@ -309,10 +398,11 @@ class PEAR_Frontend_Web extends PEAR
         case 'list-all':
             return $this->_outputListAll($data);
         case 'search':
-            return $this->_outputListAll($data, 'Package Search :: Result', 'pkgsearch', false);
+            return $this->_outputListAll($data, 'Package Search :: Result', 'pkgsearch', false, false);
         case 'remote-info':
             return $this->_outputPackageInfo($data);
         case 'install':
+        case 'upgrade':
         case 'uninstall':
             return true;
         case 'login':
@@ -332,6 +422,24 @@ class PEAR_Frontend_Web extends PEAR
         return true;
     }
 
+    /**
+     * Display a formular and return the given input (yes. needs to requests)
+     * 
+     * @param string $command  command from which this method was called
+     * @param array  $prompts  associative array. keys are the inputfieldnames 
+     *                         and values are the description
+     * @param array  $types    (optional) array of inputfieldtypes (text, password, 
+     *                         etc.) keys have to be the same like in $prompts
+     * @param array  $defaults (optional) array of defaultvalues. again keys have 
+     *                         to be the same like in $prompts
+     * @param string $title    (optional) title of the page
+     * @param string $icon     (optional) iconhandle for this page
+     *
+     * @access public
+     * 
+     * @return array input sended by the user
+     */
+     
     function userDialog($command, $prompts, $types = array(), $defaults = array(), $title = '', $icon = '')
     {
         if (isset($_GET["command"]) && $_GET["command"]==$command
@@ -342,8 +450,16 @@ class PEAR_Frontend_Web extends PEAR
                 $result[$key] = $_POST[$key];
             return $result;
         };
+        
+        switch ($command)
+        {
+        case 'login':
+            $title = 'Login';
+            $icon = 'login';
+            break;
+        };
     
-        $tpl = $this->initTemplate("userDialog.tpl.html", $title, $icon);
+        $tpl = $this->_initTemplate("userDialog.tpl.html", $title, $icon);
         $tpl->setVariable("Command", $command);
         $tpl->setVariable("Headline", nl2br($this->data[$command]));
     
@@ -375,9 +491,20 @@ class PEAR_Frontend_Web extends PEAR
         exit;
     }
     
+    /**
+     * Write message to log
+     * 
+     * @param string $text message which has to written to log
+     *
+     * @access public
+     * 
+     * @return boolean true
+     */
+     
     function log($text)
     {
         $GLOBALS['_PEAR_Frontend_Web_log'] .= $text."\n";
+        return true;
     }
 
     // }}}

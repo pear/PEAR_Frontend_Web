@@ -62,6 +62,10 @@ em {
     font-style: italic;
 }
 
+span.green {
+    color: #006600;
+}
+
 span.headline {
     font-family: verdana,arial,helvetica,sans-serif;
     font-size: 125%;
