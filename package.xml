@@ -28,9 +28,9 @@
     <filelist>
       <dir name="/" baseinstalldir="PEAR">
       	<file role="php">WebInstaller.php</file>
-      	<dir name="Frontend" baseinstalldir="PEAR/Frontend">
+      	<dir name="Frontend">
           <file role="php">Web.php</file>
-          <dir name="Web" baseinstalldir="PEAR/Frontend/Web">
+          <dir name="Web">
             <!-- Images -->
             <file role="php">download.gif</file>
             <file role="php">manual.gif</file>
