@@ -27,12 +27,13 @@
     </maintainer>
   </maintainers>
   <release>
-    <version>0.3</version>
-    <date>2003-05-28</date>
+    <version>0.4</version>
+    <date>2003-06-07</date>
     <notes>Bugfixes release:
-- Fix a bug while using both CLI and Web installer
-  (Invalid characters, bug #23516)
-- Installs correctly the CLI tools
+- Remove Pager dep
+- Should work well on non apache system (ie IIS)
+- The 'installed packages' is now the entry page
+  (no more remote connection during startup)
 </notes>
     <state>beta</state>
     <filelist>
@@ -100,4 +101,13 @@
       <dep type="pkg" rel="has">HTML_Template_IT</dep>
     </deps>
   </release>
+  <changelog>
+    <version>0.3</version>
+    <date>2003-05-28</date>
+    <notes>Bugfixes release:
+- Fix a bug while using both CLI and Web installer
+  (Invalid characters, bug #23516)
+- Installs correctly the CLI tools
+</notes>
+  </changelog>
 </package>
