@@ -83,6 +83,9 @@
             'Net_UserAgent_Detect', 'Pager', 'PEAR',
             'PEAR_Frontend_Web', 'XML_RPC');
         $reg = new PEAR_Registry($dir.'PEAR');
+        if (!file_exists($dir.'PEAR/.registry')) {
+            PEAR::raiseError('Directory "'.$dir.'PEAR/.registry" does not exist. please check your installtion');
+        };
         foreach($packages as $pkg) {
             $info = $reg->packageInfo($pkg);
             foreach($info['filelist'] as $fileName => $fileInfo) {
