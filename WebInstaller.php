@@ -52,7 +52,7 @@
     $params  = array();
     $URL = 'http://'.$_SERVER['HTTP_HOST'].$_SERVER['PHP_SELF'];
     $dir = substr(dirname(__FILE__), 0, -strlen('PEAR/PEAR')); // strip PEAR/PEAR
-    $_ENV['TMPDIR'] = $_ENV['TEMP'] = $dir.'/tmp';
+    $_ENV['TMPDIR'] = $_ENV['TEMP'] = $dir.'tmp';
     
     if (!file_exists($pear_user_config)) {
         // I think PEAR_Frontend_Web is running for the first time!
