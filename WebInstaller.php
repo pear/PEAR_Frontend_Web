@@ -18,6 +18,8 @@
 
   $Id$
 */
+    define('PEAR_Frontend_Web',1);
+    @session_start();
 
     // Include needed files
     require_once 'PEAR.php';

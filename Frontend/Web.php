@@ -338,27 +338,27 @@ class PEAR_Frontend_Web extends PEAR
                 '<a href="%s?command=install&pkg=%s"><img src="%s?img=install" border="0" alt="install"></a>',
                 $_SERVER["PHP_SELF"], $data['name'], $_SERVER["PHP_SELF"]);
             $opt_text[] = sprintf(
-                '<a href="%s?command=install&pkg=%s" class="green">Install</a>',
+                '<a href="%s?command=install&pkg=%s" class="green">Install package</a>',
                 $_SERVER["PHP_SELF"], $data['name'], $_SERVER["PHP_SELF"]);
         } else if ($compare == 1) {
             $opt_img[] = sprintf(
                 '<a href="%s?command=upgrade&pkg=%s"><img src="%s?img=install" border="0" alt="upgrade"></a><br>',
                 $_SERVER["PHP_SELF"], $data['name'], $_SERVER["PHP_SELF"]);
             $opt_text[] = sprintf(
-                '<a href="%s?command=upgrade&pkg=%s" class="green">Upgrade</a>',
+                '<a href="%s?command=upgrade&pkg=%s" class="green">Upgrade package</a>',
                 $_SERVER["PHP_SELF"], $data['name'], $_SERVER["PHP_SELF"]);
             $opt_img[] = sprintf(
                 '<a href="%s?command=uninstall&pkg=%s"><img src="%s?img=uninstall" border="0" alt="uninstall"></a>',
                 $_SERVER["PHP_SELF"], $data['name'], $_SERVER["PHP_SELF"]);
             $opt_text[] = sprintf(
-                '<a href="%s?command=uninstall&pkg=%s" class="green">Delete</a>',
+                '<a href="%s?command=uninstall&pkg=%s" class="green">Uninstall package</a>',
                 $_SERVER["PHP_SELF"], $data['name'], $_SERVER["PHP_SELF"]);
         } else {
             $opt_img[] = sprintf(
                 '<a href="%s?command=uninstall&pkg=%s"><img src="%s?img=uninstall" border="0" alt="uninstall"></a>',
                 $_SERVER["PHP_SELF"], $data['name'], $_SERVER["PHP_SELF"]);
             $opt_text[] = sprintf(
-                '<a href="%s?command=uninstall&pkg=%s" class="green">Delete</a>',
+                '<a href="%s?command=uninstall&pkg=%s" class="green">Uninstall package</a>',
                 $_SERVER["PHP_SELF"], $data['name'], $_SERVER["PHP_SELF"]);
         };
 
@@ -381,14 +381,14 @@ class PEAR_Frontend_Web extends PEAR
      * Output all kinds of data depending on the command which called this method
      * 
      * @param mixed  $data    datastructure containing the information to display
-     * @param string $command command from which this method was called
+     * @param string $command (optional) command from which this method was called
      *
      * @access public
      * 
      * @return mixed highly depends on the command
      */
      
-    function outputData($data, $command)
+    function outputData($data, $command = '_default')
     {
         switch ($command)
         {
@@ -593,6 +593,14 @@ class PEAR_Frontend_Web extends PEAR
                 "error" => array(
                     "type" => "gif",
                     "file" => "error.gif",
+                    ),
+                "manual" => array(
+                    "type" => "gif",
+                    "file" => "manual.gif",
+                    ),
+                "download" => array(
+                    "type" => "gif",
+                    "file" => "download.gif",
                     ),
                 ),
             );

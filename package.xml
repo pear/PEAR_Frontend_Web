@@ -32,6 +32,8 @@
           <file role="php">Web.php</file>
           <dir name="Web" baseinstalldir="PEAR/Frontend/Web">
             <!-- Images -->
+            <file role="php">download.gif</file>
+            <file role="php">manual.gif</file>
             <file role="php">error.gif</file>
             <file role="php">pearsmall.gif</file>
             <file role="php">trash.gif</file>
