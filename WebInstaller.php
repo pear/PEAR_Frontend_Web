@@ -101,7 +101,11 @@
             $cmd = PEAR_Command::factory($command, $config);
             $ok = $cmd->run($command, $opts, $params);
             
-            $URL .= '?pageID='.$_GET['pageID'].'#'.$_GET["pkg"];
+            if (isset($_GET['redirect']) && $_GET['redirect'] == 'info') {
+                $URL .= '?command=remote-info&pkg='.$_GET["pkg"];
+            } else {
+                $URL .= '?pageID='.$_GET['pageID'].'#'.$_GET["pkg"];
+            };
             Header("Location: ".$URL);
             exit;
         case 'remote-info':
@@ -125,6 +129,7 @@
             
             exit;
         case 'config-show':
+            $command = $_GET["command"];
             $cmd = PEAR_Command::factory($command, $config);
             $res = $cmd->run($command, $opts, $params);
             foreach($GLOBALS['_PEAR_Frontend_Web_Config'] as $var => $value) {
@@ -138,6 +143,7 @@
             Header("Location: ".$URL);
             exit;
         default:
+            $command = $_GET["command"];
             $cmd = PEAR_Command::factory($command, $config);
             $res = $cmd->run($command, $opts, $params);
             

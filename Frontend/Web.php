@@ -220,6 +220,10 @@ class PEAR_Frontend_Web extends PEAR
     {
         $tpl = $this->_initTemplate("package.list.tpl.html", $title, $img, $useDHTML);
         
+        if (!isset($data['data'])) {
+            $data['data'] = array();
+        };
+        
         // Use PEAR::Pager to page Packages
         $pager =& new Pager(array(
             'itemData'  => $data['data'],
@@ -263,7 +267,7 @@ class PEAR_Frontend_Web extends PEAR
                 $tpl->setCurrentBlock("Row");
                 $tpl->setVariable("ImgPackage", $_SERVER["PHP_SELF"].'?img=package');
                 $compare = version_compare($row[1], $row[2]);
-                if (!$row[2]) {
+                if (!$row[2] || $row[2] == "- no -") {
                     $inst = sprintf(
                         '<a href="%s?command=install&pkg=%s%s"><img src="%s?img=install" border="0" alt="install"></a>',
                         $_SERVER["PHP_SELF"], $row[0], $links['current'], $_SERVER["PHP_SELF"]);
@@ -273,12 +277,16 @@ class PEAR_Frontend_Web extends PEAR
                         '<a href="%s?command=upgrade&pkg=%s%s"><img src="%s?img=install" border="0" alt="upgrade"></a>',
                         $_SERVER["PHP_SELF"], $row[0], $links['current'], $_SERVER["PHP_SELF"]);
                     $del = sprintf(
-                        '<a href="%s?command=uninstall&pkg=%s%s"><img src="%s?img=uninstall" border="0" alt="uninstall"></a>',
-                        $_SERVER["PHP_SELF"], $row[0], $links['current'], $_SERVER["PHP_SELF"]);
+                        '<a href="%s?command=uninstall&pkg=%s%s" %s><img src="%s?img=uninstall" border="0" alt="uninstall"></a>',
+                        $_SERVER["PHP_SELF"], $row[0], $links['current'], 
+                        'onClick="return confirm(\'Do you really want to uninstall \\\''.$row[0].'\\\'?\')"',
+                        $_SERVER["PHP_SELF"]);
                 } else {
                     $del = sprintf(
-                        '<a href="%s?command=uninstall&pkg=%s%s"><img src="%s?img=uninstall" border="0" alt="uninstall"></a>',
-                        $_SERVER["PHP_SELF"], $row[0], $links['current'], $_SERVER["PHP_SELF"]);
+                        '<a href="%s?command=uninstall&pkg=%s%s" %s><img src="%s?img=uninstall" border="0" alt="uninstall"></a>',
+                        $_SERVER["PHP_SELF"], $row[0], $links['current'], 
+                        'onClick="return confirm(\'Do you really want to uninstall \\\''.$row[0].'\\\'?\')"',
+                        $_SERVER["PHP_SELF"]);
                     $inst = '';
                 };
                 $info=sprintf('<a href="%s?command=remote-info&pkg=%s"><img src="%s?img=info" border="0" alt="info"></a>',
@@ -334,33 +342,41 @@ class PEAR_Frontend_Web extends PEAR
         $compare = version_compare($data['stable'], $data['installed']);
         $opt_img = array();
         $opt_text = array();
-        if (!$data['installed']) {
+        if (!$data['installed'] || $data['installed'] == "- no -") {
             $opt_img[] = sprintf(
-                '<a href="%s?command=install&pkg=%s"><img src="%s?img=install" border="0" alt="install"></a>',
+                '<a href="%s?command=install&pkg=%s&redirect=info"><img src="%s?img=install" border="0" alt="install"></a>',
                 $_SERVER["PHP_SELF"], $data['name'], $_SERVER["PHP_SELF"]);
             $opt_text[] = sprintf(
-                '<a href="%s?command=install&pkg=%s" class="green">Install package</a>',
+                '<a href="%s?command=install&pkg=%s&redirect=info" class="green">Install package</a>',
                 $_SERVER["PHP_SELF"], $data['name'], $_SERVER["PHP_SELF"]);
         } else if ($compare == 1) {
             $opt_img[] = sprintf(
-                '<a href="%s?command=upgrade&pkg=%s"><img src="%s?img=install" border="0" alt="upgrade"></a><br>',
+                '<a href="%s?command=upgrade&pkg=%s&redirect=info"><img src="%s?img=install" border="0" alt="upgrade"></a><br>',
                 $_SERVER["PHP_SELF"], $data['name'], $_SERVER["PHP_SELF"]);
             $opt_text[] = sprintf(
-                '<a href="%s?command=upgrade&pkg=%s" class="green">Upgrade package</a>',
+                '<a href="%s?command=upgrade&pkg=%s&redirect=info" class="green">Upgrade package</a>',
                 $_SERVER["PHP_SELF"], $data['name'], $_SERVER["PHP_SELF"]);
             $opt_img[] = sprintf(
-                '<a href="%s?command=uninstall&pkg=%s"><img src="%s?img=uninstall" border="0" alt="uninstall"></a>',
-                $_SERVER["PHP_SELF"], $data['name'], $_SERVER["PHP_SELF"]);
+                '<a href="%s?command=uninstall&pkg=%s&redirect=info" %s><img src="%s?img=uninstall" border="0" alt="uninstall"></a>',
+                $_SERVER["PHP_SELF"], $data['name'], 
+                'onClick="return confirm(\'Do you really want to uninstall \\\''.$data['name'].'\\\'?\')"',
+                $_SERVER["PHP_SELF"]);
             $opt_text[] = sprintf(
-                '<a href="%s?command=uninstall&pkg=%s" class="green">Uninstall package</a>',
-                $_SERVER["PHP_SELF"], $data['name'], $_SERVER["PHP_SELF"]);
+                '<a href="%s?command=uninstall&pkg=%s&redirect=info" class="green" %s>Uninstall package</a>',
+                $_SERVER["PHP_SELF"], $data['name'], 
+                'onClick="return confirm(\'Do you really want to uninstall \\\''.$data['name'].'\\\'?\')"',
+                $_SERVER["PHP_SELF"]);
         } else {
             $opt_img[] = sprintf(
-                '<a href="%s?command=uninstall&pkg=%s"><img src="%s?img=uninstall" border="0" alt="uninstall"></a>',
-                $_SERVER["PHP_SELF"], $data['name'], $_SERVER["PHP_SELF"]);
+                '<a href="%s?command=uninstall&pkg=%s&redirect=info" %s><img src="%s?img=uninstall" border="0" alt="uninstall"></a>',
+                $_SERVER["PHP_SELF"], $data['name'], 
+                'onClick="return confirm(\'Do you really want to uninstall \\\''.$data['name'].'\\\'?\')"',
+                $_SERVER["PHP_SELF"]);
             $opt_text[] = sprintf(
-                '<a href="%s?command=uninstall&pkg=%s" class="green">Uninstall package</a>',
-                $_SERVER["PHP_SELF"], $data['name'], $_SERVER["PHP_SELF"]);
+                '<a href="%s?command=uninstall&pkg=%s&redirect=info" class="green" %s>Uninstall package</a>',
+                $_SERVER["PHP_SELF"], $data['name'], 
+                'onClick="return confirm(\'Do you really want to uninstall \\\''.$data['name'].'\\\'?\')"',
+                $_SERVER["PHP_SELF"]);
         };
 
         if (isset($opt_img[0]))
