@@ -19,7 +19,7 @@
     // Rebuild Includepath (optional)
     $include_path = array(
         '.',
-        dirname(__FILE__).'/pear',
+        dirname(__FILE__).'/PEAR',
         );
     ini_set('include_path', implode(':', $include_path));
 

@@ -69,6 +69,7 @@
     </filelist>
     <deps>
       <dep type="pkg" rel="has">Net_UserAgent_Detect</dep>
+      <dep type="pkg" rel="has">Pager</dep>
       <dep type="pkg" rel="has">HTML_Template_IT</dep>
     </deps>
   </release>
