@@ -30,7 +30,7 @@ if (isset($_GET['enableJS']) && $_GET['enableJS'] == 1) {
 }
 define('USE_DHTML_PROGRESS', (@$useDHTML && $_SESSION['_PEAR_Frontend_Web_js']));
 if (!isset($pear_user_config)) {
-     $pear_user_config = dirname(__FILE__)."/pear.conf";
+     $pear_user_config = PEAR_CONFIG_SYSCONFDIR . "/pear.conf";
 }
 
 // Include needed files
