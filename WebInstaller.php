@@ -68,10 +68,14 @@
         
         // Register packages
         function installPackage($dir, $filename) {
-            $data = implode('',file($dir.$filename));
-            $data = str_replace('{dir}', $dir, $data);
+            $data = unserialize(implode('',file($dir.$filename)));
+            if (is_array($data['filelist']))
+            foreach($data['filelist'] as $key => $value) {
+                if ($value['role'] == "php")
+                    $data['filelist'][$key] = str_replace('{dir}',$dir, $data['filelist'][$key]);
+            };
             $fp = fopen($dir.$filename, 'w');
-            fwrite($fp, $data);
+            fwrite($fp, serialize($data));
             fclose($fp);
         };
         installPackage($dir,'PEAR/.registry/Archive_Tar.reg');
