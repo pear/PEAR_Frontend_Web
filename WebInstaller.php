@@ -74,6 +74,8 @@
         $ok = $cmd->run('config-set', array(), array('bin_dir',  $dir.'bin'));
         $ok = $cmd->run('config-set', array(), array('data_dir', $dir.'data'));
         $ok = $cmd->run('config-set', array(), array('test_dir', $dir.'test'));
+        $ok = $cmd->run('config-set', array(), array('cache_dir', $dir.'cache'));
+        $ok = $cmd->run('config-set', array(), array('cache_ttl', 300));
         
         // Register packages
         $packages = array(
