@@ -14,6 +14,12 @@
       <email>dickmann@php.net</email>
     </maintainer>
     <maintainer>
+      <user>pajoye</user>
+      <role>lead</role>
+      <name>Pierre-Alain Joye</name>
+      <email>pajoye@pearfr.org</email>
+    </maintainer>
+    <maintainer>
       <user>ssb</user>
       <role>helper</role>
       <name>Stig Sæther Bakken</name>
@@ -21,9 +27,13 @@
     </maintainer>
   </maintainers>
   <release>
-    <version>0.1</version>
-    <date>2002-06-29</date>
-    <notes>First release</notes>
+    <version>0.3</version>
+    <date>2003-05-28</date>
+    <notes>Bugfixes release:
+- Fix a bug while using both CLI and Web installer
+  (Invalid characters, bug #23516)
+- Installs correctly the CLI tools
+</notes>
     <state>beta</state>
     <filelist>
       <dir name="/" baseinstalldir="PEAR">
