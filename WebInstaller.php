@@ -100,6 +100,8 @@
             
             if (isset($_GET['redirect']) && $_GET['redirect'] == 'info') {
                 $URL .= '?command=remote-info&pkg='.$_GET["pkg"];
+            } elseif (isset($_GET['redirect']) && $_GET['redirect'] == 'search') {
+                $URL .= '?command=search&userDialogResult=get&0='.$_GET["0"].'&1='.$_GET["1"];
             } else {
                 $URL .= '?pageID='.$_GET['pageID'].'#'.$_GET["pkg"];
             };

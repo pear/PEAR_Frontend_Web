@@ -233,11 +233,16 @@ class PEAR_Frontend_Web extends PEAR
         $data['data'] = $pager->getPageData();
         $links = $pager->getLinks();
         list($from, $to) = $pager->getOffsetByPageId();
+        // Generate Linkinformation to redirect to _this_ page after performing an action
         $links['current'] = '&pageID='.$pager->getCurrentPage();
         if (isset($_GET['mode']))
             $links['current'] .= '&mode='.$_GET['mode'];
         else
             $_GET['mode'] = '';
+        if (isset($_GET['command']) && $_GET['command'] == 'search')
+            $links['current'] .= '&redirect=search&0='.$_REQUEST[0].'&1='.$_REQUEST[1];
+            
+        
         $modes = array(
             'installed'    => 'list installed packages',
             ''             => 'list all packages',
@@ -264,47 +269,55 @@ class PEAR_Frontend_Web extends PEAR
         {
             foreach($packages as $row)
             {
+                list($pkgName, $pkgVersionLatest, $pkgVersionInstalled, $pkgSummary) = $row;
                 $tpl->setCurrentBlock("Row");
                 $tpl->setVariable("ImgPackage", $_SERVER["PHP_SELF"].'?img=package');
-                $compare = version_compare($row[1], $row[2]);
-                if (!$row[2] || $row[2] == "- no -") {
+                $images = array(
+                    'install' => '<img src="'.$_SERVER["PHP_SELF"].'?img=install" border="0" alt="install">',
+                    'uninstall' => '<img src="'.$_SERVER["PHP_SELF"].'?img=uninstall" border="0" alt="uninstall">',
+                    'upgrade' => '<img src="'.$_SERVER["PHP_SELF"].'?img=install" border="0" alt="upgrade">',
+                    'info' => '<img src="'.$_SERVER["PHP_SELF"].'?img=info" border="0" alt="info">',
+                    'infoExt' => '<img src="'.$_SERVER["PHP_SELF"].'?img=infoplus" border="0" alt="extended info">',
+                    );
+                $compare = version_compare($pkgVersionLatest, $pkgVersionInstalled);
+                if (!$pkgVersionInstalled || $pkgVersionInstalled == "- no -") {
                     $inst = sprintf(
-                        '<a href="%s?command=install&pkg=%s%s"><img src="%s?img=install" border="0" alt="install"></a>',
-                        $_SERVER["PHP_SELF"], $row[0], $links['current'], $_SERVER["PHP_SELF"]);
+                        '<a href="%s?command=install&pkg=%s%s">%s</a>',
+                        $_SERVER["PHP_SELF"], $pkgName, $links['current'], $images['install']);
                     $del = '';
                 } else if ($compare == 1) {
                     $inst = sprintf(
-                        '<a href="%s?command=upgrade&pkg=%s%s"><img src="%s?img=install" border="0" alt="upgrade"></a>',
-                        $_SERVER["PHP_SELF"], $row[0], $links['current'], $_SERVER["PHP_SELF"]);
+                        '<a href="%s?command=upgrade&pkg=%s%s">%s</a>',
+                        $_SERVER["PHP_SELF"], $pkgName, $links['current'], $images['upgrade']);
                     $del = sprintf(
-                        '<a href="%s?command=uninstall&pkg=%s%s" %s><img src="%s?img=uninstall" border="0" alt="uninstall"></a>',
-                        $_SERVER["PHP_SELF"], $row[0], $links['current'], 
+                        '<a href="%s?command=uninstall&pkg=%s%s" %s>%s</a>',
+                        $_SERVER["PHP_SELF"], $pkgName, $links['current'], 
                         'onClick="return confirm(\'Do you really want to uninstall \\\''.$row[0].'\\\'?\')"',
-                        $_SERVER["PHP_SELF"]);
+                        $images['uninstall']);
                 } else {
                     $del = sprintf(
-                        '<a href="%s?command=uninstall&pkg=%s%s" %s><img src="%s?img=uninstall" border="0" alt="uninstall"></a>',
-                        $_SERVER["PHP_SELF"], $row[0], $links['current'], 
+                        '<a href="%s?command=uninstall&pkg=%s%s" %s>%s</a>',
+                        $_SERVER["PHP_SELF"], $pkgName, $links['current'], 
                         'onClick="return confirm(\'Do you really want to uninstall \\\''.$row[0].'\\\'?\')"',
-                        $_SERVER["PHP_SELF"]);
+                        $images['uninstall']);
                     $inst = '';
                 };
-                $info=sprintf('<a href="%s?command=remote-info&pkg=%s"><img src="%s?img=info" border="0" alt="info"></a>',
-                    $_SERVER["PHP_SELF"], $row[0], $_SERVER["PHP_SELF"]);
-                $infoExt=sprintf('<a href="%s?package=%s"><img src="%s?img=infoplus" border="0" alt="extended info"></a>',
-                    'http://pear.php.net/package-info.php', $row[0], $_SERVER["PHP_SELF"]);
+                $info=sprintf('<a href="%s?command=remote-info&pkg=%s">%s</a>',
+                    $_SERVER["PHP_SELF"], $pkgName, $images['info']);
+                $infoExt=sprintf('<a href="%s?package=%s">%s</a>',
+                    'http://pear.php.net/package-info.php', $row[0], $images['infoExt']);
                         
-                if ($row[0] == 'PEAR' || $row[0] == 'Archive_Tar')
+                if ($pkgName == 'PEAR' || $pkgName == 'Archive_Tar')
                     $del = '';
                         
-                $tpl->setVariable("Version", $row[1]);
-                $tpl->setVariable("Installed", $row[2]);
+                $tpl->setVariable("Version", $pkgVersionLatest);
+                $tpl->setVariable("Installed", $pkgVersionInstalled);
                 $tpl->setVariable("Install", $inst);
                 $tpl->setVariable("Delete", $del);
                 $tpl->setVariable("Info", $info);
                 $tpl->setVariable("InfoExt", $infoExt);
-                $tpl->setVariable("Package", $row[0]);
-                $tpl->setVariable("Summary", nl2br($row[3]));
+                $tpl->setVariable("Package", $pkgName);
+                $tpl->setVariable("Summary", nl2br($pkgSummary));
                 $tpl->parseCurrentBlock();
             };
             $tpl->setCurrentBlock("Category");
@@ -476,6 +489,15 @@ class PEAR_Frontend_Web extends PEAR
             $result = array();
             foreach($prompts as $key => $prompt)
                 $result[$key] = $_POST[$key];
+            return $result;
+        };
+        // If this is an Answer GET Request , we can return the userinput
+        if (isset($_GET["command"]) && $_GET["command"]==$command
+            && isset($_GET["userDialogResult"]) && $_GET["userDialogResult"]=='get')
+        {
+            $result = array();
+            foreach($prompts as $key => $prompt)
+                $result[$key] = $_GET[$key];
             return $result;
         };
         
