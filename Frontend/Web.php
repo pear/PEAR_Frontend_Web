@@ -692,7 +692,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
         $tpl->setVariable("ValidationPackage", $data['main']['data']['vpackage'][1]);
         $tpl->setVariable("ChannelValidationPackageVersion",
             $data['main']['data']['vpackageversion'][1]);
-        if (!in_array($data['main']['data']['server'][1], 'pear.php.net', '__uri')) {
+        if (!in_array($data['main']['data']['server'][1], array('pear.php.net', '__uri'))) {
             // see if the validation package is installed.  If not, allow the user to install it
             $reg = &$this->config->getRegistry();
             do {
