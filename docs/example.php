@@ -15,13 +15,19 @@
      * by Christian Dickmann <dickmann@php.net>
      */
 
-
+    require_once(dirname(__FILE__).'/PEAR/PEAR.php');
+    if (OS_WINDOWS) {
+        $seperator = ';';
+    } else {
+        $seperator = ':';
+    };
+    
     // Rebuild Includepath (optional)
     $include_path = array(
         '.',
         dirname(__FILE__).'/PEAR',
         );
-    ini_set('include_path', implode(':', $include_path));
+    ini_set('include_path', implode($seperator, $include_path));
 
     // Configfile
     $pear_user_config    = dirname(__FILE__)."/pear.conf";
