@@ -882,6 +882,17 @@ class PEAR_Frontend_Web extends PEAR_Frontend
         if (!isset($_SESSION['_PEAR_Frontend_Web_ScriptCompletedPhases'])) {
             $_SESSION['_PEAR_Frontend_Web_ScriptCompletedPhases'] = array();
         }
+        if (isset($_SESSION['_PEAR_Frontend_Web_ScriptObj'])) {
+            foreach ($_SESSION['_PEAR_Frontend_Web_ScriptObj'] as $name => $val) {
+                if ($name{0} == '_') {
+                    // only public variables will be restored
+                    continue;
+                }
+                $script->$name = $val;
+            }
+        } else {
+            $_SESSION['_PEAR_Frontend_Web_ScriptObj'] = (array) $script;
+        }
         if (!is_array($xml) || !isset($xml['paramgroup'])) {
             $script->run(array(), '_default');
         } else {
@@ -892,18 +903,13 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                 if (isset($_SESSION['_PEAR_Frontend_Web_ScriptSection'])) {
                     if ($i < $_SESSION['_PEAR_Frontend_Web_ScriptSection']) {
                         $lastgroup = $group;
-                        if (isset($_SESSION['_PEAR_Frontend_Web_answers'])) {
-                            $answers = $_SESSION['_PEAR_Frontend_Web_answers'];
-                        }
                         continue;
                     }
                 }
+                if (isset($_SESSION['_PEAR_Frontend_Web_answers'])) {
+                    $answers = $_SESSION['_PEAR_Frontend_Web_answers'];
+                }
                 if (isset($group['name'])) {
-                    $paramname = explode('::', $group['name']);
-                    if ($lastgroup['id'] != $paramname[0]) {
-                        continue;
-                    }
-                    $group['name'] = $paramname[1];
                     if (isset($answers)) {
                         if (isset($answers[$group['name']])) {
                             switch ($group['conditiontype']) {
@@ -937,7 +943,11 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                     $group['param'] = array($group['param']);
                 }
                 $_SESSION['_PEAR_Frontend_Web_ScriptSection'] = $i;
-                $answers = $this->confirmDialog($group['param'], $pkg->getPackage());
+                if (!isset($answers)) {
+                    $answers = array();
+                }
+                $answers = array_merge($answers,
+                    $this->confirmDialog($group['param'], $pkg->getPackage()));
                 if ($answers) {
                     array_unshift($_SESSION['_PEAR_Frontend_Web_ScriptCompletedPhases'],
                         $group['id']);
@@ -953,6 +963,13 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                     return;
                 }
                 $lastgroup = $group;
+                foreach ($group['param'] as $param) {
+                    // rename the current params to save for future tests
+                    $answers[$group['id'] . '::' . $param['name']] = $answers[$param['name']];
+                    unset($answers[$param['name']]);
+                }
+                // save the script's variables and user answers for the next round
+                $_SESSION['_PEAR_Frontend_Web_ScriptObj'] = (array) $script;
                 $_SESSION['_PEAR_Frontend_Web_answers'] = $answers;
                 $_SERVER['REQUEST_METHOD'] = '';
             }
@@ -962,6 +979,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
 
     function _clearScriptSession()
     {
+        unset($_SESSION['_PEAR_Frontend_Web_ScriptObj']);
         unset($_SESSION['_PEAR_Frontend_Web_answers']);
         unset($_SESSION['_PEAR_Frontend_Web_ScriptSection']);
         unset($_SESSION['_PEAR_Frontend_Web_ScriptCompletedPhases']);
