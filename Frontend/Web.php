@@ -793,6 +793,9 @@ class PEAR_Frontend_Web extends PEAR_Frontend
     function startSession()
     {
         if ($this->_installScript) {
+            if (!isset($_SESSION['_PEAR_Frontend_Web_SavedOutput'])) {
+                $_SESSION['_PEAR_Frontend_Web_SavedOutput'] = array();
+            }
             $this->_savedOutput = $_SESSION['_PEAR_Frontend_Web_SavedOutput'];
         } else {
             $this->_savedOutput = array();
@@ -816,37 +819,71 @@ class PEAR_Frontend_Web extends PEAR_Frontend
         }
         $tpl->show();
     }
+
+    /**
+     * @param array An array of PEAR_Task_Postinstallscript objects (or related scripts)
+     * @param PEAR_PackageFile_v2
+     */
+    function runPostinstallScripts(&$scripts, $pkg)
+    {
+        if (!isset($_SESSION['_PEAR_Frontend_Web_Scripts'])) {
+            $saves = array();
+            foreach ($scripts as $i => $task) {
+                $saves[$i] = (array) $task->_obj;
+            }
+            $_SESSION['_PEAR_Frontend_Web_Scripts'] = $saves;
+            $nonsession = true;
+        } else {
+            $nonsession = false;
+        }
+        foreach ($scripts as $i => $task) {
+            if (!isset($_SESSION['_PEAR_Frontend_Web_ScriptIndex'])) {
+                $_SESSION['_PEAR_Frontend_Web_ScriptIndex'] = $i;
+            }
+            if ($i != $_SESSION['_PEAR_Frontend_Web_ScriptIndex']) {
+                continue;
+            }
+            if (!$nonsession) {
+                // restore values from previous sessions to the install script
+                foreach ($_SESSION['_PEAR_Frontend_Web_Scripts'][$i] as $name => $val) {
+                    if ($name{0} == '_') {
+                        // only public variables will be restored
+                        continue;
+                    }
+                    $scripts[$i]->_obj->$name = $val;
+                }
+            }
+            $this->_installScript = true;
+            $this->startSession();
+            $this->runInstallScript($scripts[$i]->_params, $scripts[$i]->_obj, $pkg);
+            $saves = $scripts;
+            foreach ($saves as $i => $task) {
+                $saves[$i] = (array) $task->_obj;
+            }
+            $_SESSION['_PEAR_Frontend_Web_Scripts'] = $saves;
+            unset($_SESSION['_PEAR_Frontend_Web_ScriptIndex']);
+        }
+        $this->_installScript = false;
+        unset($_SESSION['_PEAR_Frontend_Web_Scripts']);
+        $this->finishOutput($pkg->getPackage() . ' Install Script',
+            array('link' => $GLOBALS['URL'] .
+            '?command=remote-info&pkg='.$pkg->getPackage(),
+                'text' => 'Click for ' .$pkg->getPackage() . ' Information'));
+    }
+
     /**
      * @param array $xml contents of postinstallscript tag
      * @param object $script post-installation script
-     * @param string $installtype install|upgrade
      * @param PEAR_PackageFile_v1|PEAR_PackageFile_v2 $pkg 
      * @param string $contents contents of the install script
      */
-    function runInstallScript($xml, &$script, $installtype, $pkg, $contents = null)
+    function runInstallScript($xml, &$script, &$pkg)
     {
-        if (!isset($_SESSION['_PEAR_Frontend_Web_Script'])) {
-            $_SESSION['_PEAR_Frontend_Web_SavedOutput'] = array();
-            $_SESSION['_PEAR_Frontend_Web_ScriptFile'] = $contents;
-            $_SESSION['_PEAR_Frontend_Web_Script'] = $script;
-            $_SESSION['_PEAR_Frontend_Web_ScriptPkgFile'] = $pkg->toArray();
-            $_SESSION['_PEAR_Frontend_Web_ScriptClass'] = get_class($script);
-            $_SESSION['_PEAR_Frontend_Web_Xml'] = $xml;
-            $_SESSION['_PEAR_Frontend_Web_Installtype'] = $installtype;
+        if (!isset($_SESSION['_PEAR_Frontend_Web_ScriptCompletedPhases'])) {
             $_SESSION['_PEAR_Frontend_Web_ScriptCompletedPhases'] = array();
-            $URL = 'http://'.$_SERVER['HTTP_HOST'].$_SERVER['PHP_SELF'];
-            $URL .= '?command=installscript';
-            if (isset($_GET['redirect'])) {
-                $URL .= '&redirect=' . $_GET['redirect'];
-            }
-            if (isset($_GET['pkg'])) {
-                $URL .= '&pkg=' . $_GET['pkg'];
-            }
-            header ('Location: ' . $URL);
-            exit;
         }
         if (!is_array($xml) || !isset($xml['paramgroup'])) {
-            $script->run(array(), '_default', $installtype);
+            $script->run(array(), '_default');
         } else {
             if (!isset($xml['paramgroup'][0])) {
                 $xml['paramgroup'][0] = array($xml['paramgroup']);
@@ -902,18 +939,17 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                 $_SESSION['_PEAR_Frontend_Web_ScriptSection'] = $i;
                 $answers = $this->confirmDialog($group['param'], $pkg->getPackage());
                 if ($answers) {
-                    array_unshift($_SESSION['_PEAR_Frontend_Web_ScriptCompletedPhases'], $group['id']);
-                    if (!$script->run($answers, $group['id'], $installtype)) {
+                    array_unshift($_SESSION['_PEAR_Frontend_Web_ScriptCompletedPhases'],
+                        $group['id']);
+                    if (!$script->run($answers, $group['id'])) {
                         $script->run($_SESSION['_PEAR_Frontend_Web_ScriptCompletedPhases'],
-                            '_undoOnError', $installtype);
+                            '_undoOnError');
                         $this->_clearScriptSession();
-                        $this->_installScript = false;
                         return;
                     }
                 } else {
-                    $script->run(array(), '_undoOnError', $installtype);
+                    $script->run(array(), '_undoOnError');
                     $this->_clearScriptSession();
-                    $this->_installScript = false;
                     return;
                 }
                 $lastgroup = $group;
@@ -922,19 +958,12 @@ class PEAR_Frontend_Web extends PEAR_Frontend
             }
         }
         $this->_clearScriptSession();
-        $this->_installScript = false;
     }
 
     function _clearScriptSession()
     {
         unset($_SESSION['_PEAR_Frontend_Web_answers']);
         unset($_SESSION['_PEAR_Frontend_Web_ScriptSection']);
-        unset($_SESSION['_PEAR_Frontend_Web_Script']);
-        unset($_SESSION['_PEAR_Frontend_Web_ScriptFile']);
-        unset($_SESSION['_PEAR_Frontend_Web_ScriptPkgFile']);
-        unset($_SESSION['_PEAR_Frontend_Web_ScriptClass']);
-        unset($_SESSION['_PEAR_Frontend_Web_Xml']);
-        unset($_SESSION['_PEAR_Frontend_Web_Installtype']);
         unset($_SESSION['_PEAR_Frontend_Web_ScriptCompletedPhases']);
     }
 
@@ -964,7 +993,8 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                 $_SERVER['REQUEST_METHOD'] = '';
             }
             $title = !$attempt ? $pkg . ' Install Script Input' : 'Please fill in all values';
-            $answers = $this->userDialog('installscript', $prompts, $types, $answers, $title);
+            $answers = $this->userDialog('run-scripts', $prompts, $types, $answers, $title, '',
+                array('pkg' => $pkg));
             if ($answers === false) {
                 return false;
             }
@@ -986,13 +1016,15 @@ class PEAR_Frontend_Web extends PEAR_Frontend
      *                         to be the same like in $prompts
      * @param string $title    (optional) title of the page
      * @param string $icon     (optional) iconhandle for this page
+     * @param array  $extra    (optional) extra parameters to put in the form action
      *
      * @access public
      *
      * @return array input sended by the user
      */
 
-    function userDialog($command, $prompts, $types = array(), $defaults = array(), $title = '', $icon = '')
+    function userDialog($command, $prompts, $types = array(), $defaults = array(), $title = '',
+                        $icon = '', $extra = array())
     {
         // If this is an POST Request, we can return the userinput
         if (isset($_GET["command"]) && $_GET["command"]==$command
@@ -1025,6 +1057,14 @@ class PEAR_Frontend_Web extends PEAR_Frontend
 
         $tpl = $this->_initTemplate("userDialog.tpl.html", $title, $icon);
         $tpl->setVariable("Command", $command);
+        $extrap = '';
+        if (count($extra)) {
+            $extrap = '&';
+            foreach ($extra as $name => $value) {
+                $extrap .= urlencode($name) . '=' . urlencode($value);
+            }
+        }
+        $tpl->setVariable("extra", $extrap);
         if (isset($this->_data[$command])) {
             $tpl->setVariable("Headline", nl2br($this->_data[$command]));
         }
@@ -1051,7 +1091,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                 $tpl->parseCurrentBlock();
             }
         }
-        if ($command == 'installscript') {
+        if ($command == 'run-scripts') {
             $tpl->setVariable("cancel", '<input type="submit" value="Cancel" name="cancel">');
         }
         $tpl->show();

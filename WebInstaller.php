@@ -166,33 +166,11 @@ if (isset($_GET["command"])) {
             }
             Header("Location: ".$URL);
             exit;
-        case 'installscript' :
-            if (!isset($_SESSION['_PEAR_Frontend_Web_Script'])) {
-                return PEAR::raiseError('ERROR: install scripts can only be called from installation');
-            }
-            include_once $_SESSION['_PEAR_Frontend_Web_ScriptFile'];
-            $oldscript = $_SESSION['_PEAR_Frontend_Web_Script'];
-            $script = new $_SESSION['_PEAR_Frontend_Web_ScriptClass'];
-            require_once 'PEAR/PackageFile/v2.php';
-            $pkgfile = &new PEAR_PackageFile_v2;
-            $pkgfile->setConfig($config);
-            $pkgfile->fromArray($_SESSION['_PEAR_Frontend_Web_ScriptPkgFile']);
-            foreach (get_object_vars($oldscript) as $name => $val) {
-                $script->$name = $val;
-            }
-            $script->init($config, $ui);
-            if (method_exists($script, '__wakeup')) {
-                $script->__wakeup();
-            }
-            $xml = $_SESSION['_PEAR_Frontend_Web_Xml'];
-            $installtype = $_SESSION['_PEAR_Frontend_Web_Installtype'];
-            $ui->_installScript = true;
-            $ui->startSession();
-            $ui->runInstallScript($xml, $script, $installtype, $pkgfile);
-            $ui->finishOutput($pkgfile->getPackage() . ' Install Script',
-                array('link' => $URL .
-                '?command=remote-info&pkg='.$pkgfile->getPackage(),
-                    'text' => 'Click for ' .$pkgfile->getPackage() . ' Information'));
+        case 'run-scripts' :
+            $command = $_GET["command"];
+            $params = array($_GET["pkg"]);
+            $cmd = PEAR_Command::factory($command, $config);
+            $ok = $cmd->run($command, $opts, $params);
             exit;
         case 'remote-info':
             $command = $_GET["command"];
