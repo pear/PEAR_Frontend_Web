@@ -23,7 +23,6 @@ require_once "PEAR.php";
 require_once "PEAR/Remote.php";
 require_once "HTML/Template/IT.php";
 require_once "Net/UserAgent/Detect.php";
-require_once "Pager/Pager.php";
 
 /**
 * PEAR_Frontend_Web is a HTML based Webfrontend for the PEAR Installer
@@ -39,7 +38,8 @@ require_once "Pager/Pager.php";
 * @access  private
 */
 
-class PEAR_Frontend_Web extends PEAR {
+class PEAR_Frontend_Web extends PEAR
+{
     // {{{ properties
 
     /**
@@ -55,7 +55,7 @@ class PEAR_Frontend_Web extends PEAR {
      * @access private
      */
     var $_data = array();
-    
+
     // }}}
     var $config;
 
@@ -67,7 +67,7 @@ class PEAR_Frontend_Web extends PEAR {
         'XML_RPC',
         'Net_UserAgent_Detect',
         'Pager');
-        
+
     // {{{ constructor
 
     function PEAR_Frontend_Web()
@@ -78,14 +78,16 @@ class PEAR_Frontend_Web extends PEAR {
     }
 
     // }}}
+    // {{{ displayLine()
 
-    // XXX some methods from CLI following. should be deleted in the near future
-    // {{{ displayLine(text)
-
+    /* XXX some methods from CLI following. should be deleted in the near future */
     function displayLine($text)
     {
         trigger_error("Frontend::display deprecated", E_USER_ERROR);
     }
+
+    // }}}
+    // {{{ display()
 
     function display($text)
     {
@@ -93,8 +95,7 @@ class PEAR_Frontend_Web extends PEAR {
     }
 
     // }}}
-
-    // {{{ userConfirm(prompt, [default])
+    // {{{ userConfirm()
 
     function userConfirm($prompt, $default = 'yes')
     {
@@ -103,17 +104,21 @@ class PEAR_Frontend_Web extends PEAR {
     }
 
     // }}}
-    
+    // {{{ displayStart(prompt, [default])
+
     function displayStart()
     {
         $tpl = $this->_initTemplate("start.tpl.html", 'PEAR Installer');
-        $tpl->setVariable('Version', '0.1');
+        $tpl->setVariable('Version', '0.5');
         $tpl->show();
         exit;
     }
-    
+
+    // }}}
+    // {{{ _initTemplate()
+
     /**
-     * Initialize a TemplateObject, add a title, and icon and add JS and CSS for DHTML 
+     * Initialize a TemplateObject, add a title, and icon and add JS and CSS for DHTML
      *
      * @param string  $file     filename of the template file
      * @param string  $title    (optional) title of the page
@@ -124,7 +129,7 @@ class PEAR_Frontend_Web extends PEAR {
      *
      * @return object Object of HTML/IT - Template - Class
      */
-    
+
     function _initTemplate($file, $title = '', $icon = '', $useDHTML = true)
     {
         $tpl = new HTML_Template_IT(dirname(__FILE__)."/Web");
@@ -140,66 +145,68 @@ class PEAR_Frontend_Web extends PEAR {
             $tpl->setVariable("_Title", $title);
             $tpl->setVariable("_Icon", $icon);
             $tpl->parseCurrentBlock();
-        };
+        }
+
         $tpl->setCurrentBlock();
-        
+
         if ($useDHTML && Net_UserAgent_Detect::getBrowser('ie5up') == 'ie5up') {
             $dhtml = true;
         } else {
             $dhtml = false;
         }
-        
+
         if ($dhtml) {
             $tpl->setVariable("JS", 'dhtml');
             $css = '<link rel="stylesheet" href="'.$_SERVER['PHP_SELF'].'?css=dhtml" />';
             $tpl->setVariable("DHTMLcss", $css);
         } else {
             $tpl->setVariable("JS", 'nodhtml');
-        };
-        
+        }
+
         if (!isset($_SESSION['_PEAR_Frontend_Web_js']) || $_SESSION['_PEAR_Frontend_Web_js'] == false) {
             $tpl->setCurrentBlock('JSEnable');
             $tpl->setVariable('RedirectURL', $_SERVER['REQUEST_URI']. (!empty($_GET) ? '&' : '?') .'enableJS=1');
             $tpl->parseCurrentBlock();
             $tpl->setCurrentBlock();
-        };
-        
+        }
+
         return $tpl;
     }
-    
-    // {{{ displayError(eobj)
-    
+
+    // }}}
+    // {{{ displayError()
+
     /**
      * Display an error page
-     * 
+     *
      * @param mixed   $eobj  PEAR_Error object or string containing the error message
      * @param string  $title (optional) title of the page
      * @param string  $img   (optional) iconhandle for this page
      * @param boolean $popup (optional) popuperror or normal?
      *
      * @access public
-     * 
+     *
      * @return null does not return anything, but exit the script
      */
-     
+
     function displayError($eobj, $title = 'Error', $img = 'error', $popup = false)
     {
         $msg = '';
         if (isset($GLOBALS['_PEAR_Frontend_Web_log']) && trim($GLOBALS['_PEAR_Frontend_Web_log'])) {
             $msg = trim($GLOBALS['_PEAR_Frontend_Web_log'])."\n\n";
         }
-            
+
         if (PEAR::isError($eobj)) {
             $msg .= trim($eobj->getMessage());
         } else {
             $msg .= trim($eobj);
         }
-        
+
         $msg = nl2br($msg."\n");
 
         $tplfile = ($popup ? "error.popup.tpl.html" : "error.tpl.html");
         $tpl = $this->_initTemplate($tplfile, $title, $img);
-        
+
         $tpl->setVariable("Error", $msg);
         $command_map = array(
             "install"   => "list-all",
@@ -207,21 +214,22 @@ class PEAR_Frontend_Web extends PEAR {
             "upgrade"   => "list-all",
             );
         if (isset($_GET['command'])) {
-            if (isset($command_map[$_GET['command']]))
+            if (isset($command_map[$_GET['command']])) {
                 $_GET['command'] = $command_map[$_GET['command']];
+            }
             $tpl->setVariable("param", '?command='.$_GET['command']);
-        };
-        
+        }
+
         $tpl->show();
         exit;
     }
 
     // }}}
-    // {{{ displayFatalError(eobj)
+    // {{{ displayFatalError()
 
     /**
      * Alias for PEAR_Frontend_Web::displayError()
-     * 
+     *
      * @see PEAR_Frontend_Web::displayError()
      */
 
@@ -233,156 +241,171 @@ class PEAR_Frontend_Web extends PEAR {
     function displayErrorImg($eobj)
     {
         $msg = '';
-        if (isset($GLOBALS['_PEAR_Frontend_Web_log']) && trim($GLOBALS['_PEAR_Frontend_Web_log'])) {
+        if (isset($GLOBALS['_PEAR_Frontend_Web_log']) && trim($GLOBALS['_PEAR_Frontend_Web_log']))
             $msg = trim($GLOBALS['_PEAR_Frontend_Web_log'])."\n\n";
-        }
-            
+
         $_SESSION['_PEAR_Frontend_Web_LastError']     = $eobj;
         $_SESSION['_PEAR_Frontend_Web_LastError_log'] = $msg;
         echo '<script language="javascript">';
-        printf('window.open("%s?command=show-last-error", "PEAR", "width=600, height=400");', 
-               $_SERVER["PHP_SELF"]);
+        printf('window.open("%s?command=show-last-error", "PEAR", "width=600, height=400");',
+            $_SERVER["PHP_SELF"]);
         echo ' </script>';
         printf('<img src="%s?img=install_fail" border="0">', $_SERVER['PHP_SELF']);
         exit;
     }
 
     // }}}
-    
+    // {{{ _outputListAll()
+
     /**
      * Output a list of packages, grouped by categories. Uses Paging
-     * 
+     *
      * @param array   $data     array containing all data to display the list
      * @param string  $title    (optional) title of the page
      * @param string  $img      (optional) iconhandle for this page
      * @param boolean $useDHTML (optional) add JS and CSS for DHTML-features
-     * @param boolean $paging   (optional) use Paging or not 
+     * @param boolean $paging   (optional) use Paging or not
      *
      * @access private
-     * 
+     *
      * @return boolean true (yep. i am an optimist)
      */
 
     function _outputListAll($data, $title = 'Install / Upgrade / Remove PEAR Packages', $img = 'pkglist', $useDHTML = false, $paging = true)
     {
         $tpl = $this->_initTemplate("package.list.tpl.html", $title, $img, $useDHTML);
-        
+
         if (!isset($data['data'])) {
             $data['data'] = array();
-        };
-        
-        // Use PEAR::Pager to page Packages
-        $pager =& new Pager(array(
-            'itemData'  => $data['data'],
-            'perPage'   => ($paging ? 5 : count($data['data'])),
-            'linkClass' => 'green',
-            ));
-        $data['data'] = $pager->getPageData();
-        $links = $pager->getLinks();
-        list($from, $to) = $pager->getOffsetByPageId();
+        }
+
+        $pageId = isset($_GET['from'])?$_GET['from']:0;
+        $paging_data = $this->__getData($pageId, 5, count($data['data']), false);
+
+        $data['data'] = array_slice($data['data'], $pageId, 5);
+
+        $links = array();
+        $from = $paging_data['from'];
+        $to = $paging_data['next'];
+
         // Generate Linkinformation to redirect to _this_ page after performing an action
-        $links['current'] = '&pageID='.$pager->getCurrentPageID();
+        $link_str = '<a href="?command=%s&from=%s" class="paging_link">%s</a>';
+        $links['current'] = '&from=' . $paging_data['from'];
+
+        $command = isset($_GET['command']) ? $_GET['command']:'list-all';
+
+        if ($paging_data['from']>1) {
+            $links['back'] = sprintf($link_str, $command, $paging_data['prev'], '&lt;&lt;');
+        } else {
+            $links['back'] = '';
+        }
+
+        if ( $paging_data['next']) {
+            $links['next'] = sprintf($link_str, $command, $paging_data['next'], '&gt;&gt;');
+        } else {
+            $links['next'] = '';
+        }
+
         if (isset($_GET['mode'])) {
             $links['current'] .= '&mode='.$_GET['mode'];
         } else {
             $_GET['mode'] = '';
         }
+
         if (isset($_GET['command']) && $_GET['command'] == 'search') {
             $links['current'] .= '&redirect=search&0='.$_REQUEST[0].'&1='.$_REQUEST[1];
         }
-                    
+
         $modes = array(
             'installed'    => 'list installed packages',
             ''             => 'list all packages',
             'notinstalled' => 'list not installed packages',
             'upgrades'     => 'list avail. upgrades',
             );
+
         unset($modes[$_GET['mode']]);
-        
+
         $i = 1;
         foreach($modes as $mode => $text) {
-            $tpl->setVariable('mode'.$i, ((!empty($mode)) ? '&mode='.$mode : ''));
-            $tpl->setVariable('mode'.$i.'text', $text);
+            $tpl->setVariable('mode' . $i , !empty($mode) ? '&mode='.$mode : '');
+            $tpl->setVariable('mode' . $i.'text', $text);
             $i++;
-        };
-        
+        }
+
         $tpl->setVariable('Prev', $links['back']);
         $tpl->setVariable('Next', $links['next']);
         $tpl->setVariable('PagerFrom', $from);
         $tpl->setVariable('PagerTo', $to);
-        $tpl->setVariable('PagerCount', $pager->numItems());
+        $tpl->setVariable('PagerCount', $paging_data['numrows']);
 
-        if (is_array($data['data'])) {
-            uksort($data['data'], 'strnatcasecmp');
-            foreach($data['data'] as $category => $packages) {
-                foreach($packages as $row) {
-                    list($pkgName, $pkgVersionLatest, $pkgVersionInstalled, $pkgSummary) = $row;
-                    $tpl->setCurrentBlock("Row");
-                    $tpl->setVariable("ImgPackage", $_SERVER["PHP_SELF"].'?img=package');
-                    $images = array(
-                        'install' => '<img src="'.$_SERVER["PHP_SELF"].'?img=install" width="13" height="13" border="0" alt="install">',
-                        'uninstall' => '<img src="'.$_SERVER["PHP_SELF"].'?img=uninstall" width="18" height="17"  border="0" alt="uninstall">',
-                        'upgrade' => '<img src="'.$_SERVER["PHP_SELF"].'?img=install" width="13" height="13" border="0" alt="upgrade">',
-                        'info' => '<img src="'.$_SERVER["PHP_SELF"].'?img=info"  width="17" height="19" border="0" alt="info">',
-                        'infoExt' => '<img src="'.$_SERVER["PHP_SELF"].'?img=infoplus"  width="18" height="19" border="0" alt="extended info">',
-                        );
-                    $urls   = array(
-                        'install' => sprintf('%s?command=install&pkg=%s%s',
-                            $_SERVER["PHP_SELF"], $pkgName, $links['current']),
-                        'uninstall' => sprintf('%s?command=uninstall&pkg=%s%s',
-                            $_SERVER["PHP_SELF"], $pkgName, $links['current']),
-                        'upgrade' => sprintf('%s?command=upgrade&pkg=%s%s',
-                            $_SERVER["PHP_SELF"], $pkgName, $links['current']),
-                        'info' => sprintf('%s?command=remote-info&pkg=%s',
-                            $_SERVER["PHP_SELF"], $pkgName),
-                        'infoExt' => sprintf('%s?package=%s',
-                            'http://pear.php.net/package-info.php', $row[0]),
-                        );
-                        
-                    $compare = version_compare($pkgVersionLatest, $pkgVersionInstalled);
-                    $id = 'id="'.$pkgName.'_href"';
-                    if (!$pkgVersionInstalled || $pkgVersionInstalled == "- no -") {
-                        $inst = sprintf('<a href="%s" onClick="return perform(\'%s\');" %s>%s</a>', 
-                            $urls['install'], $pkgName, $id, $images['install']);
-                        $del = '';
-                    } elseif ($compare == 1) {
-                        $inst = sprintf('<a href="%s" onClick="return perform(\'%s\');" %s>%s</a>', 
-                            $urls['upgrade'], $pkgName, $id, $images['upgrade']);
-                        $del = sprintf('<a href="%s" onClick="return deletePkg(\'%s\');" %s >%s</a>',
-                            $urls['uninstall'], $pkgName, $id, $images['uninstall']);
-                    } else {
-                        $del = sprintf('<a href="%s" onClick="return deletePkg(\'%s\');" %s >%s</a>',
-                            $urls['uninstall'], $pkgName, $id, $images['uninstall']);
-                        $inst = '';
-                    };
-                    $info    = sprintf('<a href="%s">%s</a>', $urls['info'],    $images['info']);
-                    $infoExt = sprintf('<a href="%s">%s</a>', $urls['infoExt'], $images['infoExt']);
-                            
-                    if (in_array($pkgName, $this->_no_delete_pkgs)) {
-                        $del = '';
-                    }
-                            
-                    $tpl->setVariable("Latest", $pkgVersionLatest);
-                    $tpl->setVariable("Installed", $pkgVersionInstalled);
-                    $tpl->setVariable("Install", $inst);
-                    $tpl->setVariable("Delete", $del);
-                    $tpl->setVariable("Info", $info);
-                    $tpl->setVariable("InfoExt", $infoExt);
-                    $tpl->setVariable("Package", $pkgName);
-                    $tpl->setVariable("Summary", nl2br($pkgSummary));
-                    $tpl->parseCurrentBlock();
+        foreach($data['data'] as $category => $packages) {
+            foreach($packages as $row) {
+                list($pkgName, $pkgVersionLatest, $pkgVersionInstalled, $pkgSummary) = $row;
+                $tpl->setCurrentBlock("Row");
+                $tpl->setVariable("ImgPackage", $_SERVER["PHP_SELF"].'?img=package');
+                $images = array(
+                    'install' => '<img src="'.$_SERVER["PHP_SELF"].'?img=install" width="13" height="13" border="0" alt="install">',
+                    'uninstall' => '<img src="'.$_SERVER["PHP_SELF"].'?img=uninstall" width="18" height="17"  border="0" alt="uninstall">',
+                    'upgrade' => '<img src="'.$_SERVER["PHP_SELF"].'?img=install" width="13" height="13" border="0" alt="upgrade">',
+                    'info' => '<img src="'.$_SERVER["PHP_SELF"].'?img=info"  width="17" height="19" border="0" alt="info">',
+                    'infoExt' => '<img src="'.$_SERVER["PHP_SELF"].'?img=infoplus"  width="18" height="19" border="0" alt="extended info">',
+                    );
+                $urls   = array(
+                    'install' => sprintf('%s?command=install&pkg=%s%s',
+                        $_SERVER["PHP_SELF"], $pkgName, $links['current']),
+                    'uninstall' => sprintf('%s?command=uninstall&pkg=%s%s',
+                        $_SERVER["PHP_SELF"], $pkgName, $links['current']),
+                    'upgrade' => sprintf('%s?command=upgrade&pkg=%s%s',
+                        $_SERVER["PHP_SELF"], $pkgName, $links['current']),
+                    'info' => sprintf('%s?command=remote-info&pkg=%s',
+                        $_SERVER["PHP_SELF"], $pkgName),
+                    'infoExt' => sprintf('%s?package=%s',
+                        'http://pear.php.net/package-info.php', $row[0]),
+                    );
+
+                $compare = version_compare($pkgVersionLatest, $pkgVersionInstalled);
+                $id = 'id="'.$pkgName.'_href"';
+                if (!$pkgVersionInstalled || $pkgVersionInstalled == "- no -") {
+                    $inst = sprintf('<a href="%s" onClick="return perform(\'%s\');" %s>%s</a>',
+                        $urls['install'], $pkgName, $id, $images['install']);
+                    $del = '';
+                } else if ($compare == 1) {
+                    $inst = sprintf('<a href="%s" onClick="return perform(\'%s\');" %s>%s</a>',
+                        $urls['upgrade'], $pkgName, $id, $images['upgrade']);
+                    $del = sprintf('<a href="%s" onClick="return deletePkg(\'%s\');" %s >%s</a>',
+                        $urls['uninstall'], $pkgName, $id, $images['uninstall']);
+                } else {
+                    $del = sprintf('<a href="%s" onClick="return deletePkg(\'%s\');" %s >%s</a>',
+                        $urls['uninstall'], $pkgName, $id, $images['uninstall']);
+                    $inst = '';
                 }
-                $tpl->setCurrentBlock("Category");
-                $tpl->setVariable("categoryName", $category);
-                $tpl->setVariable("ImgCategory", $_SERVER["PHP_SELF"].'?img=category');
+                $info    = sprintf('<a href="%s">%s</a>', $urls['info'],    $images['info']);
+                $infoExt = sprintf('<a href="%s">%s</a>', $urls['infoExt'], $images['infoExt']);
+
+                if (in_array($pkgName, $this->_no_delete_pkgs)) {
+                    $del = '';
+                }
+
+                $tpl->setVariable("Latest", $pkgVersionLatest);
+                $tpl->setVariable("Installed", $pkgVersionInstalled);
+                $tpl->setVariable("Install", $inst);
+                $tpl->setVariable("Delete", $del);
+                $tpl->setVariable("Info", $info);
+                $tpl->setVariable("InfoExt", $infoExt);
+                $tpl->setVariable("Package", $pkgName);
+                $tpl->setVariable("Summary", nl2br($pkgSummary));
                 $tpl->parseCurrentBlock();
             }
+            $tpl->setCurrentBlock("Category");
+            $tpl->setVariable("categoryName", $category);
+            $tpl->setVariable("ImgCategory", $_SERVER["PHP_SELF"].'?img=category');
+            $tpl->parseCurrentBlock();
         }
         $tpl->show();
-        
+
         return true;
     }
-    
+
     function _getPackageDeps($deps)
     {
         if (count($deps) == 0) {
@@ -410,13 +433,13 @@ class PEAR_Frontend_Web extends PEAR {
                 );
             $result = "      <dl>\n";
             foreach($deps as $row) {
-                
+
                 // Print link if it's a PEAR package
                 if ($row['type'] == 'pkg') {
-                    $row['name'] = sprintf('<a class="green" href="%s?command=remote-info&pkg=%s">%s</a>', 
+                    $row['name'] = sprintf('<a class="green" href="%s?command=remote-info&pkg=%s">%s</a>',
                         $_SERVER['PHP_SELF'], $row['name'], $row['name']);
                 }
-        
+
                 if (isset($rel_trans[$row['relation']])) {
                     $rel = sprintf($rel_trans[$row['relation']], $row['version']);
                     $result .= sprintf("%s: %s %s",
@@ -433,21 +456,21 @@ class PEAR_Frontend_Web extends PEAR {
         }
         return $result;
     }
-    
+
     /**
      * Output details of one package
-     * 
+     *
      * @param array $data array containing all information about the package
      *
      * @access private
-     * 
+     *
      * @return boolean true (yep. i am an optimist)
      */
 
     function _outputPackageInfo($data)
     {
         $tpl = $this->_initTemplate("package.info.tpl.html", 'Package Management :: '.$data['name'], 'pkglist');
-        
+
         $tpl->setVariable("Latest", $data['stable']);
         $tpl->setVariable("Installed", $data['installed']);
         $tpl->setVariable("Package", $data['name']);
@@ -474,65 +497,65 @@ class PEAR_Frontend_Web extends PEAR {
                 $_SERVER["PHP_SELF"], $data['name'], $images['install']);
             $opt_text[] = sprintf(
                 '<a href="%s?command=install&pkg=%s&redirect=info" class="green">Install package</a>',
-                $_SERVER["PHP_SELF"], $data['name'], $_SERVER["PHP_SELF"]);
-        } elseif ($compare == 1) {
+                $_SERVER["PHP_SELF"], $data['name']);
+        } else if ($compare == 1) {
             $opt_img[] = sprintf(
                 '<a href="%s?command=upgrade&pkg=%s&redirect=info">%s</a><br>',
                 $_SERVER["PHP_SELF"], $data['name'], $images['upgrade']);
             $opt_text[] = sprintf(
                 '<a href="%s?command=upgrade&pkg=%s&redirect=info" class="green">Upgrade package</a>',
-                $_SERVER["PHP_SELF"], $data['name'], $_SERVER["PHP_SELF"]);
+                $_SERVER["PHP_SELF"], $data['name']);
             if (!in_array($data['name'], $this->_no_delete_pkgs)) {
                 $opt_img[] = sprintf(
                     '<a href="%s?command=uninstall&pkg=%s&redirect=info" %s>%s</a>',
-                    $_SERVER["PHP_SELF"], $data['name'], 
+                    $_SERVER["PHP_SELF"], $data['name'],
                     'onClick="return confirm(\'Do you really want to uninstall \\\''.$data['name'].'\\\'?\')"',
                     $images['uninstall']);
                 $opt_text[] = sprintf(
                     '<a href="%s?command=uninstall&pkg=%s&redirect=info" class="green" %s>Uninstall package</a>',
-                    $_SERVER["PHP_SELF"], $data['name'], 
-                    'onClick="return confirm(\'Do you really want to uninstall \\\''.$data['name'].'\\\'?\')"',
-                    $_SERVER["PHP_SELF"]);
-           };
+                    $_SERVER["PHP_SELF"], $data['name'],
+                    'onClick="return confirm(\'Do you really want to uninstall \\\''.$data['name'].'\\\'?\')"');
+           }
         } else {
             if (!in_array($data['name'], $this->_no_delete_pkgs)) {
                 $opt_img[] = sprintf(
                     '<a href="%s?command=uninstall&pkg=%s&redirect=info" %s>%s</a>',
-                    $_SERVER["PHP_SELF"], $data['name'], 
+                    $_SERVER["PHP_SELF"], $data['name'],
                     'onClick="return confirm(\'Do you really want to uninstall \\\''.$data['name'].'\\\'?\')"',
                     $images['uninstall']);
                 $opt_text[] = sprintf(
                     '<a href="%s?command=uninstall&pkg=%s&redirect=info" class="green" %s>Uninstall package</a>',
-                    $_SERVER["PHP_SELF"], $data['name'], 
-                    'onClick="return confirm(\'Do you really want to uninstall \\\''.$data['name'].'\\\'?\')"',
-                    $_SERVER["PHP_SELF"]);
-           };
-        };
+                    $_SERVER["PHP_SELF"], $data['name'],
+                    'onClick="return confirm(\'Do you really want to uninstall \\\''.$data['name'].'\\\'?\')"');
+           }
+        }
 
-        if (isset($opt_img[0])) {
+        if (isset($opt_img[0]))
+        {
             $tpl->setVariable("Opt_Img_1", $opt_img[0]);
             $tpl->setVariable("Opt_Text_1", $opt_text[0]);
-        };
-        if (isset($opt_img[1])) {
+        }
+        if (isset($opt_img[1]))
+        {
             $tpl->setVariable("Opt_Img_2", $opt_img[1]);
             $tpl->setVariable("Opt_Text_2", $opt_text[1]);
-        };
-        
+        }
+
         $tpl->show();
         return true;
     }
-    
+
     /**
      * Output all kinds of data depending on the command which called this method
-     * 
+     *
      * @param mixed  $data    datastructure containing the information to display
      * @param string $command (optional) command from which this method was called
      *
      * @access public
-     * 
+     *
      * @return mixed highly depends on the command
      */
-     
+
     function outputData($data, $command = '_default')
     {
         switch ($command) {
@@ -543,10 +566,10 @@ class PEAR_Frontend_Web extends PEAR {
                     foreach($group as $row) {
                         $prompt[$row[1]]  = $row[0];
                         $default[$row[1]] = $row[2];
-                    };
-                };
+                    }
+                }
                 $title = 'Configuration :: '.$GLOBALS['pear_user_config'];
-                $GLOBALS['_PEAR_Frontend_Web_Config'] = 
+                $GLOBALS['_PEAR_Frontend_Web_Config'] =
                     $this->userDialog($command, $prompt, array(), $default, $title, 'config');
                 return true;
             case 'list-all':
@@ -560,9 +583,8 @@ class PEAR_Frontend_Web extends PEAR {
             case 'uninstall':
                 return true;
             case 'login':
-                if ($_SERVER["REQUEST_METHOD"] != "POST") {
+                if ($_SERVER["REQUEST_METHOD"] != "POST")
                     $this->_data[$command] = $data;
-                }
                 return true;
             case 'logout':
                 $this->displayError($data, 'Logout', 'logout');
@@ -572,75 +594,71 @@ class PEAR_Frontend_Web extends PEAR {
                 break;
             default:
                 echo $data;
-        };
-        
+        }
+
         return true;
     }
 
     /**
      * Display a formular and return the given input (yes. needs to requests)
-     * 
+     *
      * @param string $command  command from which this method was called
-     * @param array  $prompts  associative array. keys are the inputfieldnames 
+     * @param array  $prompts  associative array. keys are the inputfieldnames
      *                         and values are the description
-     * @param array  $types    (optional) array of inputfieldtypes (text, password, 
+     * @param array  $types    (optional) array of inputfieldtypes (text, password,
      *                         etc.) keys have to be the same like in $prompts
-     * @param array  $defaults (optional) array of defaultvalues. again keys have 
+     * @param array  $defaults (optional) array of defaultvalues. again keys have
      *                         to be the same like in $prompts
      * @param string $title    (optional) title of the page
      * @param string $icon     (optional) iconhandle for this page
      *
      * @access public
-     * 
+     *
      * @return array input sended by the user
      */
-     
+
     function userDialog($command, $prompts, $types = array(), $defaults = array(), $title = '', $icon = '')
     {
         // If this is an POST Request, we can return the userinput
         if (isset($_GET["command"]) && $_GET["command"]==$command
-            && $_SERVER["REQUEST_METHOD"] == "POST")
-        {
+            && $_SERVER["REQUEST_METHOD"] == "POST") {
             $result = array();
             foreach($prompts as $key => $prompt) {
                 $result[$key] = $_POST[$key];
             }
             return $result;
-        };
+        }
+
         // If this is an Answer GET Request , we can return the userinput
         if (isset($_GET["command"]) && $_GET["command"]==$command
-            && isset($_GET["userDialogResult"]) && $_GET["userDialogResult"]=='get')
-        {
+            && isset($_GET["userDialogResult"]) && $_GET["userDialogResult"]=='get') {
             $result = array();
             foreach($prompts as $key => $prompt) {
                 $result[$key] = $_GET[$key];
             }
             return $result;
-        };
-        
+        }
+
         // Assign title and icon to some commands
-        switch ($command)
-        {
-        case 'login':
+        if ($command == 'login') {
             $title = 'Login';
             $icon = 'login';
-            break;
-        };
-    
+        }
+
         $tpl = $this->_initTemplate("userDialog.tpl.html", $title, $icon);
         $tpl->setVariable("Command", $command);
         if (isset($this->_data[$command])) {
             $tpl->setVariable("Headline", nl2br($this->_data[$command]));
         }
-    
+
         if (is_array($prompts)) {
             $maxlen = 0;
             foreach($prompts as $key => $prompt) {
                 if (strlen($prompt) > $maxlen) {
                     $maxlen = strlen($prompt);
-                };
-            };
-            
+                }
+            }
+
             foreach($prompts as $key => $prompt) {
                 $tpl->setCurrentBlock("InputField");
                 $type    = (isset($types[$key])    ? $types[$key]    : 'text');
@@ -653,23 +671,22 @@ class PEAR_Frontend_Web extends PEAR {
                     $tpl->setVariable("width", 'width="275"');
                 }
                 $tpl->parseCurrentBlock();
-            };
-        };
-    
+            }
+        }
         $tpl->show();
         exit;
     }
-    
+
     /**
      * Write message to log
-     * 
+     *
      * @param string $text message which has to written to log
      *
      * @access public
-     * 
+     *
      * @return boolean true
      */
-     
+
     function log($text)
     {
         $GLOBALS['_PEAR_Frontend_Web_log'] .= $text."\n";
@@ -678,15 +695,15 @@ class PEAR_Frontend_Web extends PEAR {
 
     /**
      * Sends the required file along with Headers and exits the script
-     * 
+     *
      * @param string $handle handle of the requested file
      * @param string $group  group of the requested file
      *
      * @access public
-     * 
+     *
      * @return null nothing, because script exits
      */
-     
+
     function outputFrontendFile($handle, $group)
     {
         $handles = array(
@@ -694,7 +711,7 @@ class PEAR_Frontend_Web extends PEAR {
                 "style" => "style.css",
                 "dhtml" => "dhtml.css",
                 ),
-            "js" => array(    
+            "js" => array(
                 "dhtml" => "dhtml.js",
                 "nodhtml" => "nodhtml.js",
                 ),
@@ -773,27 +790,112 @@ class PEAR_Frontend_Web extends PEAR {
                     ),
                 ),
             );
-            
+
         $file = $handles[$group][$handle];
         switch ($group) {
             case 'css':
-                Header("Content-Type: text/css");
+                header("Content-Type: text/css");
                 readfile(dirname(__FILE__).'/Web/'.$file);
                 exit;
             case 'image':
                 $filename = dirname(__FILE__).'/Web/'.$file['file'];
-                Header("Content-Type: image/".$file['type']);
-                Header("Expires: ".gmdate("D, d M Y H:i:s \G\M\T", time() + 60*60*24*100));
-                Header("Last-Modified: ".gmdate("D, d M Y H:i:s \G\M\T", filemtime($filename)));
-                Header("Cache-Control: public");
-                Header("Pragma: ");
+                header("Content-Type: image/".$file['type']);
+                header("Expires: ".gmdate("D, d M Y H:i:s \G\M\T", time() + 60*60*24*100));
+                header("Last-Modified: ".gmdate("D, d M Y H:i:s \G\M\T", filemtime($filename)));
+                header("Cache-Control: public");
+                header("Pragma: ");
                 readfile($filename);
                 exit;
             case 'js':
-                Header("Content-Type: text/javascript");
+                header("Content-Type: text/javascript");
                 readfile(dirname(__FILE__).'/Web/'.$file);
                 exit;
-        };
+        }
+    }
+
+    /*
+     * From DB::Pager. Removing Pager dependency.
+     * @private
+     */
+    function __getData($from, $limit, $numrows, $maxpages = false)
+    {
+        if (empty($numrows) || ($numrows < 0)) {
+            return null;
+        }
+        $from = (empty($from)) ? 0 : $from;
+
+        if ($limit <= 0) {
+            return false;
+        }
+
+        // Total number of pages
+        $pages = ceil($numrows/$limit);
+        $data['numpages'] = $pages;
+
+        // first & last page
+        $data['firstpage'] = 1;
+        $data['lastpage']  = $pages;
+
+        // Build pages array
+        $data['pages'] = array();
+        for ($i=1; $i <= $pages; $i++) {
+            $offset = $limit * ($i-1);
+            $data['pages'][$i] = $offset;
+            // $from must point to one page
+            if ($from == $offset) {
+                // The current page we are
+                $data['current'] = $i;
+            }
+        }
+        if (!isset($data['current'])) {
+            return PEAR::raiseError (null, 'wrong "from" param', null,
+                                     null, null, 'DB_Error', true);
+        }
+              // Limit number of pages (Goole algorithm)
+        if ($maxpages) {
+            $radio = floor($maxpages/2);
+            $minpage = $data['current'] - $radio;
+            if ($minpage < 1) {
+                $minpage = 1;
+            }
+            $maxpage = $data['current'] + $radio - 1;
+            if ($maxpage > $data['numpages']) {
+                $maxpage = $data['numpages'];
+            }
+            foreach (range($minpage, $maxpage) as $page) {
+                $tmp[$page] = $data['pages'][$page];
+            }
+            $data['pages'] = $tmp;
+            $data['maxpages'] = $maxpages;
+        } else {
+            $data['maxpages'] = null;
+        }
+
+        // Prev link
+        $prev = $from - $limit;
+        $data['prev'] = ($prev >= 0) ? $prev : null;
+
+        // Next link
+        $next = $from + $limit;
+        $data['next'] = ($next < $numrows) ? $next : null;
+
+        // Results remaining in next page & Last row to fetch
+        if ($data['current'] == $pages) {
+            $data['remain'] = 0;
+            $data['to'] = $numrows;
+        } else {
+            if ($data['current'] == ($pages - 1)) {
+                $data['remain'] = $numrows - ($limit*($pages-1));
+            } else {
+                $data['remain'] = $limit;
+            }
+            $data['to'] = $data['current'] * $limit;
+        }
+        $data['numrows'] = $numrows;
+        $data['from']    = $from + 1;
+        $data['limit']   = $limit;
+
+        return $data;
     }
 
     // }}}
