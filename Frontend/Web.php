@@ -449,7 +449,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
         foreach($data['data'] as $category => $packages) {
             foreach($packages as $row) {
                 list($pkgName, $pkgVersionLatest, $pkgVersionInstalled, $pkgSummary) = $row;
-                $parsed = $reg->parsePackageName($pkgName);
+                $parsed = $reg->parsePackageName($pkgName, $this->config->get('default_channel'));
                 $pkgChannel = $parsed['channel'];
                 $pkgName = $parsed['package'];
                 $tpl->setCurrentBlock("Row");
