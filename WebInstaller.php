@@ -23,8 +23,6 @@
 
     if (!isset($_SESSION['_PEAR_Frontend_Web_js'])) {
         $_SESSION['_PEAR_Frontend_Web_js'] = false;
-        printf('<script language="javascript"><!-- location.href="%s?command=list-all&enableJS=1"; --></script>',
-            $_SERVER['PHP_SELF']);
     };
     if (isset($_GET['enableJS']) && $_GET['enableJS'] == 1) {
         $_SESSION['_PEAR_Frontend_Web_js'] = true;
@@ -114,7 +112,17 @@
             
             // success
             if (USE_DHTML_PROGRESS && isset($_GET['dhtml'])) {
-                $js   = sprintf('<script language="javascript"> newestVersion(%s); </script>', $_GET["pkg"]);
+                echo '<script language="javascript"><!--';
+                if ($_GET["command"] == "uninstall") {
+                    printf(' parent.deleteVersion(\'%s\'); ',  $_GET["pkg"]);
+                    printf(' parent.displayInstall(\'%s\'); ', $_GET["pkg"]);
+                    printf(' parent.hideDelete(\'%s\'); ',     $_GET["pkg"]);
+                } else {
+                    printf(' parent.newestVersion(\'%s\'); ',  $_GET["pkg"]);
+                    printf(' parent.hideInstall(\'%s\'); ',    $_GET["pkg"]);
+                    printf(' parent.displayDelete(\'%s\'); ',  $_GET["pkg"]);
+                };
+                echo '--></script>';
                 $html = sprintf('<img src="%s?img=install_ok" border="0">', $_SERVER['PHP_SELF']);
                 echo $js.$html;
                 exit;
@@ -173,7 +181,8 @@
         
             exit;
         case 'show-last-error':
-            $ui->displayError($_SESSION['_PEAR_Frontend_Web_LastError']);
+            $GLOBALS['_PEAR_Frontend_Web_log'] = $_SESSION['_PEAR_Frontend_Web_LastError_log'];
+            $ui->displayError($_SESSION['_PEAR_Frontend_Web_LastError'], 'Error', 'error', true);
             exit;
         default:
             $command = $_GET["command"];
