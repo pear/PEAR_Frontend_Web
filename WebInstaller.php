@@ -112,7 +112,7 @@
             
             // success
             if (USE_DHTML_PROGRESS && isset($_GET['dhtml'])) {
-                echo '<script language="javascript"><!--';
+                echo '<script language="javascript">';
                 if ($_GET["command"] == "uninstall") {
                     printf(' parent.deleteVersion(\'%s\'); ',  $_GET["pkg"]);
                     printf(' parent.displayInstall(\'%s\'); ', $_GET["pkg"]);
@@ -122,7 +122,7 @@
                     printf(' parent.hideInstall(\'%s\'); ',    $_GET["pkg"]);
                     printf(' parent.displayDelete(\'%s\'); ',  $_GET["pkg"]);
                 };
-                echo '--></script>';
+                echo '</script>';
                 $html = sprintf('<img src="%s?img=install_ok" border="0">', $_SERVER['PHP_SELF']);
                 echo $js.$html;
                 exit;

@@ -371,6 +371,57 @@ class PEAR_Frontend_Web extends PEAR
         return true;
     }
     
+    function _getPackageDeps($deps)
+    {
+        if (count($deps) == 0) {
+            return "<i>No dependencies registered.</i>\n";
+        } else {
+            $lastversion = '';
+            $rel_trans = array(
+                'lt' => 'older than %s',
+                'le' => 'version %s or older',
+                'eq' => 'version %s',
+                'ne' => 'any version but %s',
+                'gt' => 'newer than %s',
+                'ge' => '%s or newer',
+                );
+            $dep_type_desc = array(
+                'pkg'    => 'PEAR Package',
+                'ext'    => 'PHP Extension',
+                'php'    => 'PHP Version',
+                'prog'   => 'Program',
+                'ldlib'  => 'Development Library',
+                'rtlib'  => 'Runtime Library',
+                'os'     => 'Operating System',
+                'websrv' => 'Web Server',
+                'sapi'   => 'SAPI Backend',
+                );
+            $result = "      <dl>\n";
+            foreach($deps as $row) {
+                
+                // Print link if it's a PEAR package
+                if ($row['type'] == 'pkg') {
+                    $row['name'] = sprintf('<a class="green" href="%s?command=remote-info&pkg=%s">%s</a>', 
+                        $_SERVER['PHP_SELF'], $row['name'], $row['name']);
+                }
+        
+                if (isset($rel_trans[$row['relation']])) {
+                    $rel = sprintf($rel_trans[$row['relation']], $row['version']);
+                    $result .= sprintf("%s: %s %s",
+                           $dep_type_desc[$row['type']], $row['name'], $rel);
+                } else {
+                    $result .= sprintf("%s: %s", $dep_type_desc[$row['type']], $row['name']);
+                }
+                $lastversion = $row['version'];
+                $result .= '<br>';
+            }
+            if ($lastversion) {
+            }
+            $result .= "      </dl>\n";
+        }
+        return $result;
+    }
+    
     /**
      * Output details of one package
      * 
@@ -392,6 +443,8 @@ class PEAR_Frontend_Web extends PEAR
         $tpl->setVariable("Category", $data['category']);
         $tpl->setVariable("Summary", nl2br($data['summary']));
         $tpl->setVariable("Description", nl2br($data['description']));
+        $deps = $data['releases'][$data['stable']]['deps'];
+        $tpl->setVariable("Dependencies", $this->_getPackageDeps($deps));
 
         $compare = version_compare($data['stable'], $data['installed']);
         $opt_img = array();
