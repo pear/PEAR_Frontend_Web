@@ -289,28 +289,28 @@ class PEAR_Frontend_Web extends PEAR
         $to = $paging_data['next'];
 
         // Generate Linkinformation to redirect to _this_ page after performing an action
-        $link_str = '<a href="?command=%s&from=%s" class="paging_link">%s</a>';
-        $links['current'] = '&from=' . $paging_data['from'];
+        $link_str = '<a href="?command=%s&from=%s&mode=%s" class="paging_link">%s</a>';
+
+
 
         $command = isset($_GET['command']) ? $_GET['command']:'list-all';
+        $mode = isset($_GET['mode'])?$_GET['mode']:'';
+
+
 
         if ($paging_data['from']>1) {
-            $links['back'] = sprintf($link_str, $command, $paging_data['prev'], '&lt;&lt;');
+            $links['back'] = sprintf($link_str, $command, $paging_data['prev'], $mode, '&lt;&lt;');
         } else {
             $links['back'] = '';
         }
 
         if ( $paging_data['next']) {
-            $links['next'] = sprintf($link_str, $command, $paging_data['next'], '&gt;&gt;');
+            $links['next'] = sprintf($link_str, $command, $paging_data['next'], $mode, '&gt;&gt;');
         } else {
             $links['next'] = '';
         }
 
-        if (isset($_GET['mode'])) {
-            $links['current'] .= '&mode='.$_GET['mode'];
-        } else {
-            $_GET['mode'] = '';
-        }
+        $links['current'] = '&from=' . $paging_data['from']  . '&mode='.$_GET['mode'];
 
         if (isset($_GET['command']) && $_GET['command'] == 'search') {
             $links['current'] .= '&redirect=search&0='.$_REQUEST[0].'&1='.$_REQUEST[1];
