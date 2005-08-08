@@ -965,8 +965,31 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                     $answers = array();
                 }
                 if (isset($group['param'])) {
-                    $answers = array_merge($answers,
-                        $this->confirmDialog($group['param'], $pkg->getPackage()));
+                    if (method_exists($script, 'postProcessPrompts')) {
+                        $prompts = $script->postProcessPrompts($group['param'], $group['name']);
+                        if (!is_array($prompts) || count($prompts) != count($group['param'])) {
+                            $this->outputData('postinstall', 'Error: post-install script did not ' .
+                                'return proper post-processed prompts');
+                            $prompts = $group['param'];
+                        } else {
+                            foreach ($prompts as $i => $var) {
+                                if (!is_array($var) || !isset($var['prompt']) ||
+                                      !isset($var['name']) ||
+                                      ($var['name'] != $group['param'][$i]['name']) ||
+                                      ($var['type'] != $group['param'][$i]['type'])) {
+                                    $this->outputData('postinstall', 'Error: post-install script ' .
+                                        'modified the variables or prompts, severe security risk. ' .
+                                        'Will instead use the defaults from the package.xml');
+                                    $prompts = $group['param'];
+                                }
+                            }
+                        }
+                        $answers = array_merge($answers,
+                            $this->confirmDialog($prompts, $pkg->getPackage()));
+                    } else {
+                        $answers = array_merge($answers,
+                            $this->confirmDialog($group['param'], $pkg->getPackage()));
+                    }
                 }
                 if ($answers) {
                     array_unshift($_SESSION['_PEAR_Frontend_Web_ScriptCompletedPhases'],
