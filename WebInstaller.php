@@ -121,6 +121,14 @@ if (!file_exists($pear_user_config)) {
     }
 }
 
+$cache_dir = $config->get('cache_dir');
+if (!is_dir($cache_dir)) {
+    include_once 'System.php';
+    if (!System::mkDir('-p', $cache_dir)) {
+        PEAR::raiseError('Directory "'.$cache_dir.'" does not exist and cannot be created. Please check your installation');
+    }
+}
+
 // Handle some diffrent Commands
 if (isset($_GET["command"])) {
     switch ($_GET["command"]) {
