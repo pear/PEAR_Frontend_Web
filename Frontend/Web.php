@@ -280,7 +280,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
 
     // }}}
     // {{{ _outputListChannels()
-    
+
     function _outputListChannels($data, $title = 'Manage Installer Channels',
                             $img = 'pkglist', $useDHTML = false, $paging = true)
     {
@@ -582,6 +582,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
 
     function _outputPackageInfo($data)
     {
+        include_once "PEAR/Downloader.php";
         $tpl = $this->_initTemplate("package.info.tpl.html", 'Package Management :: '.$data['name'], 'pkglist');
 
         $tpl->setVariable("PreferredMirror", $this->config->get('preferred_mirror'));
@@ -888,7 +889,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
     /**
      * @param array $xml contents of postinstallscript tag
      * @param object $script post-installation script
-     * @param PEAR_PackageFile_v1|PEAR_PackageFile_v2 $pkg 
+     * @param PEAR_PackageFile_v1|PEAR_PackageFile_v2 $pkg
      * @param string $contents contents of the install script
      */
     function runInstallScript($xml, &$script, &$pkg)
