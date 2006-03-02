@@ -33,10 +33,11 @@
     </maintainer>
   </maintainers>
   <release>
-    <version>0.5.0</version>
+    <version>0.5.1</version>
     <date>2005-03-02</date>
-    <notes>Major features addition: channel support
-Also, support for post-install scripts on install, and package.xml 2.0
+    <notes>- #6995 missing require_once in Web.php
+- #6993 prevents large response time, create the cache_dir
+  if it does not exist
 </notes>
     <state>alpha</state>
     <deps>
@@ -109,6 +110,13 @@ Also, support for post-install scripts on install, and package.xml 2.0
     </filelist>
   </release>
   <changelog>
+    <release>
+    <version>0.5.0</version>
+    <date>2005-03-02</date>
+    <notes>Major features addition: channel support
+Also, support for post-install scripts on install, and package.xml 2.0
+</notes>
+    </release>
     <release>
     <version>0.3</version>
     <date>2003-05-28</date>
