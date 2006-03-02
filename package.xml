@@ -34,11 +34,11 @@
   </maintainers>
   <release>
     <version>0.5.0</version>
-    <date>2004-01-22</date>
+    <date>2005-03-02</date>
     <notes>Major features addition: channel support
 Also, support for post-install scripts on install, and package.xml 2.0
 </notes>
-    <state>beta</state>
+    <state>alpha</state>
     <deps>
       <dep type="pkg" rel="has">Net_UserAgent_Detect</dep>
       <dep type="pkg" rel="has">HTML_Template_IT</dep>
