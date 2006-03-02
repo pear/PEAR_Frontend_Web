@@ -99,7 +99,6 @@ if (!file_exists($pear_user_config)) {
                                 'Console_Getopt',
                                 'HTML_Template_IT',
                                 'Net_UserAgent_Detect',
-                                'Pager',
                                 'PEAR',
                                 'PEAR_Frontend_Web',
                                 'XML_RPC'
