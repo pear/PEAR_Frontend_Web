@@ -67,7 +67,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
         'Console_Getopt',
         'XML_RPC',
         'Net_UserAgent_Detect',
-        'Pager');
+    );
 
     var $_no_delete_chans = array(
         'pear.php.net',
