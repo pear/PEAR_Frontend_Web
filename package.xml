@@ -34,7 +34,7 @@
   </maintainers>
   <release>
     <version>0.5.1</version>
-    <date>2005-04-18</date>
+    <date>2006-04-18</date>
     <notes>- #6995 missing require_once in Web.php
 - #6993 prevents large response time, create the cache_dir
   if it does not exist
@@ -45,7 +45,7 @@
     <deps>
       <dep type="pkg" rel="has">Net_UserAgent_Detect</dep>
       <dep type="pkg" rel="has">HTML_Template_IT</dep>
-      <dep type="pkg" rel="ge" version="1.4.0a1">PEAR</dep>
+      <dep type="pkg" rel="ge" version="1.4.6">PEAR</dep>
     </deps>
     <filelist>
       <dir name="/" baseinstalldir="PEAR">
