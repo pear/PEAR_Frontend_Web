@@ -1,142 +1,199 @@
-<?xml version="1.0" encoding="ISO-8859-1" ?>
-<!DOCTYPE package SYSTEM "http://pear.php.net/dtd/package-1.0">
-<package version="1.0">
+<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://pear.php.net/dtd/package-2.0" xmlns:tasks="http://pear.php.net/dtd/tasks-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" packagerversion="1.4.9" version="2.0" xsi:schemaLocation="http://pear.php.net/dtd/tasks-1.0 http://pear.php.net/dtd/tasks-1.0.xsd http://pear.php.net/dtd/package-2.0 http://pear.php.net/dtd/package-2.0.xsd">
   <name>PEAR_Frontend_Web</name>
+  <channel>pear.php.net</channel>
   <summary>HTML (Web) PEAR Installer</summary>
-  <description>Web Interface to the PEAR Installer
-</description>
-  <license>PHP License</license>
-  <maintainers>
-    <maintainer>
-      <user>dickmann</user>
-      <role>lead</role>
-      <name>Christian Dickmann</name>
-      <email>dickmann@php.net</email>
-    </maintainer>
-    <maintainer>
-      <user>pajoye</user>
-      <role>lead</role>
-      <name>Pierre-Alain Joye</name>
-      <email>pajoye@pearfr.org</email>
-    </maintainer>
-    <maintainer>
-      <user>cellog</user>
-      <role>developer</role>
-      <name>Gregory Beaver</name>
-      <email>cellog@php.net</email>
-    </maintainer>
-    <maintainer>
-      <user>ssb</user>
-      <role>helper</role>
-      <name>Stig Bakken</name>
-      <email>stig@php.net</email>
-    </maintainer>
-  </maintainers>
-  <release>
-    <version>0.5.1</version>
-    <date>2006-04-18</date>
-    <notes>- #6995 missing require_once in Web.php
+  <description>Web Interface to the PEAR Installer</description>
+  <lead>
+    <name>Pierre-Alain Joye</name>
+    <user>pajoye</user>
+    <email>pajoye@pearfr.org</email>
+    <active>yes</active>
+  </lead>
+  <lead>
+    <name>Christian Dickmann</name>
+    <user>dickmann</user>
+    <email>dickmann@php.net</email>
+    <active>no</active>
+  </lead>
+  <developer>
+    <name>Gregory Beaver</name>
+    <user>cellog</user>
+    <email>cellog@php.net</email>
+    <active>yes</active>
+  </developer>
+  <helper>
+    <name>Stig Bakken</name>
+    <user>ssb</user>
+    <email>stig@php.net</email>
+    <active>no</active>
+  </helper>
+  <date>2006-04-18</date>
+  <time>01:07:41</time>
+  <version>
+    <release>0.5.2</release>
+    <api>0.5.2</api>
+  </version>
+  <stability>
+    <release>alpha</release>
+    <api>alpha</api>
+  </stability>
+  <license uri="http://www.php.net/license">PHP License</license>
+  <notes>- </notes>
+  <contents>
+    <dir name="/">
+      <dir name="docs">
+        <file baseinstalldir="PEAR" name="example.php" role="doc">
+          <tasks:replace from="@php_bin@" to="php_bin" type="pear-config"/>
+          <tasks:replace from="@bin_dir@" to="bin_dir" type="pear-config"/>
+          <tasks:replace from="@php_dir@" to="php_dir" type="pear-config"/>
+          <tasks:replace from="@pear_version@" to="version" type="package-info"/>
+          <tasks:replace from="@include_path@" to="php_dir" type="pear-config"/>
+        </file>
+      </dir>
+<!-- /docs -->
+      <dir name="Frontend">
+        <dir name="Web">
+          <file baseinstalldir="PEAR" name="bottom.inc.tpl.html" role="php"/>
+          <file baseinstalldir="PEAR" name="category.jpg" role="php"/>
+          <file baseinstalldir="PEAR" name="channel.info.tpl.html" role="php"/>
+          <file baseinstalldir="PEAR" name="channel.list.tpl.html" role="php"/>
+          <file baseinstalldir="PEAR" name="config.gif" role="php"/>
+          <file baseinstalldir="PEAR" name="dhtml.css" role="php"/>
+          <file baseinstalldir="PEAR" name="dhtml.js" role="php"/>
+          <file baseinstalldir="PEAR" name="download.gif" role="php"/>
+          <file baseinstalldir="PEAR" name="error.gif" role="php"/>
+          <file baseinstalldir="PEAR" name="error.popup.tpl.html" role="php"/>
+          <file baseinstalldir="PEAR" name="error.tpl.html" role="php"/>
+          <file baseinstalldir="PEAR" name="footer.inc.tpl.html" role="php"/>
+          <file baseinstalldir="PEAR" name="header.inc.tpl.html" role="php"/>
+          <file baseinstalldir="PEAR" name="info.gif" role="php"/>
+          <file baseinstalldir="PEAR" name="info.tpl.html" role="php"/>
+          <file baseinstalldir="PEAR" name="infoplus.gif" role="php"/>
+          <file baseinstalldir="PEAR" name="install.gif" role="php"/>
+          <file baseinstalldir="PEAR" name="install_fail.gif" role="php"/>
+          <file baseinstalldir="PEAR" name="install_ok.gif" role="php"/>
+          <file baseinstalldir="PEAR" name="install_wait.gif" role="php"/>
+          <file baseinstalldir="PEAR" name="login.gif" role="php"/>
+          <file baseinstalldir="PEAR" name="logout.gif" role="php"/>
+          <file baseinstalldir="PEAR" name="manual.gif" role="php"/>
+          <file baseinstalldir="PEAR" name="nodhtml.js" role="php"/>
+          <file baseinstalldir="PEAR" name="package.info.tpl.html" role="php"/>
+          <file baseinstalldir="PEAR" name="package.jpg" role="php"/>
+          <file baseinstalldir="PEAR" name="package.list.tpl.html" role="php"/>
+          <file baseinstalldir="PEAR" name="pearsmall.gif" role="php"/>
+          <file baseinstalldir="PEAR" name="pkglist.png" role="php"/>
+          <file baseinstalldir="PEAR" name="pkgsearch.png" role="php"/>
+          <file baseinstalldir="PEAR" name="start.tpl.html" role="php"/>
+          <file baseinstalldir="PEAR" name="style.css" role="php"/>
+          <file baseinstalldir="PEAR" name="top.inc.tpl.html" role="php"/>
+          <file baseinstalldir="PEAR" name="trash.gif" role="php"/>
+          <file baseinstalldir="PEAR" name="userDialog.tpl.html" role="php"/>
+        </dir>
+<!-- /Frontend/Web -->
+        <file baseinstalldir="PEAR" name="Web.php" role="php"/>
+      </dir>
+<!-- /Frontend -->
+      <file baseinstalldir="PEAR" name="WebInstaller.php" role="php"/>
+    </dir>
+<!-- / -->
+  </contents>
+  <dependencies>
+    <required>
+      <php>
+        <min>4.0.0</min>
+      </php>
+      <pearinstaller>
+        <min>1.4.0b1</min>
+      </pearinstaller>
+      <package>
+        <name>Net_UserAgent_Detect</name>
+        <channel>pear.php.net</channel>
+      </package>
+      <package>
+        <name>HTML_Template_IT</name>
+        <channel>pear.php.net</channel>
+      </package>
+      <package>
+        <name>PEAR</name>
+        <channel>pear.php.net</channel>
+        <min>1.4.6</min>
+      </package>
+    </required>
+  </dependencies>
+  <phprelease/>
+  <changelog>
+    <release>
+      <date>2006-04-18</date>
+      <time>01:07:41</time>
+      <version>
+        <release>0.5.2</release>
+        <api>0.5.2</api>
+      </version>
+      <stability>
+        <release>alpha</release>
+        <api>alpha</api>
+      </stability>
+      <license uri="http://www.php.net/license">PHP License</license>
+      <notes>- #6995 missing require_once in Web.php
 - #6993 prevents large response time, create the cache_dir
   if it does not exist
 - #7319, bad display of errors when the install cmd failed
 - remove Pager dependency
-</notes>
-    <state>alpha</state>
-    <deps>
-      <dep type="pkg" rel="has">Net_UserAgent_Detect</dep>
-      <dep type="pkg" rel="has">HTML_Template_IT</dep>
-      <dep type="pkg" rel="ge" version="1.4.6">PEAR</dep>
-    </deps>
-    <filelist>
-      <dir name="/" baseinstalldir="PEAR">
-      	<file role="php">WebInstaller.php</file>
-      	<dir name="Frontend">
-          <file role="php">Web.php</file>
-          <dir name="Web">
-            <!-- Images -->
-            <file role="php">config.gif</file>
-            <file role="php">download.gif</file>
-            <file role="php">error.gif</file>
-            <file role="php">info.gif</file>
-            <file role="php">infoplus.gif</file>
-            <file role="php">install.gif</file>
-            <file role="php">install_fail.gif</file>
-            <file role="php">install_ok.gif</file>
-            <file role="php">install_wait.gif</file>
-            <file role="php">login.gif</file>
-            <file role="php">logout.gif</file>
-            <file role="php">manual.gif</file>
-            <file role="php">pearsmall.gif</file>
-            <file role="php">trash.gif</file>
-
-            <file role="php">package.jpg</file>
-            <file role="php">category.jpg</file>
-
-            <file role="php">pkglist.png</file>
-            <file role="php">pkgsearch.png</file>
-
-            <!-- CSS -->
-            <file role="php">style.css</file>
-            <file role="php">dhtml.css</file>
-
-            <!-- JS -->
-            <file role="php">dhtml.js</file>
-            <file role="php">nodhtml.js</file>
-
-            <!-- TEMPLATES -->
-            <file role="php">bottom.inc.tpl.html</file>
-            <file role="php">channel.info.tpl.html</file>
-            <file role="php">channel.list.tpl.html</file>
-            <file role="php">error.popup.tpl.html</file>
-            <file role="php">error.tpl.html</file>
-            <file role="php">footer.inc.tpl.html</file>
-            <file role="php">header.inc.tpl.html</file>
-            <file role="php">info.tpl.html</file>
-            <file role="php">package.info.tpl.html</file>
-            <file role="php">package.list.tpl.html</file>
-            <file role="php">start.tpl.html</file>
-            <file role="php">top.inc.tpl.html</file>
-            <file role="php">userDialog.tpl.html</file>
-          </dir>
-        </dir>
-        <dir name="docs" role="doc">
-            <file name="example.php">
-              <replace from="@php_bin@" to="php_bin" type="pear-config"/>
-              <replace from="@bin_dir@" to="bin_dir" type="pear-config"/>
-              <replace from="@php_dir@" to="php_dir" type="pear-config"/>
-              <replace from="@pear_version@" to="version" type="package-info"/>
-              <replace from="@include_path@" to="php_dir" type="pear-config"/>
-            </file>
-        </dir>
-      </dir>
-    </filelist>
-  </release>
-  <changelog>
-    <release>
-    <version>0.5.0</version>
-    <date>2005-03-02</date>
-    <notes>Major features addition: channel support
-Also, support for post-install scripts on install, and package.xml 2.0
-</notes>
+ </notes>
     </release>
     <release>
-    <version>0.3</version>
-    <date>2003-05-28</date>
-    <notes>Bugfixes release:
+      <version>
+        <release>0.5.0</release>
+        <api>0.5.0</api>
+      </version>
+      <stability>
+        <release>stable</release>
+        <api>stable</api>
+      </stability>
+      <date>2005-03-02</date>
+      <license uri="http://www.php.net/license">PHP License</license>
+      <notes>Major features addition: channel support
+Also, support for post-install scripts on install, and package.xml 2.0
+
+   </notes>
+    </release>
+    <release>
+      <version>
+        <release>0.3</release>
+        <api>0.3</api>
+      </version>
+      <stability>
+        <release>stable</release>
+        <api>stable</api>
+      </stability>
+      <date>2003-05-28</date>
+      <license uri="http://www.php.net/license">PHP License</license>
+      <notes>Bugfixes release:
 - Fix a bug while using both CLI and Web installer
   (Invalid characters, bug #23516)
 - Installs correctly the CLI tools
-</notes>
+
+   </notes>
     </release>
     <release>
-    <version>0.4</version>
-    <date>2003-06-07</date>
-    <notes>Bugfixes release:
+      <version>
+        <release>0.4</release>
+        <api>0.4</api>
+      </version>
+      <stability>
+        <release>stable</release>
+        <api>stable</api>
+      </stability>
+      <date>2003-06-07</date>
+      <license uri="http://www.php.net/license">PHP License</license>
+      <notes>Bugfixes release:
 - Remove Pager dep
 - Should work well on non apache system (ie IIS)
 - The 'installed packages' is now the entry page
   (no more remote connection during startup)
-</notes>
+
+   </notes>
     </release>
   </changelog>
 </package>
