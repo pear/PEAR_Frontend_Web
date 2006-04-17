@@ -785,7 +785,10 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                     $this->_savedOutput[] = $_SESSION['_PEAR_Frontend_Web_SavedOutput'][] = $data;
                     break;
                 }
-                echo $data;
+                /* TODO: figure out a sane way to manage the inconsisten new error msg */
+                if (!is_array($data)) {
+		            echo $data;
+                }
         }
 
         return true;
