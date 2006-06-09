@@ -38,6 +38,12 @@ if ($env=getenv('PHP_PEAR_PHP_BIN')) {
 } else {
     putenv('PHP_PEAR_PHP_BIN=@php_bin@');
 }
+
+// Default for sig_bin
+putenv('PHP_PEAR_SIG_BIN=""');
+// Default for sig_keydir
+putenv('PHP_PEAR_SIG_KEYDIR=""');
+
 $env=getenv('PHP_PEAR_INSTALL_DIR');
 require_once($env.'/PEAR.php');
 if (OS_WINDOWS) {
