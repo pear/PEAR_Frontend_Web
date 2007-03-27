@@ -263,12 +263,22 @@ if (isset($_GET["command"])) {
 
             exit;
         case 'update-channels':
-            $command = $_GET["command"];
-            $params = array();
+            // update every channel manually,
+            // fixes bug PEAR/#10275 (XML_RPC dependency)
+            // will be fixed in next pear release
+            $reg = &$config->getRegistry();
+            $channels = $reg->getChannels();
+            $command = 'channel-update';
             $cmd = PEAR_Command::factory($command, $config);
-            $ui->startSession();
-            $ok = $cmd->run($command, $opts, $params);
 
+            $success = true;
+            $ui->startSession();
+            foreach ($channels as $channel) {
+                if ($channel->getName() != '__uri') {
+                    $success &= $cmd->run($command, $opts,
+                                          array($channel->getName()));
+                }
+            }
             $ui->finishOutput('Update Channel List', array('link' =>
                 $_SERVER['PHP_SELF'] . '?command=list-channels',
                 'text' => 'Click here to list all channels'));

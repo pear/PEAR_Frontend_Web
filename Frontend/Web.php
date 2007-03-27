@@ -781,6 +781,9 @@ class PEAR_Frontend_Web extends PEAR_Frontend
             case 'update-channels':
                 $this->_savedOutput[] = $data;
                 break;
+            case 'channel-update':
+                $this->_savedOutput[] = $data;
+                break;
             default:
                 if ($this->_installScript) {
                     $this->_savedOutput[] = $_SESSION['_PEAR_Frontend_Web_SavedOutput'][] = $data;
@@ -788,7 +791,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                 }
                 /* TODO: figure out a sane way to manage the inconsisten new error msg */
                 if (!is_array($data)) {
-		            echo $data;
+		            echo $data."<br />\n";
                 }
         }
 
