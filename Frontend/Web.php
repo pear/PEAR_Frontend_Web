@@ -788,6 +788,9 @@ class PEAR_Frontend_Web extends PEAR_Frontend
             case 'channel-update':
                 $this->_savedOutput[] = $data;
                 break;
+            case 'config-set':
+                $this->_savedOutput[] = $data;
+                break;
             default:
                 if ($this->_installScript) {
                     $this->_savedOutput[] = $_SESSION['_PEAR_Frontend_Web_SavedOutput'][] = $data;

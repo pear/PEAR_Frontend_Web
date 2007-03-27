@@ -207,18 +207,27 @@ if (isset($_GET["command"])) {
 
             exit;
         case 'config-show':
+            $params = array();
             $command = $_GET["command"];
             $cmd = PEAR_Command::factory($command, $config);
             $res = $cmd->run($command, $opts, $params);
+
+            // if this code is reached, the config vars are submitted
+            $ui->startSession();
+            $set = PEAR_Command::factory('config-set', $config);
             foreach($GLOBALS['_PEAR_Frontend_Web_Config'] as $var => $value) {
-                $command = 'config-set';
-                $params = array($var, $value);
-                $cmd = PEAR_Command::factory($command, $config);
-                $res = $cmd->run($command, $opts, $params);
+                if ($var == 'Filename') {
+                    continue; // I hate obscure bugs
+                }
+                if ($value != $config->get($var)) {
+                    $res = $set->run('config-set', $opts, array($var, $value));
+                    $config->set($var, $value);
+                }
             }
 
-            $URL .= '?command=config-show';
-            header("Location: ".$URL);
+            $ui->finishOutput('Save Config Changes', array('link' =>
+                $_SERVER['PHP_SELF'] . '?command='.$command,
+                'text' => '<p>Configuration saved succesfully ! Back to config.</p>'));
             exit;
         case 'list-all':
             $command = $_GET["command"];
