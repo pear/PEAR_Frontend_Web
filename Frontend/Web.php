@@ -61,12 +61,13 @@ class PEAR_Frontend_Web extends PEAR_Frontend
     var $config;
 
     var $_no_delete_pkgs = array(
-        'PEAR',
-        'PEAR_Frontend_Web',
         'Archive_Tar',
         'Console_Getopt',
-        'XML_RPC',
+        'HTML_Template_IT',
         'Net_UserAgent_Detect',
+        'PEAR',
+        'PEAR_Frontend_Web',
+        'Structures_Graph',
     );
 
     var $_no_delete_chans = array(

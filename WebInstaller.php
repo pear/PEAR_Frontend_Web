@@ -101,7 +101,7 @@ if (!file_exists($pear_user_config)) {
                                 'Net_UserAgent_Detect',
                                 'PEAR',
                                 'PEAR_Frontend_Web',
-                                'XML_RPC'
+                                'Structures_Graph'
                         );
     $reg = &$config->getRegistry();
     if (!file_exists($dir.'PEAR/.registry')) {
