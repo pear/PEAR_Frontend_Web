@@ -138,6 +138,11 @@ if (isset($_GET["command"])) {
                 PEAR::setErrorHandling(PEAR_ERROR_CALLBACK, array($ui, "displayErrorImg"));
             }
 
+            if ($_GET['command'] == 'install') {
+                // also install dependencies
+                $opts['onlyreqdeps'] = true;
+            }
+
             $command = $_GET["command"];
             if (strpos($_GET['pkg'], '\\\\') !== false) {
                 $_GET['pkg'] = stripslashes($_GET['pkg']);
