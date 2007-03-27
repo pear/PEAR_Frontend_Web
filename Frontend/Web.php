@@ -296,7 +296,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
 
         $links = array();
         $from = $paging_data['from'];
-        $to = $paging_data['next'];
+        $to = $paging_data['to'];
 
         // Generate Linkinformation to redirect to _this_ page after performing an action
         $link_str = '<a href="?command=%s&from=%s" class="paging_link">%s</a>';
@@ -396,7 +396,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
 
         $links = array();
         $from = $paging_data['from'];
-        $to = $paging_data['next'];
+        $to = $paging_data['to'];
 
         // Generate Linkinformation to redirect to _this_ page after performing an action
         $link_str = '<a href="?command=%s&from=%s&mode=%s" class="paging_link">%s</a>';

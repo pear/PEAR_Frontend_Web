@@ -174,7 +174,9 @@ if (isset($_GET["command"])) {
             } elseif (isset($_GET['redirect']) && $_GET['redirect'] == 'search') {
                 $URL .= '?command=search&userDialogResult=get&0='.$_GET["0"].'&1='.$_GET["1"];
             } else {
-                $URL .= '?command=list-all&pageID='.$_GET['pageID'].'#'.$_GET["pkg"];
+                $URL .= '?command=list-all&mode=installed';
+                // following doesn't work:
+                //$URL .= '?command=list-all&pageID='.$_GET['pageID'].'#'.$_GET["pkg"];
             }
             Header("Location: ".$URL);
             exit;

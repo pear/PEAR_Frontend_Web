@@ -142,7 +142,23 @@
     <TABLE border="0">
     <TR>
       <TD>
-       <span class="green"><B>Add a new channel by server name (requires internet connection)</B></span>
+       <span class="green"><B>Update All Channel protocols:</B></span>
+      </TD>
+    </TR>
+    <TR>
+      <TD>
+       <FORM name="updatechannels" method="GET" action="{NewChannelURL}">
+        <INPUT type="hidden" name="command" value="update-channels">
+        <INPUT name="foo" type="submit" value="Update All Channels">
+       </FORM>
+      </TD>
+    </TR>
+    </TABLE>
+    <br />
+    <TABLE border="0">
+    <TR>
+      <TD>
+       <span class="green"><B>Add a new channel server:</B></span>
       </TD>
     </TR>
     <TR>
@@ -150,21 +166,6 @@
        <FORM name="addchannel" method="GET" action="{NewChannelURL}">
         <INPUT type="hidden" name="command" value="channel-discover">
         <INPUT name="chan" type="text" size="35"><INPUT name="foo" type="submit" value="New Channel">
-       </FORM>
-      </TD>
-    </TR>
-    </TABLE>
-    <TABLE border="0">
-    <TR>
-      <TD>
-       <span class="green"><B>Retrieve an updated list of channels from pear.php.net (requires internet connection)</B></span>
-      </TD>
-    </TR>
-    <TR>
-      <TD>
-       <FORM name="updatechannels" method="GET" action="{NewChannelURL}">
-        <INPUT type="hidden" name="command" value="update-channels">
-        <INPUT name="foo" type="submit" value="Update Channels List">
        </FORM>
       </TD>
     </TR>
