@@ -587,7 +587,10 @@ class PEAR_Frontend_Web extends PEAR_Frontend
         $tpl = $this->_initTemplate("package.info.tpl.html", 'Package Management :: '.$data['name'], 'pkglist');
 
         $tpl->setVariable("PreferredMirror", $this->config->get('preferred_mirror'));
+        /*
         $dl = &new PEAR_Downloader($this, array(), $this->config);
+        // don't call private functions
+        // gives error, not gonna fix, but gonna skip
         $info = $dl->_getPackageDownloadUrl(array('package' => $data['name'],
             'channel' => $this->config->get('default_channel'), 'version' => $data['stable']));
         if (isset($info['url'])) {
@@ -595,6 +598,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
         } else {
             $tpl->setVariable("DownloadURL", $_SERVER['PHP_SELF']);
         }
+        */
         $tpl->setVariable("Latest", $data['stable']);
         $tpl->setVariable("Installed", $data['installed']);
         $tpl->setVariable("Package", $data['name']);
