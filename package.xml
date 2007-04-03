@@ -10,12 +10,12 @@
     <email>cellog@php.net</email>
     <active>yes</active>
   </lead>
-  <developer>
+  <lead>
     <name>Tias Guns</name>
     <user>tias</user>
     <email>tias@ulyssis.org</email>
     <active>yes</active>
-  </developer>
+  </lead>
   <lead>
     <name>Christian Dickmann</name>
     <user>dickmann</user>
@@ -114,10 +114,10 @@
   <dependencies>
     <required>
       <php>
-        <min>4.0.0</min>
+        <min>4.3.0</min>
       </php>
       <pearinstaller>
-        <min>1.4.0b1</min>
+        <min>1.4.3</min>
       </pearinstaller>
       <package>
         <name>Net_UserAgent_Detect</name>
@@ -136,6 +136,26 @@
   </dependencies>
   <phprelease/>
   <changelog>
+    <release>
+      <date>2007-04-03</date>
+      <version>
+        <release>0.5.2</release>
+        <api>0.5.1</api>
+      </version>
+      <stability>
+        <release>alpha</release>
+        <api>alpha</api>
+      </stability>
+      <license uri="http://www.php.net/license">PHP License</license>
+      <notes>
+* Fix Bug #10427: wrong dependencies [tias]
+* Fix Bug #10428: install dependencies of package [tias]
+* Fix Bug #10429: some small bugfixes [tias]
+* Fix Bug #10430: remote-info broken for installed packages [tias]
+* Small changes in the templates files, that makes stuff much nicer
+* config-show submit: only config-set what has changed (and never the buggy Filename that can not be changed this way), and output it nicely.
+ </notes>
+    </release>
     <release>
       <date>2006-04-18</date>
       <time>01:07:41</time>
