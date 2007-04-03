@@ -554,10 +554,11 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                         $_SERVER['PHP_SELF'], $row['name'], $row['name']);
                 }
 
-                if (isset($rel_trans[$row['relation']])) {
-                    $rel = sprintf($rel_trans[$row['relation']], $row['version']);
-                    $result .= sprintf("%s: %s %s",
-                           $dep_type_desc[$row['type']], $row['name'], $rel);
+                if (isset($rel_trans[$row['rel']])) {
+                    $rel = sprintf($rel_trans[$row['rel']], $row['version']);
+                    $optional = isset($row['optional']) && $row['optional'] == 'yes';
+                    $result .= sprintf("%s: %s %s" . $optional,
+                           $dep_type_desc[$row['type']], @$row['name'], $rel);
                 } else {
                     $result .= sprintf("%s: %s", $dep_type_desc[$row['type']], $row['name']);
                 }
