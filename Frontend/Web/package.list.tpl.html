@@ -1,5 +1,3 @@
-<!-- INCLUDE header.inc.tpl.html -->
-<!-- INCLUDE top.inc.tpl.html -->
     <script language="javascript">
     <!--
         function getElem(name)
@@ -68,162 +66,141 @@
 
     -->
     </script>
-    <TABLE border="0" width="670">
-    <TR>
-      <TD width="20">
-      </TD>
-      <TD width="175" align="left">
-        <a href="{InstallerURL}?command=list-all{mode1}" class="green">[ {mode1text} ]</a>
-      </TD>
-      <TD width="175" align="center">
-        <a href="{InstallerURL}?command=list-all{mode2}" class="green">[ {mode2text} ]</a>
-      </TD>
-      <TD width="175" align="right">
-        <a href="{InstallerURL}?command=list-all{mode3}" class="green">[ {mode3text} ]</a>
-      </TD>
-      <TD width="175" align="right">
-        <a href="{InstallerURL}?command=list-all{mode4}" class="green">[ {mode4text} ]</a>
-      </TD>
-    </TR>
-    </TABLE>
-    <br>
-    <TABLE border="0">
-    <TR>
-      <TD width="20">
-      </TD>
-      <TD width="100" align="left">
+    <table border="0">
+    <tr>
+      <td width="20">
+      </td>
+      <td width="100" align="left">
         {Prev}
-      </TD>
-      <TD width="450" align="center">
+      </td>
+      <td width="450" align="center">
         <span class="green">Displaying <b>{PagerFrom}</b> to <b>{PagerTo}</b> of <b>{PagerCount}</b> Categories</span>
-      </TD>
-      <TD width="100" align="right">
+      </td>
+      <td width="100" align="right">
         {Next}
-      </TD>
-    </TR>
-    </TABLE>
+      </td>
+    </tr>
+    </table>
     <br>
     <!-- BEGIN Category -->
-    <TABLE border="0" onClick="expandCategory('__{categoryName}');" class="DHTML_Category_Expand" >
-    <TR>
-      <TD width="20">
-      </TD>
-      <TD>
+    <table border="0" onClick="expandCategory('__{categoryName}');" class="DHTML_Category_Expand" >
+    <tr>
+      <td width="20">
+      </td>
+      <td>
         <img src="{InstallerURL}?img=category" width="16" height="15" border="0" alt="{categoryName}">
-      </TD>
-      <TD>
+      </td>
+      <td>
         <b>{categoryName}</b>
-      </TD>
-    </TR>
-    </TABLE>
-    <TABLE border="0" id="__{categoryName}" class="DHTML_Category">
-    <TR>
-      <TD width="50" valign="top" colspan="2">
-      </TD>
-      <TD valign="top">
+      </td>
+    </tr>
+    </table>
+    <table border="0" id="__{categoryName}" class="DHTML_Category">
+    <tr>
+      <td width="50" valign="top" colspan="2">
+      </td>
+      <td valign="top">
         
-      </TD>
-      <TD width="100" valign="top">
+      </td>
+      <td width="100" valign="top">
         <b>Channel</b>
-      </TD>
-      <TD width="150" valign="top">
+      </td>
+      <td width="150" valign="top">
         <b>Package</b>
-      </TD>
-      <TD width="50" valign="top">
-        <b>Local</b>
-      </TD>
-      <TD width="50" valign="top">
-        <b>Latest (stable)</b>
-      </TD>
-      <TD valign="top" width="15">
+      </td>
+      <td width="50" valign="top">
+        <b>Local version</b>
+      </td>
+      <td width="50" valign="top">
+        <b>Latest version</b>
+      </td>
+      <td valign="top" width="15">
         
-      </TD>
-      <TD valign="top" width="18">
+      </td>
+      <td valign="top" width="18">
         
-      </TD>
-      <TD valign="top">
+      </td>
+      <td valign="top">
         
-      </TD>
-      <TD valign="top">
+      </td>
+      <td valign="top">
         
-      </TD>
-      <TD width="300" valign="top">
+      </td>
+      <td width="300" valign="top">
         <b>Description</b>
-      </TD>
-    </TR>
+      </td>
+    </tr>
     <!-- BEGIN Row -->
-    <TR>
-      <TD width="1" valign="top">
+    <tr>
+      <td width="1" valign="top">
         <a name="{Package}">
-      </TD>
-      <TD width="49" valign="top" align="right">
+      </td>
+      <td width="49" valign="top" align="right">
         <iframe id="{Package}_status" height="20" 
             width="20" scrolling="no" frameborder="0" marginheight="0" marginwidth="0"></iframe>
-      </TD>
-      <TD valign="top">
+      </td>
+      <td valign="top">
         <img src="{InstallerURL}?img=package" width="12" height="12" border="0">
-      </TD>
-      <TD width="100" valign="top">
+      </td>
+      <td width="100" valign="top">
         {Channel}
-      </TD>
-      <TD width="150" valign="top">
+      </td>
+      <td width="150" valign="top">
         {Package}
-      </TD>
-      <TD width="50" valign="top">
+      </td>
+      <td width="50" valign="top">
         <div id="{Package}_installed">{Installed}</div>
-      </TD>
-      <TD width="50" valign="top">
+      </td>
+      <td width="50" valign="top">
         <div id="{Package}_latest">{Latest}</div>
-      </TD>
-      <TD valign="top" width="15">
+      </td>
+      <td valign="top" width="15">
         <div id="{Package}_install">{Install}</div>
-      </TD>
-      <TD valign="top" width="18">
+      </td>
+      <td valign="top" width="18">
         <div id="{Package}_uninstall">{Delete}</div>
-      </TD>
-      <TD valign="top">
+      </td>
+      <td valign="top">
         {Info}
-      </TD>
-      <TD valign="top">
+      </td>
+      <td valign="top">
         {InfoExt}
-      </TD>
-      <TD width="300" valign="top">
+      </td>
+      <td width="300" valign="top">
         {Summary}
-      </TD>
-    </TR>
+      </td>
+    </tr>
     <!-- END Row -->
-    </TABLE>
+    </table>
     <!-- END Category -->
     <br>
-    <TABLE border="0">
-    <TR>
-      <TD width="20">
-      </TD>
-      <TD width="100" align="left">
+    <table border="0">
+    <tr>
+      <td width="20">
+      </td>
+      <td width="100" align="left">
         {Prev}
-      </TD>
-      <TD width="450" align="center">
+      </td>
+      <td width="450" align="center">
         <span class="green">Displaying <b>{PagerFrom}</b> to <b>{PagerTo}</b> of <b>{PagerCount}</b> Categories</span>
-      </TD>
-      <TD width="100" align="right">
+      </td>
+      <td width="100" align="right">
         {Next}
-      </TD>
-    </TR>
-    </TABLE>
-    <TABLE>
-     <TR>
-      <TD>
-        <span class="green">Quick-install a package</span>
-      </TD>
-     </TR>
-     <TR>
-      <TD valign="top">
-        <FORM name="nonstandardpackage">
-         <INPUT type="hidden" name="command" value="install">
-         <INPUT type="hidden" name="redirect" value="info">
-         <img src="{InstallerURL}?img=package" width="12" height="12" border="0" alt="non-standard package"><INPUT type="text" size="50" name="pkg"><INPUT type="submit" name="sub" value="Install">
-      </TD>
-     </TR>
-    </TABLE>
-<!-- INCLUDE bottom.inc.tpl.html -->
-<!-- INCLUDE footer.inc.tpl.html -->
+      </td>
+    </tr>
+    </table>
+    <table>
+     <tr>
+      <td>
+        <span class="green">[Advanced Users] Install a local package or remote non-PEAR package</span>
+      </td>
+     </tr>
+     <tr>
+      <td valign="top">
+        <form name="nonstandardpackage">
+         <input type="hidden" name="command" value="install">
+         <input type="hidden" name="redirect" value="info">
+         <img src="{InstallerURL}?img=package" width="12" height="12" border="0" alt="non-standard package"><input type="text" size="50" name="pkg"><input type="submit" name="sub" value="Install">
+      </td>
+     </tr>
+    </table>

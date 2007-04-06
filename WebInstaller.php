@@ -15,12 +15,14 @@
   +----------------------------------------------------------------------+
   | Author: Christian Dickmann <dickmann@php.net>                        |
   |         Pierre-Alain Joye <pajoye@php.net>                           |
+  |         Tias Guns <tias@ulyssis.org>                                 |
   +----------------------------------------------------------------------+
 
   $Id$
 */
 define('PEAR_Frontend_Web',1);
 @session_start();
+$_SESSION['_PEAR_Frontend_Web_version'] = '0.6.0';
 
 if (!isset($_SESSION['_PEAR_Frontend_Web_js'])) {
     $_SESSION['_PEAR_Frontend_Web_js'] = false;
@@ -56,6 +58,7 @@ $ui->setConfig($config);
 PEAR::setErrorHandling(PEAR_ERROR_CALLBACK, array($ui, "displayFatalError"));
 
 // Cient requests an Image/Stylesheet/Javascript
+// outputFrontendFile() does exit()
 if (isset($_GET["css"])) {
     $ui->outputFrontendFile($_GET["css"], 'css');
 }
@@ -128,14 +131,29 @@ if (!is_dir($cache_dir)) {
     }
 }
 
-// Handle some diffrent Commands
 if (isset($_GET["command"])) {
-    switch ($_GET["command"]) {
+    $command = $_GET["command"];
+} else {
+    $command = null;
+}
+
+// Prepare and begin output (if not DHTML magic)
+if (!(USE_DHTML_PROGRESS && isset($_GET['dhtml']))) {
+    $ui->outputBegin($command);
+}
+
+// Handle some diffrent Commands
+if (is_null($command)) {
+    $ui->displayStart();
+} else {
+    switch ($command) {
         case 'install':
         case 'uninstall':
         case 'upgrade':
             if (USE_DHTML_PROGRESS && isset($_GET['dhtml'])) {
                 PEAR::setErrorHandling(PEAR_ERROR_CALLBACK, array($ui, "displayErrorImg"));
+                // TODO: display error on new page...
+                // TODO: eliminate DHTML stuff
             }
 
             if ($_GET['command'] == 'install') {
@@ -143,7 +161,6 @@ if (isset($_GET["command"])) {
                 $opts['onlyreqdeps'] = true;
             }
 
-            $command = $_GET["command"];
             if (strpos($_GET['pkg'], '\\\\') !== false) {
                 $_GET['pkg'] = stripslashes($_GET['pkg']);
             }
@@ -167,89 +184,109 @@ if (isset($_GET["command"])) {
                 $html = sprintf('<img src="%s?img=install_ok" border="0">', $_SERVER['PHP_SELF']);
                 echo $js.$html;
                 exit;
-            }
-
-            if (isset($_GET['redirect']) && $_GET['redirect'] == 'info') {
-                $URL .= '?command=remote-info&pkg='.$_GET["pkg"];
-            } elseif (isset($_GET['redirect']) && $_GET['redirect'] == 'search') {
-                $URL .= '?command=search&userDialogResult=get&0='.$_GET["0"].'&1='.$_GET["1"];
             } else {
-                $URL .= '?command=list-all&mode=installed';
-                // following doesn't work:
-                //$URL .= '?command=list-all&pageID='.$_GET['pageID'].'#'.$_GET["pkg"];
+                print('<p>'.$command.' OK</p>');
             }
-            Header("Location: ".$URL);
-            exit;
+
+            if (!(USE_DHTML_PROGRESS && isset($_GET['dhtml']))) {
+                $ui->finishOutput('Back', array('link' => $URL.'?command=list',
+                'text' => 'Click here to go back'));
+            }
+            break;
         case 'run-scripts' :
-            $command = $_GET["command"];
             $params = array($_GET["pkg"]);
             $cmd = PEAR_Command::factory($command, $config);
             $ok = $cmd->run($command, $opts, $params);
-            exit;
+            break;
         case 'remote-info':
-            $command = $_GET["command"];
             $params = array($_GET["pkg"]);
             $cmd = PEAR_Command::factory($command, $config);
             $ok = $cmd->run($command, $opts, $params);
 
-            exit;
+            break;
+        case 'info':
+            $params = array(strtolower($_GET["pkg"]));
+            $cmd = PEAR_Command::factory($command, $config);
+            $ok = $cmd->run($command, $opts, $params);
+
+            break;
         case 'search':
+            // TODO: search pkg_name (fastest), category (fast), pkg_info (slow)
+            // TODO: over all channels or option which channel !
             list($name, $description) = $ui->userDialog('search',
                 array('Package Name', 'Package Info'), // Prompts
                 array(), array(), // Types, Defaults
                 'Package Search', 'pkgsearch' // Title, Icon
                 );
 
-            $command = $_GET["command"];
             $params = array($name, $description);
             $cmd = PEAR_Command::factory($command, $config);
             $ok = $cmd->run($command, $opts, $params);
 
-            exit;
+            break;
         case 'config-show':
-            $params = array();
-            $command = $_GET["command"];
             $cmd = PEAR_Command::factory($command, $config);
             $res = $cmd->run($command, $opts, $params);
 
             // if this code is reached, the config vars are submitted
-            $ui->startSession();
             $set = PEAR_Command::factory('config-set', $config);
             foreach($GLOBALS['_PEAR_Frontend_Web_Config'] as $var => $value) {
                 if ($var == 'Filename') {
                     continue; // I hate obscure bugs
                 }
                 if ($value != $config->get($var)) {
+                    print('Saving '.$var.'... ');
                     $res = $set->run('config-set', $opts, array($var, $value));
                     $config->set($var, $value);
                 }
             }
+            print('<p><b>Config saved succesfully!</b></p>');
 
-            $ui->finishOutput('Save Config Changes', array('link' =>
-                $_SERVER['PHP_SELF'] . '?command='.$command,
-                'text' => '<p>Configuration saved succesfully ! Back to config.</p>'));
-            exit;
+            $URL .= '?command='.$command;
+            $ui->finishOutput('Back', array('link' => $URL,
+                'text' => 'Back to the config'));
+            break;
         case 'list-all':
-            $command = $_GET["command"];
-            $params = array();
+            // TODO: over all channels = show channel choice
             if (isset($_GET["mode"]))
                 $opts['mode'] = $_GET["mode"];
+            // Forward compatible (bug #10495)
+            require_once('Frontend/Web_Command_Forward_Compatible.php');
+            $cmd = new Web_Command_Forward_Compatible($ui, $config);
+            // TODO: get categories and only download info of current cats.
+            $cmd->doListAll($command, $opts, $params);
+
+            break;
+        case 'list':
+            $opts['allchannels'] = true;
+            // Forward compatible (bug #10496)
+            require_once('Frontend/Web_Command_Forward_Compatible.php');
+            $cmd = new Web_Command_Forward_Compatible($ui, $config);
+            $cmd->doList($command, $opts, $params);
+            break;
+        case 'list-upgrades':
+            // Forward compatible (bug #10515)
+            require_once('Frontend/Web_Command_Forward_Compatible.php');
+            $cmd = new Web_Command_Forward_Compatible($ui, $config);
+            $cmd->doListUpgrades($command, $opts, $params);
+
+            $ui->outputUpgradeAll();
+            break;
+        case 'upgrade-all':
             $cmd = PEAR_Command::factory($command, $config);
             $ok = $cmd->run($command, $opts, $params);
 
-            exit;
+            $ui->finishOutput('Back', array('link' => $URL.'?command=list',
+                'text' => 'Click here to go back'));
+            break;
         case 'channel-info':
-            $command = $_GET["command"];
-            $params = array();
             if (isset($_GET["chan"]))
                 $params[] = $_GET["chan"];
             $cmd = PEAR_Command::factory($command, $config);
             $ok = $cmd->run($command, $opts, $params);
 
-            exit;
+            break;
         case 'channel-discover':
-            $command = $_GET["command"];
-            $params = array();
             if (isset($_GET["chan"]))
                 $params[] = $_GET["chan"];
             $cmd = PEAR_Command::factory($command, $config);
@@ -259,25 +296,19 @@ if (isset($_GET["command"])) {
             $ui->finishOutput('Channel Discovery', array('link' =>
                 $_SERVER['PHP_SELF'] . '?command=channel-info&chan=' . urlencode($_GET['chan']),
                 'text' => 'Click Here for ' . htmlspecialchars($_GET['chan']) . ' Information'));
-            exit;
+            break;
         case 'channel-delete':
-            $command = $_GET["command"];
-            $params = array();
             if (isset($_GET["chan"]))
                 $params[] = $_GET["chan"];
             $cmd = PEAR_Command::factory($command, $config);
-            $ui->startSession();
             $ok = $cmd->run($command, $opts, $params);
 
-            $ui->finishOutput('Channel Deletion');
-            exit;
+            break;
         case 'list-channels':
-            $command = $_GET["command"];
-            $params = array();
             $cmd = PEAR_Command::factory($command, $config);
             $ok = $cmd->run($command, $opts, $params);
 
-            exit;
+            break;
         case 'update-channels':
             // update every channel manually,
             // fixes bug PEAR/#10275 (XML_RPC dependency)
@@ -286,7 +317,7 @@ if (isset($_GET["command"])) {
             $channels = $reg->getChannels();
             $command = 'channel-update';
             $cmd = PEAR_Command::factory($command, $config);
-
+            
             $success = true;
             $ui->startSession();
             foreach ($channels as $channel) {
@@ -295,24 +326,28 @@ if (isset($_GET["command"])) {
                                           array($channel->getName()));
                 }
             }
+
             $ui->finishOutput('Update Channel List', array('link' =>
                 $_SERVER['PHP_SELF'] . '?command=list-channels',
                 'text' => 'Click here to list all channels'));
-            exit;
+            break;
         case 'show-last-error':
             $GLOBALS['_PEAR_Frontend_Web_log'] = $_SESSION['_PEAR_Frontend_Web_LastError_log'];
             $ui->displayError($_SESSION['_PEAR_Frontend_Web_LastError'], 'Error', 'error', true);
-            exit;
+            break;
         default:
-            $command = $_GET["command"];
             $cmd = PEAR_Command::factory($command, $config);
             $res = $cmd->run($command, $opts, $params);
 
             $URL .= '?command='.$_GET["command"];
             header("Location: ".$URL);
-            exit;
+            break;
     }
 }
 
-$ui->displayStart();
+// End and stop output (if not DHTML magic)
+if (!(USE_DHTML_PROGRESS && isset($_GET['dhtml']))) {
+    $ui->outputEnd($command);
+}
+
 ?>
