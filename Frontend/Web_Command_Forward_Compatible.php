@@ -62,7 +62,8 @@ class Web_Command_Forward_Compatible extends PEAR_Command_Common
     // }}}
 
     // {{{ doList()
-    // Reported in bug #10496
+    // Reported in bug #10496 :: list with channel information
+    // Original file: Command/Registry.php
     function doList($command, $options, $params)
     {
         require_once 'PEAR/Command/Registry.php';
@@ -122,7 +123,8 @@ class Web_Command_Forward_Compatible extends PEAR_Command_Common
 
     // }}}
     // {{{ doListUpgrades()
-    // Reported in bug #10515
+    // Reported in bug #10515 :: list-upgrades with channel information
+    // Original file: Command/Remote.php
     function doListUpgrades($command, $options, $params)
     {
         require_once 'PEAR/Command/Remote.php';
@@ -227,7 +229,8 @@ class Web_Command_Forward_Compatible extends PEAR_Command_Common
 
     // }}}
     // {{{ doListAll()
-    // Reported in bug #10495
+    // Reported in bug #10495 :: list-all with channel information etc
+    // Original file: Command/Remote.php
     function doListAll($command, $options, $params)
     {
         require_once 'PEAR/Command/Remote.php';
@@ -354,6 +357,264 @@ class Web_Command_Forward_Compatible extends PEAR_Command_Common
         $this->ui->outputData($data, $command);
         return true;
     }
+
+    // }}}
+    // {{{ REST::listAll()
+    // Reported in bug #10599 :: search packagename: quick
+    // Original file: Rest/10.php
+    function REST_listAll(&$rest, $base, $dostable, $basic = true, $searchpackage = false, $searchsummary = false)
+    {
+        $packagelist = $rest->_rest->retrieveData($base . 'p/packages.xml');
+        if (PEAR::isError($packagelist)) {
+            return $packagelist;
+        }
+        if ($rest->_rest->config->get('verbose') > 0) {
+            $ui = &PEAR_Frontend::singleton();
+            $ui->log('Retrieving data...0%', false);
+        }
+        $ret = array();
+        if (!is_array($packagelist) || !isset($packagelist['p'])) {
+            return $ret;
+        }
+        if (!is_array($packagelist['p'])) {
+            $packagelist['p'] = array($packagelist['p']);
+        }
+
+        // only search-packagename = quicksearch !
+        if ($searchpackage && (!$searchsummary || empty($searchpackage))) {
+            $newpackagelist = array();
+            foreach ($packagelist['p'] as $package) {
+                if (!empty($searchpackage) && stristr($package, $searchpackage) !== false) {
+                    $newpackagelist[] = $package;
+                }
+            }
+            $packagelist['p'] = $newpackagelist;
+        }
+
+        PEAR::pushErrorHandling(PEAR_ERROR_RETURN);
+        $next = .1;
+        foreach ($packagelist['p'] as $progress => $package) {
+            if ($rest->_rest->config->get('verbose') > 0) {
+                if ($progress / count($packagelist['p']) >= $next) {
+                    if ($next == .5) {
+                        $ui->log('50%', false);
+                    } else {
+                        $ui->log('.', false);
+                    }
+                    $next += .1;
+                }
+            }
+            if ($basic) { // remote-list command
+                if ($dostable) {
+                    $latest = $rest->_rest->retrieveData($base . 'r/' . strtolower($package) .
+                        '/stable.txt');
+                } else {
+                    $latest = $rest->_rest->retrieveData($base . 'r/' . strtolower($package) .
+                        '/latest.txt');
+                }
+                if (PEAR::isError($latest)) {
+                    $latest = false;
+                }
+                $info = array('stable' => $latest);
+            } else { // list-all command
+                $inf = $rest->_rest->retrieveData($base . 'p/' . strtolower($package) . '/info.xml');
+                if (PEAR::isError($inf)) {
+                    PEAR::popErrorHandling();
+                    return $inf;
+                }
+                if ($searchpackage) {
+                    $found = (!empty($searchpackage) && stristr($package, $searchpackage) !== false);
+                    if (!$found && !(isset($searchsummary) && !empty($searchsummary)
+                        && (stristr($inf['s'], $searchsummary) !== false
+                            || stristr($inf['d'], $searchsummary) !== false)))
+                    {
+                        continue;
+                    };
+                }
+                $releases = $rest->_rest->retrieveData($base . 'r/' . strtolower($package) .
+                    '/allreleases.xml');
+                if (PEAR::isError($releases)) {
+                    continue;
+                }
+                if (!isset($releases['r'][0])) {
+                    $releases['r'] = array($releases['r']);
+                }
+                unset($latest);
+                unset($unstable);
+                unset($stable);
+                unset($state);
+                foreach ($releases['r'] as $release) {
+                    if (!isset($latest)) {
+                        if ($dostable && $release['s'] == 'stable') {
+                            $latest = $release['v'];
+                            $state = 'stable';
+                        }
+                        if (!$dostable) {
+                            $latest = $release['v'];
+                            $state = $release['s'];
+                        }
+                    }
+                    if (!isset($stable) && $release['s'] == 'stable') {
+                        $stable = $release['v'];
+                        if (!isset($unstable)) {
+                            $unstable = $stable;
+                        }
+                    }
+                    if (!isset($unstable) && $release['s'] != 'stable') {
+                        $latest = $unstable = $release['v'];
+                        $state = $release['s'];
+                    }
+                    if (isset($latest) && !isset($state)) {
+                        $state = $release['s'];
+                    }
+                    if (isset($latest) && isset($stable) && isset($unstable)) {
+                        break;
+                    }
+                }
+                $deps = array();
+                if (!isset($unstable)) {
+                    $unstable = false;
+                    $state = 'stable';
+                    if (isset($stable)) {
+                        $latest = $unstable = $stable;
+                    }
+                } else {
+                    $latest = $unstable;
+                }
+                if (!isset($latest)) {
+                    $latest = false;
+                }
+                if ($latest) {
+                    $d = $rest->_rest->retrieveCacheFirst($base . 'r/' . strtolower($package) . '/deps.' .
+                        $latest . '.txt');
+                    if (!PEAR::isError($d)) {
+                        $d = unserialize($d);
+                        if ($d) {
+                            if (isset($d['required'])) {
+                                if (!class_exists('PEAR_PackageFile_v2')) {
+                                    require_once 'PEAR/PackageFile/v2.php';
+                                }
+                                if (!isset($pf)) {
+                                    $pf = new PEAR_PackageFile_v2;
+                                }
+                                $pf->setDeps($d);
+                                $tdeps = $pf->getDeps();
+                            } else {
+                                $tdeps = $d;
+                            }
+                            foreach ($tdeps as $dep) {
+                                if ($dep['type'] !== 'pkg') {
+                                    continue;
+                                }
+                                $deps[] = $dep;
+                            }
+                        }
+                    }
+                }
+                if (!isset($stable)) {
+                    $stable = '-n/a-';
+                }
+                if (!$searchpackage) {
+                    $info = array('stable' => $latest, 'summary' => $inf['s'], 'description' =>
+                        $inf['d'], 'deps' => $deps, 'category' => $inf['ca']['_content'],
+                        'unstable' => $unstable, 'state' => $state);
+                } else {
+                    $info = array('stable' => $stable, 'summary' => $inf['s'], 'description' =>
+                        $inf['d'], 'deps' => $deps, 'category' => $inf['ca']['_content'],
+                        'unstable' => $unstable, 'state' => $state);
+                }
+            }
+            $ret[$package] = $info;
+        }
+        PEAR::popErrorHandling();
+        return $ret;
+    }
+
+    // }}}
+    // {{{ doSearch()
+    // Needed for bug #10599 :: search packagename: quick
+    // Original file: Command/Remote.php
+    function doSearch($command, $options, $params)
+    {
+        require_once 'PEAR/Command/Remote.php';
+        $cmd = new PEAR_Command_Remote(&$this->ui, &$this->config);
+
+        if ((!isset($params[0]) || empty($params[0]))
+            && (!isset($params[1]) || empty($params[1])))
+        {
+            return $this->raiseError('no valid search string supplied');
+        };
+
+        $savechannel = $channel = $this->config->get('default_channel');
+        $reg = &$this->config->getRegistry();
+        $package = $params[0];
+        $summary = isset($params[1]) ? $params[1] : false;
+        if (isset($options['channel'])) {
+            $reg = &$this->config->getRegistry();
+            $channel = $options['channel'];
+            if ($reg->channelExists($channel)) {
+                $this->config->set('default_channel', $channel);
+            } else {
+                return $this->raiseError('Channel "' . $channel . '" does not exist');
+            }
+        }
+        $chan = $reg->getChannel($channel);
+        if (PEAR::isError($e = $cmd->_checkChannelForStatus($channel, $chan))) {
+            return $e;
+        }
+        if ($chan->supportsREST($this->config->get('preferred_mirror')) &&
+              $base = $chan->getBaseURL('REST1.0', $this->config->get('preferred_mirror'))) {
+            $rest = &$this->config->getREST('1.0', array());
+            $available = $this->REST_listAll(&$rest, $base, false, false, $package, $summary);
+        } else {
+            $r = &$this->config->getRemote();
+            $available = $r->call('package.search', $package, $summary, true, 
+                $this->config->get('preferred_state') == 'stable', true);
+        }
+        if (PEAR::isError($available)) {
+            $this->config->set('default_channel', $savechannel);
+            return $this->raiseError($available);
+        }
+        if (!$available) {
+            return $this->raiseError('no packages found that match pattern "' . $package . '"');
+        }
+        $data = array(
+            'caption' => 'Matched packages, channel ' . $channel . ':',
+            'border' => true,
+            'headline' => array('Channel', 'Package', 'Stable/(Latest)', 'Local'),
+            );
+
+        foreach ($available as $name => $info) {
+            $installed = $reg->packageInfo($name, null, $channel);
+            $desc = $info['summary'];
+            if (isset($params[$name]))
+                $desc .= "\n\n".$info['description'];
+
+            if (!isset($info['stable']) || !$info['stable']) {
+                $version_remote = 'none';
+            } else {
+                if ($info['unstable']) {
+                    $version_remote = $info['unstable'];
+                } else {
+                    $version_remote = $info['stable'];
+                }
+                $version_remote .= ' ('.$info['state'].')';
+            }
+            $version = is_array($installed['version']) ? $installed['version']['release'] :
+                $installed['version'];
+            $data['data'][$info['category']][] = array(
+                $channel,
+                $name,
+                $version_remote,
+                $version,
+                $desc,
+                );
+        }
+        $this->ui->outputData($data, $command);
+        $this->config->set('default_channel', $channel);
+        return true;
+    }
+
 }
 
 ?>

@@ -66,6 +66,8 @@
 
     -->
     </script>
+<!-- INCLUDE caption.tpl.html -->
+    <!-- BEGIN Paging_pre -->
     <table border="0">
     <tr>
       <td width="20">
@@ -81,6 +83,7 @@
       </td>
     </tr>
     </table>
+    <!-- END Paging_pre -->
     <br>
     <!-- BEGIN Category -->
     <table border="0" onClick="expandCategory('__{categoryName}');" class="DHTML_Category_Expand" >
@@ -96,8 +99,7 @@
     </tr>
     </table>
     <table border="0" id="__{categoryName}" class="DHTML_Category">
-    <tr>
-      <td width="50" valign="top" colspan="2">
+    <tr> <td width="50" valign="top" colspan="2">
       </td>
       <td valign="top">
         
@@ -174,6 +176,7 @@
     </table>
     <!-- END Category -->
     <br>
+    <!-- BEGIN Paging_post -->
     <table border="0">
     <tr>
       <td width="20">
@@ -189,18 +192,4 @@
       </td>
     </tr>
     </table>
-    <table>
-     <tr>
-      <td>
-        <span class="green">[Advanced Users] Install a local package or remote non-PEAR package</span>
-      </td>
-     </tr>
-     <tr>
-      <td valign="top">
-        <form name="nonstandardpackage">
-         <input type="hidden" name="command" value="install">
-         <input type="hidden" name="redirect" value="info">
-         <img src="{InstallerURL}?img=package" width="12" height="12" border="0" alt="non-standard package"><input type="text" size="50" name="pkg"><input type="submit" name="sub" value="Install">
-      </td>
-     </tr>
-    </table>
+    <!-- END Paging_post -->

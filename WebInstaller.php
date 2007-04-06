@@ -219,9 +219,11 @@ if (is_null($command)) {
                 'Package Search', 'pkgsearch' // Title, Icon
                 );
 
+            // Forward compatible (bug #10495)
             $params = array($name, $description);
-            $cmd = PEAR_Command::factory($command, $config);
-            $ok = $cmd->run($command, $opts, $params);
+            require_once('Frontend/Web_Command_Forward_Compatible.php');
+            $cmd = new Web_Command_Forward_Compatible($ui, $config);
+            $cmd->doSearch($command, $opts, $params);
 
             break;
         case 'config-show':

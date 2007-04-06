@@ -308,80 +308,63 @@ class PEAR_Frontend_Web extends PEAR_Frontend
      * Output a list of packages, grouped by categories. Uses Paging
      *
      * @param array   $data     array containing all data to display the list
-     * @param string  $title    (optional) title of the page
-     * @param string  $img      (optional) iconhandle for this page
-     * @param boolean $useDHTML (optional) add JS and CSS for DHTML-features
+     * @param boolean $paging   (optional) use Paging or not
      *
      * @access private
      *
      * @return boolean true (yep. i am an optimist)
      */
 
-    function _outputListAll($data, $title = 'Install / Upgrade / Remove PEAR Packages',
-                            $img = 'pkglist', $useDHTML = false)
+    function _outputListAll($data, $paging=true)
     {
         $tpl = $this->_initTemplate("package.list.tpl.html", $title, $img, $useDHTML);
+        $tpl->setVariable('Caption', $data['caption']);
 
         if (!isset($data['data'])) {
             $data['data'] = array();
         }
 
-        $pageId = isset($_GET['from']) ? $_GET['from'] : 0;
-        $paging_data = $this->__getData($pageId, $this->_paging_cats, count($data['data']), false);
-
-        $data['data'] = array_slice($data['data'], $pageId, $this->_paging_cats);
-
-        $links = array();
-        $from = $paging_data['from'];
-        $to = $paging_data['to'];
-
-        // Generate Linkinformation to redirect to _this_ page after performing an action
-        $link_str = '<a href="?command=%s&from=%s&mode=%s" class="paging_link">%s</a>';
-
-
-
         $command = isset($_GET['command']) ? $_GET['command']:'list-all';
         $mode = isset($_GET['mode'])?$_GET['mode']:'';
-
-
-
-        if ($paging_data['from']>1) {
-            $links['back'] = sprintf($link_str, $command, $paging_data['prev'], $mode, '&lt;&lt;');
-        } else {
-            $links['back'] = '';
-        }
-
-        if ( $paging_data['next']) {
-            $links['next'] = sprintf($link_str, $command, $paging_data['next'], $mode, '&gt;&gt;');
-        } else {
-            $links['next'] = '';
-        }
-
-        $links['current'] = '&from=' . $paging_data['from']  . '&mode=' . $mode;
-
+        $links = array('back' => '',
+                       'next' => '',
+                       'current' => '&mode='.$mode,
+                       );
         if (isset($_GET['command']) && $_GET['command'] == 'search') {
             $links['current'] .= '&redirect=search&0='.$_REQUEST[0].'&1='.$_REQUEST[1];
         }
 
-        $modes = array(
-            'installed'    => 'list installed packages',
-            ''             => 'list all packages',
-            'notinstalled' => 'list non-installed packages',
-            'upgrades'     => 'list avail. upgrades',
-            );
+        if ($paging) {
+            // Generate Linkinformation to redirect to _this_ page after performing an action
+            $link_str = '<a href="?command=%s&from=%s&mode=%s" class="paging_link">%s</a>';
 
-        $i = 1;
-        foreach($modes as $mode => $text) {
-            $tpl->setVariable('mode' . $i , !empty($mode) ? '&mode='.$mode : '');
-            $tpl->setVariable('mode' . $i.'text', $text);
-            $i++;
+            $pageId = isset($_GET['from']) ? $_GET['from'] : 0;
+            $paging_data = $this->__getData($pageId, $this->_paging_cats, count($data['data']), false);
+            $data['data'] = array_slice($data['data'], $pageId, $this->_paging_cats);
+            $from = $paging_data['from'];
+            $to = $paging_data['to'];
+
+            if ($paging_data['from']>1) {
+                $links['back'] = sprintf($link_str, $command, $paging_data['prev'], $mode, '&lt;&lt;');
+            }
+
+            if ( $paging_data['next']) {
+                $links['next'] = sprintf($link_str, $command, $paging_data['next'], $mode, '&gt;&gt;');
+            }
+
+            $links['current'] = '&from=' . $paging_data['from'];
+
+            $blocks = array('Paging_pre', 'Paging_post');
+            foreach ($blocks as $block) {
+                $tpl->setCurrentBlock($block);
+                $tpl->setVariable('Prev', $links['back']);
+                $tpl->setVariable('Next', $links['next']);
+                $tpl->setVariable('PagerFrom', $from);
+                $tpl->setVariable('PagerTo', $to);
+                $tpl->setVariable('PagerCount', $paging_data['numrows']);
+                $tpl->parseCurrentBlock();
+            }
         }
-
-        $tpl->setVariable('Prev', $links['back']);
-        $tpl->setVariable('Next', $links['next']);
-        $tpl->setVariable('PagerFrom', $from);
-        $tpl->setVariable('PagerTo', $to);
-        $tpl->setVariable('PagerCount', $paging_data['numrows']);
 
         $reg = &$this->config->getRegistry();
         foreach($data['data'] as $category => $packages) {
@@ -917,7 +900,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
             case 'list-channels':
                 return $this->_outputListChannels($data);
             case 'search':
-                return $this->_outputListAll($data, 'Package Search :: Result', 'pkgsearch', false, false);
+                return $this->_outputListAll($data, false);
             case 'remote-info':
                 return $this->_outputPackageRemoteInfo($data);
             case 'package-info': // = 'info' command

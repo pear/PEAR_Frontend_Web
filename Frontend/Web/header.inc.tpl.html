@@ -41,7 +41,13 @@
 
   <tr bgcolor="#006600">
     <td align="right" valign="top" colspan="3">
-        <span style="color : #FFFFFF;"><B>Current Channel :: {_default_channel}</B></span><br />
+        <span style="color : #FFFFFF; font-size : 0.8em;">
+        <form action="{InstallerURL}?command=search" method="post">
+            Search by packagename ({_default_channel})
+            <input type="text" name="0" value="" size="10">
+            <input type="submit" value="Go"></input>
+        </form>
+        </span>
     </td>
   </tr>
 
