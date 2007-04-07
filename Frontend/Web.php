@@ -317,11 +317,17 @@ class PEAR_Frontend_Web extends PEAR_Frontend
 
     function _outputListAll($data, $paging=true)
     {
+        if (!isset($data['data'])) {
+            return true;
+        }
+
         $tpl = $this->_initTemplate("package.list.tpl.html", $title, $img, $useDHTML);
         $tpl->setVariable('Caption', $data['caption']);
 
-        if (!isset($data['data'])) {
-            $data['data'] = array();
+        if (!is_array($data['data'])) {
+            $tpl->show();
+            print('<p>'.$data['data'].'</p>');
+            return true;
         }
 
         $command = isset($_GET['command']) ? $_GET['command']:'list-all';
@@ -1562,7 +1568,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
         if ($title) {
             $tpl->setVariable("Title", $title);
         } else {
-            $tpl->setVariable("Title", 'Web-based PEAR Installer');
+            $tpl->setVariable("Title", 'Web-based PEAR Frontend');
         }
 
         if ($icon) {

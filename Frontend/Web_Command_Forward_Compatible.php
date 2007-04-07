@@ -575,40 +575,42 @@ class Web_Command_Forward_Compatible extends PEAR_Command_Common
             $this->config->set('default_channel', $savechannel);
             return $this->raiseError($available);
         }
-        if (!$available) {
-            return $this->raiseError('no packages found that match pattern "' . $package . '"');
-        }
         $data = array(
             'caption' => 'Matched packages, channel ' . $channel . ':',
             'border' => true,
             'headline' => array('Channel', 'Package', 'Stable/(Latest)', 'Local'),
             );
+        // clean exit, no error !
+        if (!$available) {
+            unset($data['headline']);
+            $data['data'] = 'No packages found that match pattern "'.$package.'".';
+        } else {
+            foreach ($available as $name => $info) {
+                $installed = $reg->packageInfo($name, null, $channel);
+                $desc = $info['summary'];
+                if (isset($params[$name]))
+                    $desc .= "\n\n".$info['description'];
 
-        foreach ($available as $name => $info) {
-            $installed = $reg->packageInfo($name, null, $channel);
-            $desc = $info['summary'];
-            if (isset($params[$name]))
-                $desc .= "\n\n".$info['description'];
-
-            if (!isset($info['stable']) || !$info['stable']) {
-                $version_remote = 'none';
-            } else {
-                if ($info['unstable']) {
-                    $version_remote = $info['unstable'];
+                if (!isset($info['stable']) || !$info['stable']) {
+                    $version_remote = 'none';
                 } else {
-                    $version_remote = $info['stable'];
+                    if ($info['unstable']) {
+                        $version_remote = $info['unstable'];
+                    } else {
+                        $version_remote = $info['stable'];
+                    }
+                    $version_remote .= ' ('.$info['state'].')';
                 }
-                $version_remote .= ' ('.$info['state'].')';
+                $version = is_array($installed['version']) ? $installed['version']['release'] :
+                    $installed['version'];
+                $data['data'][$info['category']][] = array(
+                    $channel,
+                    $name,
+                    $version_remote,
+                    $version,
+                    $desc,
+                    );
             }
-            $version = is_array($installed['version']) ? $installed['version']['release'] :
-                $installed['version'];
-            $data['data'][$info['category']][] = array(
-                $channel,
-                $name,
-                $version_remote,
-                $version,
-                $desc,
-                );
         }
         $this->ui->outputData($data, $command);
         $this->config->set('default_channel', $channel);

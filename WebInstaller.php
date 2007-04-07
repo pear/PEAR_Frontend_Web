@@ -159,6 +159,9 @@ if (is_null($command)) {
             if ($_GET['command'] == 'install') {
                 // also install dependencies
                 $opts['onlyreqdeps'] = true;
+                if (isset($_GET['force']) && $_GET['force'] == 'on') {
+                    $opts['force'] = true;
+                }
             }
 
             if (strpos($_GET['pkg'], '\\\\') !== false) {
@@ -224,6 +227,28 @@ if (is_null($command)) {
             require_once('Frontend/Web_Command_Forward_Compatible.php');
             $cmd = new Web_Command_Forward_Compatible($ui, $config);
             $cmd->doSearch($command, $opts, $params);
+
+            break;
+        case 'search-all':
+            // only for quicksearchbar, for now
+            // Will become Forward_Compatible and reported to PEAR
+            if (isset($_POST['search_name'])) {
+                // iterate over all channels
+                $reg = &$config->getRegistry();
+                $channels = $reg->getChannels();
+                require_once('Frontend/Web_Command_Forward_Compatible.php');
+                $cmd = new Web_Command_Forward_Compatible($ui, $config);
+                $command = 'search';
+                $params = array($_POST['search_name']);
+            
+                $ui->startSession();
+                foreach ($channels as $channel) {
+                    if ($channel->getName() != '__uri') {
+                        $opts['channel'] = $channel->getName();
+                        $cmd->doSearch($command, $opts, $params);
+                    }
+                }
+            }
 
             break;
         case 'config-show':
