@@ -1,9 +1,9 @@
 <?php
-/*
+/**
   +----------------------------------------------------------------------+
   | PHP Version 4                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2003 The PHP Group                                |
+  | Copyright (c) 1997-2007 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 2.02 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -17,28 +17,44 @@
   |         Tias Guns <tias@ulyssis.org>                                 |
   +----------------------------------------------------------------------+
 
-  $Id$
-*/
+ * @category   pear
+ * @package    PEAR_Frontend_Web
+ * @author     Christian Dickmann <dickmann@php.net>
+ * @author     Tias Guns <tias@ulyssis.org>
+ * @copyright  1997-2007 The PHP Group
+ * @license    http://www.php.net/license/2_02.txt  PHP License 2.02
+ * @version    CVS: $Id$
+ * @link       http://pear.php.net/package/PEAR_Frontend_Web
+ * @since      File available since Release 0.1
+ */
 
+/**
+ * base class
+ */
 require_once "PEAR/Frontend.php";
 require_once "PEAR/Remote.php";
 require_once "HTML/Template/IT.php";
 require_once "Net/UserAgent/Detect.php";
 
 /**
-* PEAR_Frontend_Web is a HTML based Webfrontend for the PEAR Installer
-*
-* The Webfrontend provides basic functionality of the Installer, such as
-* a package list grouped by categories, a search mask, the possibility
-* to install/upgrade/uninstall packages and some minor things.
-* PEAR_Frontend_Web makes use of the PEAR::HTML_IT Template engine which
-* provides the possibillity to skin the Installer.
-*
-* @author  Christian Dickmann <dickmann@php.net>
-* @package PEAR_Frontend_Web
-* @access  private
-*/
-
+ * PEAR_Frontend_Web is a HTML based Webfrontend for the PEAR Installer
+ *
+ * The Webfrontend provides basic functionality of the Installer, such as
+ * a package list grouped by categories, a search mask, the possibility
+ * to install/upgrade/uninstall packages and some minor things.
+ * PEAR_Frontend_Web makes use of the PEAR::HTML_IT Template engine which
+ * provides the possibillity to skin the Installer.
+ *
+ * @category   pear
+ * @package    PEAR_Frontend_Web
+ * @author     Christian Dickmann <dickmann@php.net>
+ * @author     Tias Guns <tias@ulyssis.org>
+ * @copyright  1997-2007 The PHP Group
+ * @license    http://www.php.net/license/2_02.txt  PHP License 2.02
+ * @version    CVS: $Id$
+ * @link       http://pear.php.net/package/PEAR_Frontend_Web
+ * @since      File available since Release 0.1
+ */
 class PEAR_Frontend_Web extends PEAR_Frontend
 {
     // {{{ properties
@@ -53,14 +69,22 @@ class PEAR_Frontend_Web extends PEAR_Frontend
     /**
      * Container, where values can be saved temporary
      * @var array
-     * @access private
      */
     var $_data = array();
+
+    /**
+     * Used to save output, to display it later
+     */
     var $_savedOutput = array();
 
-    // }}}
+    /**
+     * The config object
+     */
     var $config;
 
+    /**
+     * List of packages that will not be deletable thourgh the webinterface
+     */
     var $_no_delete_pkgs = array(
         'pear.php.net/Archive_Tar',
         'pear.php.net/Console_Getopt',
@@ -71,19 +95,26 @@ class PEAR_Frontend_Web extends PEAR_Frontend
         'pear.php.net/Structures_Graph',
     );
 
+    /**
+     * List of channels that will not be deletable thourgh the webinterface
+     */
     var $_no_delete_chans = array(
         'pear.php.net',
         '__uri',
         );
 
+    /**
+     * How many categories to display on one 'list-all' page
+     */
     var $_paging_cats = 4;
 
     /**
      * Flag to determine whether to treat all output as information from a post-install script
      * @var bool
-     * @access private
      */
     var $_installScript = false;
+
+    // }}}
     // {{{ constructor
 
     function PEAR_Frontend_Web()
@@ -93,41 +124,17 @@ class PEAR_Frontend_Web extends PEAR_Frontend
         $this->config = &$GLOBALS['_PEAR_Frontend_Web_config'];
     }
 
-    // }}}
-
     function setConfig(&$config)
     {
         $this->config = &$config;
     }
 
-    // {{{ displayLine()
-
-    /* XXX some methods from CLI following. should be deleted in the near future */
-    function displayLine($text)
-    {
-        trigger_error("Frontend::display deprecated", E_USER_ERROR);
-    }
-
-    // }}}
-    // {{{ display()
-
-    function display($text)
-    {
-        trigger_error("Frontend::display deprecated", E_USER_ERROR);
-    }
-
-    // }}}
-    // {{{ userConfirm()
-
-    function userConfirm($prompt, $default = 'yes')
-    {
-        trigger_error("Frontend::display deprecated", E_USER_ERROR);
-        return false;
-    }
-
     // }}}
     // {{{ displayStart(prompt, [default])
 
+    /**
+     * Display the 'start' page, first page
+     */
     function displayStart()
     {
         $tpl = $this->_initTemplate("start.tpl.html");
@@ -139,19 +146,13 @@ class PEAR_Frontend_Web extends PEAR_Frontend
     // {{{ _initTemplate()
 
     /**
-     * Initialize a TemplateObject, add a title, and icon and add JS and CSS for DHTML
+     * Initialize a TemplateObject
      *
      * @param string  $file     filename of the template file
-     * @param string  $title    (optional) title of the page
-     * @param string  $icon     (optional) iconhandle for this page
-     * @param boolean $useDHTML (optional) add JS and CSS for DHTML-features
-     *
-     * @access private
      *
      * @return object Object of HTML/IT - Template - Class
      */
-
-    function _initTemplate($file, $title = '', $icon = '', $useDHTML = true)
+    function _initTemplate($file)
     {
         // Errors here can not be displayed using the UI
         PEAR::staticPushErrorHandling(PEAR_ERROR_PRINT);
@@ -179,7 +180,6 @@ class PEAR_Frontend_Web extends PEAR_Frontend
      *
      * @return null does not return anything, but exit the script
      */
-
     function displayError($eobj, $title = 'Error', $img = 'error', $popup = false)
     {
         $msg = '';
@@ -223,12 +223,14 @@ class PEAR_Frontend_Web extends PEAR_Frontend
      *
      * @see PEAR_Frontend_Web::displayError()
      */
-
     function displayFatalError($eobj, $title = 'Error', $img = 'error')
     {
         $this->displayError($eobj, $title, $img);
     }
 
+    /**
+     * Display error as popup
+     */
     function displayErrorImg($eobj)
     {
         $msg = '';
@@ -248,6 +250,9 @@ class PEAR_Frontend_Web extends PEAR_Frontend
     // }}}
     // {{{ _outputListChannels()
 
+    /**
+     * Output the list of channels
+     */
     function _outputListChannels($data, $title = 'Manage Installer Channels',
                             $img = 'pkglist', $useDHTML = false)
     {
@@ -310,11 +315,8 @@ class PEAR_Frontend_Web extends PEAR_Frontend
      * @param array   $data     array containing all data to display the list
      * @param boolean $paging   (optional) use Paging or not
      *
-     * @access private
-     *
      * @return boolean true (yep. i am an optimist)
      */
-
     function _outputListAll($data, $paging=true)
     {
         if (!isset($data['data'])) {
@@ -457,11 +459,9 @@ class PEAR_Frontend_Web extends PEAR_Frontend
     // {{{ _outputList()
 
     /**
-     * Output the list of installed packages. Uses Paging
+     * Output the list of installed packages.
      *
      * @param array   $data     array containing all data to display the list
-     *
-     * @access private
      *
      * @return boolean true (yep. i am an optimist)
      */
@@ -537,11 +537,9 @@ class PEAR_Frontend_Web extends PEAR_Frontend
     // {{{ _outputListUpgrades()
 
     /**
-     * Output the list of installed packages. Uses Paging
+     * Output the list of available upgrades packages.
      *
      * @param array   $data     array containing all data to display the list
-     *
-     * @access private
      *
      * @return boolean true (yep. i am an optimist)
      */
@@ -666,8 +664,6 @@ class PEAR_Frontend_Web extends PEAR_Frontend
      *
      * @param array $data array containing all information about the package
      *
-     * @access private
-     *
      * @return boolean true (yep. i am an optimist)
      */
     function _outputPackageInfo($data)
@@ -709,8 +705,6 @@ class PEAR_Frontend_Web extends PEAR_Frontend
      * Output details of one package, remote-info
      *
      * @param array $data array containing all information about the package
-     *
-     * @access private
      *
      * @return boolean true (yep. i am an optimist)
      */
@@ -807,8 +801,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
     }
 
     /**
-     * Output given data in a generic table,
-     * possible prepend caption
+     * Output given data in a generic table, possibly prepend caption
      */
     function _outputGenericTable($caption, $data) {
         $tpl = $this->_initTemplate('generic_table.tpl.html');
@@ -827,12 +820,11 @@ class PEAR_Frontend_Web extends PEAR_Frontend
         $tpl->show();
         return true;
     }
+
     /**
      * Output details of one channel
      *
      * @param array $data array containing all information about the channel
-     *
-     * @access private
      *
      * @return boolean true (yep. i am an optimist)
      */
@@ -880,7 +872,6 @@ class PEAR_Frontend_Web extends PEAR_Frontend
      *
      * @return mixed highly depends on the command
      */
-
     function outputData($data, $command = '_default')
     {
         switch ($command) {
@@ -949,6 +940,9 @@ class PEAR_Frontend_Web extends PEAR_Frontend
         return true;
     }
 
+    /**
+     * Output the 'upgrade-all' page
+     */
     function outputUpgradeAll()
     {
         $tpl = $this->_initTemplate('upgrade_all.tpl.html');
@@ -956,6 +950,9 @@ class PEAR_Frontend_Web extends PEAR_Frontend
         $tpl->show();
     }
 
+    /**
+     * Start session: starts saving output temporary
+     */
     function startSession()
     {
         if ($this->_installScript) {
@@ -968,6 +965,9 @@ class PEAR_Frontend_Web extends PEAR_Frontend
         }
     }
 
+    /**
+     * End session: output all saved output
+     */
     function finishOutput($command, $redirectLink = false)
     {
         unset($_SESSION['_PEAR_Frontend_Web_SavedOutput']);
@@ -987,6 +987,8 @@ class PEAR_Frontend_Web extends PEAR_Frontend
     }
 
     /**
+     * Run postinstall scripts
+     *
      * @param array An array of PEAR_Task_Postinstallscript objects (or related scripts)
      * @param PEAR_PackageFile_v2
      */
@@ -1197,6 +1199,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
 
     /**
      * Ask for user input, confirm the answers and continue until the user is satisfied
+     *
      * @param array an array of arrays, format array('name' => 'paramname', 'prompt' =>
      *              'text to display', 'type' => 'string'[, default => 'default value'])
      * @param string Package Name
@@ -1250,7 +1253,6 @@ class PEAR_Frontend_Web extends PEAR_Frontend
      *
      * @return array input sended by the user
      */
-
     function userDialog($command, $prompts, $types = array(), $defaults = array(), $title = '',
                         $icon = '', $extra = array())
     {
@@ -1337,7 +1339,6 @@ class PEAR_Frontend_Web extends PEAR_Frontend
      *
      * @return boolean true
      */
-
     function log($text)
     {
         $GLOBALS['_PEAR_Frontend_Web_log'] .= $text."\n";
@@ -1355,7 +1356,6 @@ class PEAR_Frontend_Web extends PEAR_Frontend
      *
      * @return null nothing, because script exits
      */
-
     function outputFrontendFile($handle, $group)
     {
         $handles = array(
@@ -1553,6 +1553,9 @@ class PEAR_Frontend_Web extends PEAR_Frontend
     // }}}
     // {{{ outputBegin($command)
 
+    /**
+     * Start output, HTML header etc
+     */
     function outputBegin($command)
     {
         $tpl = $this->_initTemplate('top.inc.tpl.html');
@@ -1634,6 +1637,9 @@ class PEAR_Frontend_Web extends PEAR_Frontend
     // }}}
     // {{{ outputEnd($command)
 
+    /**
+     * End output, HTML footer etc
+     */
     function outputEnd($command)
     {
         if ($command == 'list') {
@@ -1646,6 +1652,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
     }
 
     // }}}
+
 }
 
 ?>

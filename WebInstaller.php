@@ -1,5 +1,5 @@
 <?php
-/*
+/**
   +----------------------------------------------------------------------+
   | PHP Version 4                                                        |
   +----------------------------------------------------------------------+
@@ -18,8 +18,25 @@
   |         Tias Guns <tias@ulyssis.org>                                 |
   +----------------------------------------------------------------------+
 
-  $Id$
-*/
+ * Web-based PEAR Frontend, include this file to display the fontend.
+ * This file does the basic configuration, handles all requests and calls
+ * the needed commands.
+ *
+ * @category   pear
+ * @package    PEAR_Frontend_Web
+ * @author     Christian Dickmann <dickmann@php.net>
+ * @author     Pierre-Alain Joye <pajoye@php.net>
+ * @author     Tias Guns <tias@ulyssis.org>
+ * @copyright  1997-2007 The PHP Group
+ * @license    http://www.php.net/license/2_02.txt  PHP License 2.02
+ * @version    CVS: $Id$
+ * @link       http://pear.php.net/package/PEAR_Frontend_Web
+ * @since      File available since Release 0.1
+ */
+
+/**
+ * This is PEAR_Frontend_Web
+ */
 define('PEAR_Frontend_Web',1);
 @session_start();
 $_SESSION['_PEAR_Frontend_Web_version'] = '0.6.0';
@@ -32,7 +49,9 @@ if (isset($_GET['enableJS']) && $_GET['enableJS'] == 1) {
 }
 define('USE_DHTML_PROGRESS', (@$useDHTML && $_SESSION['_PEAR_Frontend_Web_js']));
 
-// Include needed files
+/**
+ * base frontend class
+ */
 require_once 'PEAR/Frontend.php';
 require_once 'PEAR/Registry.php';
 require_once 'PEAR/Config.php';
@@ -142,7 +161,7 @@ if (!(USE_DHTML_PROGRESS && isset($_GET['dhtml']))) {
     $ui->outputBegin($command);
 }
 
-// Handle some diffrent Commands
+// Handle some different Commands
 if (is_null($command)) {
     $ui->displayStart();
 } else {
