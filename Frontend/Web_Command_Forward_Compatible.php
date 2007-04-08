@@ -533,20 +533,37 @@ class Web_Command_Forward_Compatible extends PEAR_Command_Common
     // }}}
     // {{{ doSearch()
     // Needed for bug #10599 :: search packagename: quick
+    // Needed for bug #10659 :: search allchannels
     // Original file: Command/Remote.php
     function doSearch($command, $options, $params)
     {
-        require_once 'PEAR/Command/Remote.php';
-        $cmd = new PEAR_Command_Remote(&$this->ui, &$this->config);
-
         if ((!isset($params[0]) || empty($params[0]))
             && (!isset($params[1]) || empty($params[1])))
         {
             return $this->raiseError('no valid search string supplied');
         };
 
-        $savechannel = $channel = $this->config->get('default_channel');
         $reg = &$this->config->getRegistry();
+        if ($options['allchannels'] == true) {
+            // search all channels
+            unset($options['allchannels']);
+            $channels = $reg->getChannels();
+            foreach ($channels as $channel) {
+                if ($channel->getName() != '__uri') {
+                    $options['channel'] = $channel->getName();
+                    $ret = $this->doSearch($command, $options, $params);
+                    if ($ret !== true) {
+                        return $ret;
+                    }
+                }
+            }
+            return true;
+        }
+
+        require_once 'PEAR/Command/Remote.php';
+        $cmd = new PEAR_Command_Remote(&$this->ui, &$this->config);
+
+        $savechannel = $channel = $this->config->get('default_channel');
         $package = $params[0];
         $summary = isset($params[1]) ? $params[1] : false;
         if (isset($options['channel'])) {

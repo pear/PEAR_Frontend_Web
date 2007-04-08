@@ -233,40 +233,33 @@ if (is_null($command)) {
 
             break;
         case 'search':
-            // TODO: search pkg_name (fastest), category (fast), pkg_info (slow)
-            // TODO: over all channels or option which channel !
-            list($name, $description) = $ui->userDialog('search',
-                array('Package Name', 'Package Info'), // Prompts
-                array(), array(), // Types, Defaults
-                'Package Search', 'pkgsearch' // Title, Icon
-                );
+            if (!isset($_POST['search']) || $_POST['search'] == '') {
+                // unsubmited, show forms
+                $ui->outputSearch();
+            } else {
+                if ($_POST['channel'] == 'all') {
+                    $opts['allchannels'] = true;
+                } else {
+                    $opts['channel'] = $_POST['channel'];
+                }
 
-            // Forward compatible (bug #10495)
-            $params = array($name, $description);
-            require_once('Frontend/Web_Command_Forward_Compatible.php');
-            $cmd = new Web_Command_Forward_Compatible($ui, $config);
-            $cmd->doSearch($command, $opts, $params);
+                // submited, do search
+                switch ($_POST['search']) {
+                    case 'name':
+                        $params = array($_POST['input']);
+                        break;
+                    case 'description':
+                        $params = array($_POST['input'], $_POST['input']);
+                        break;
+                    default:
+                        PEAR::raiseError('Can\'t search for '.$_POST['search']);
+                        break;
+                }
 
-            break;
-        case 'search-all':
-            // only for quicksearchbar, for now
-            // Will become Forward_Compatible and reported to PEAR
-            if (isset($_POST['search_name'])) {
-                // iterate over all channels
-                $reg = &$config->getRegistry();
-                $channels = $reg->getChannels();
+                // Forward compatible (bug #10495)
                 require_once('Frontend/Web_Command_Forward_Compatible.php');
                 $cmd = new Web_Command_Forward_Compatible($ui, $config);
-                $command = 'search';
-                $params = array($_POST['search_name']);
-            
-                $ui->startSession();
-                foreach ($channels as $channel) {
-                    if ($channel->getName() != '__uri') {
-                        $opts['channel'] = $channel->getName();
-                        $cmd->doSearch($command, $opts, $params);
-                    }
-                }
+                $cmd->doSearch($command, $opts, $params);
             }
 
             break;

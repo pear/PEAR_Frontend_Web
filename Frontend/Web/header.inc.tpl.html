@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <html>
 <head>
- <title>PEAR :: Installer :: {Title}</title>
+ <title>PEAR :: {Title}</title>
  <link rel="stylesheet" href="{InstallerURL}?css=style" />
  {DHTMLcss}
  <script language="javascript" src="{InstallerURL}?js={JS}"></script>
@@ -42,9 +42,11 @@
   <tr bgcolor="#006600">
     <td align="right" valign="top" colspan="3">
         <span style="color : #FFFFFF; font-size : 0.8em;">
-        <form action="{InstallerURL}?command=search-all" method="post">
+        <form action="{InstallerURL}?command=search" method="post">
+            <input type="hidden" name="search" value="name" />
             Search package by name
-            <input type="text" name="search_name" value="" size="10">
+            <input type="text" name="input" value="" size="10">
+            <input type="hidden" name="channel" value="all" />
             <input type="submit" value="Go"></input>
         </form>
         </span>

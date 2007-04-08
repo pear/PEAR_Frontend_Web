@@ -328,7 +328,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
 
         if (!is_array($data['data'])) {
             $tpl->show();
-            print('<p>'.$data['data'].'</p>');
+            print('<p><table><tr><td width="50">&nbsp;</td><td>'.$data['data'].'</td></tr></table></p>');
             return true;
         }
 
@@ -948,6 +948,47 @@ class PEAR_Frontend_Web extends PEAR_Frontend
         $tpl = $this->_initTemplate('upgrade_all.tpl.html');
         $tpl->setVariable('UpgradeAllURL', $_SERVER['PHP_SELF']);
         $tpl->show();
+    }
+
+    /**
+     * Output the 'search' page
+     */
+    function outputSearch()
+    {
+        $reg = $this->config->getRegistry();
+        $channels = $reg->getChannels();
+        $channel_select = array('all' => 'All channels');
+        foreach ($channels as $channel) {
+            if ($channel->getName() != '__uri') {
+                $channel_select[$channel->getName()] = $channel->getName();
+            }
+        }
+
+        // TODO: search category name
+        // search-types to display
+        $arr = array(
+              'name' => array('title' => 'Search package by name (fast)',
+                              'descr' => 'Package name'),
+              'description' => array('title' => 'Search package by name and description (slow)',
+                                     'descr' => 'Search:'),
+             );
+
+        foreach($arr as $type => $values) {
+            $tpl = $this->_initTemplate('search.tpl.html');
+            $tpl->setCurrentBlock('Search');
+            foreach($channel_select as $key => $value) {
+                $tpl->setCurrentBlock('Search_channel');
+                $tpl->setVariable('Key', $key);
+                $tpl->setVariable('Value', $value);
+                $tpl->parseCurrentBlock();
+            }
+            $tpl->setVariable('InstallerURL', $_SERVER['PHP_SELF']);
+            $tpl->setVariable('Search_type', $type);
+            $tpl->setVariable('Title', $values['title']);
+            $tpl->setVariable('Description', $values['descr']);
+            $tpl->parseCurrentBlock();
+            $tpl->show();
+        }
     }
 
     /**
