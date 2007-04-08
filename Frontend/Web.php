@@ -1236,6 +1236,15 @@ class PEAR_Frontend_Web extends PEAR_Frontend
     }
 
     /**
+     * Useless function that needs to exists for Frontend::setFrontendObject()
+     * Reported in bug #10656
+     */
+    function userConfirm($prompt, $default = 'yes')
+    {
+        trigger_error("PEAR_Frontend_Web::userConfirm not used", E_USER_ERROR);
+    }
+
+    /**
      * Display a formular and return the given input (yes. needs to requests)
      *
      * @param string $command  command from which this method was called
