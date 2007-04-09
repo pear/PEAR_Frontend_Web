@@ -69,6 +69,7 @@
         <dir name="Web">
           <file baseinstalldir="PEAR" name="bottom.inc.tpl.html" role="php"/>
           <file baseinstalldir="PEAR" name="caption.tpl.html" role="php"/>
+          <file baseinstalldir="PEAR" name="categories.tpl.html" role="php"/>
           <file baseinstalldir="PEAR" name="category.jpg" role="php"/>
           <file baseinstalldir="PEAR" name="channel.list.tpl.html" role="php"/>
           <file baseinstalldir="PEAR" name="config.gif" role="php"/>

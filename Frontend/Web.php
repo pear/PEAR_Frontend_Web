@@ -263,7 +263,6 @@ class PEAR_Frontend_Web extends PEAR_Frontend
         if (!isset($data['data'])) {
             $data['data'] = array();
         }
-        $command = isset($_GET['command']) ? $_GET['command'] : 'list-channels';
 
         $reg = &$this->config->getRegistry();
         foreach($data['data'] as $row) {
@@ -306,6 +305,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
         $tpl->show();
         return true;
     }
+
     // }}}
     // {{{ _outputListAll()
 
@@ -456,6 +456,110 @@ class PEAR_Frontend_Web extends PEAR_Frontend
     }
 
     // }}}
+    // {{{ _outputListCategories()
+
+    /**
+     * Output the list of categories of a channel
+     *
+     * @param array   $data     array containing all data to display the list
+     *
+     * @return boolean true (yep. i am an optimist)
+     */
+    function _outputListCategories($data)
+    {
+        $channel = $data['channel'];
+
+        if (!is_array($data['data']) && $channel == '__uri') {
+            // no categories in __uri, don't show this ugly duck !
+            return true;
+        }
+
+        $tpl = $this->_initTemplate('categories.list.tpl.html');
+
+        $tpl->setVariable('categoryName', $data['caption']);
+        $tpl->setVariable('channel', $data['channel']);
+
+        // set headlines
+        if (isset($data['headline']) && is_array($data['headline'])) {
+            foreach($data['headline'] as $text) {
+                $tpl->setCurrentBlock('Headline');
+                $tpl->setVariable('Text', $text);
+                $tpl->parseCurrentBlock();
+            }
+        } else {
+            $tpl->setCurrentBlock('Headline');
+            $tpl->setVariable('Text', $data['data']);
+            $tpl->parseCurrentBlock();
+            unset($data['data']); //clear
+        }
+
+        // set extra title info
+        $tpl->setCurrentBlock('Title_info');
+        $info = sprintf('<a href="%s?command=list-packages&chan=%s" class="green">List all packagenames of this channel.</a>',
+                        $_SERVER['PHP_SELF'],
+                        $channel
+                            );
+        //TODO implement this
+        $tpl->setVariable('Text', $info);
+        $tpl->parseCurrentBlock();
+
+        $tpl->setCurrentBlock('Title_info');
+        $info = sprintf('<a href="%s?command=list-categories&chan=%s&opt=packages" class="green">List all packagenames, by category, of this channel.</a>',
+                        $_SERVER['PHP_SELF'],
+                        $channel
+                            );
+        //TODO implement this
+        $tpl->setVariable('Text', $info);
+        $tpl->parseCurrentBlock();
+
+
+        if (isset($data['data']) && is_array($data['data'])) {
+            foreach($data['data'] as $row) {
+                list($channel, $category, $packages) = $row;
+
+                $tpl->setCurrentBlock('Data_row');
+                $tpl->setVariable('Text', $channel);
+                $tpl->parseCurrentBlock();
+
+                $tpl->setCurrentBlock('Data_row');
+                $info = sprintf('<a href="%s?command=list-category&cat=%s" class="green">%s</a>',
+                            $_SERVER['PHP_SELF'],
+                            $category,
+                            $category
+                                );
+                $tpl->setVariable('Text', $info);
+                $tpl->parseCurrentBlock();
+
+                if (is_array($packages)) {
+                    $info = '';
+                    foreach($packages as $i => $package) {
+                        $info .= sprintf('<a href="%s?command=info&pkg=%s/%s" class="green">%s</a>',
+                                    $_SERVER['PHP_SELF'],
+                                    $channel,
+                                    $package,
+                                    $package
+                                        );
+
+                        if ($i+1 != count($packages)) {
+                            $info .= ', ';
+                        }
+                    }
+                    $tpl->setCurrentBlock('Data_row');
+                    $tpl->setVariable('Text', $info);
+                    $tpl->parseCurrentBlock();
+                }
+
+                $tpl->setCurrentBlock('Data');
+                $tpl->parseCurrentBlock();
+            }
+        }
+
+        $tpl->show();
+
+        return true;
+    }
+
+    // }}}
     // {{{ _outputList()
 
     /**
@@ -478,8 +582,6 @@ class PEAR_Frontend_Web extends PEAR_Frontend
 
         $tpl->setVariable('categoryName', $data['caption']);
         //$tpl->setVariable('Border', $data['border']);
-
-        $command = isset($_GET['command']) ? $_GET['command']:'list';
 
         // set headlines
         if (isset($data['headline']) && is_array($data['headline'])) {
@@ -552,7 +654,6 @@ class PEAR_Frontend_Web extends PEAR_Frontend
 
         
         $channel = $data['channel'];
-        $command = isset($_GET['command']) ? $_GET['command']:'list';
 
         // set headlines
         if (isset($data['headline']) && is_array($data['headline'])) {
@@ -890,6 +991,8 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                 return true;
             case 'list-all':
                 return $this->_outputListAll($data);
+            case 'list-categories':
+                return $this->_outputListCategories($data);
             case 'list-upgrades':
                 return $this->_outputListUpgrades($data);
             case 'list':
@@ -1660,20 +1763,29 @@ class PEAR_Frontend_Web extends PEAR_Frontend
         // submenu's for list, list-upgrades and list-all
         if ($command == 'list' ||
             $command == 'list-upgrades' ||
-            $command == 'list-all') {
+            $command == 'list-all' ||
+            $command == 'list-categories' ||
+            $command == 'list-category') {
             
             $tpl = $this->_initTemplate('package.submenu.tpl.html');
 
             $menus = array(
-                'list'          => 'list installed packages',
-                'list-upgrades' => 'list available upgrades',
-                'list-all'      => 'list all packages',
+                'list'              => 'list installed packages',
+                'list-upgrades'     => 'list available upgrades',
+                'list-categories'   => 'list all categories',
             );
+            $highlight_map = array(
+                'list' => 'list',
+                'list-upgrades' => 'list-upgrades',
+                'list-all' => 'list-categories',
+                'list-categories' => 'list-categories',
+                'list-category' => 'list-category',
+                    );
             foreach ($menus as $name => $text) {
                 $tpl->setCurrentBlock('Submenu');
                 $tpl->setVariable("href", $_SERVER["PHP_SELF"].'?command='.$name);
                 $tpl->setVariable("text", $text);
-                if ($command == $name) {
+                if ($name == $highlight_map[$command]) {
                     $tpl->setVariable("class", 'red');
                 } else {
                     $tpl->setVariable("class", 'green');

@@ -228,6 +228,111 @@ class Web_Command_Forward_Compatible extends PEAR_Command_Common
     }
 
     // }}}
+    // {{{ doListCategories()
+    // Reported in bug !UNSBUMITTED!
+    // Original file will be: Command/Remote.php
+    function doListCategories($command, $options, $params)
+    {
+        require_once 'PEAR/Command/Remote.php';
+        $cmd = new PEAR_Command_Remote(&$this->ui, &$this->config);
+
+        $reg = &$this->config->getRegistry();
+        if ($options['allchannels'] == true) {
+            // over all channels
+            unset($options['allchannels']);
+            $channels = $reg->getChannels();
+            foreach ($channels as $channel) {
+                if ($channel->getName() != '__uri') {
+                    $options['channel'] = $channel->getName();
+                    $ret = $this->doListCategories($command, $options, $params);
+                    if ($ret !== true) {
+                        return $ret;
+                    }
+                }
+            }
+            return true;
+        }
+
+        $savechannel = $channel = $this->config->get('default_channel');
+        if (isset($options['channel'])) {
+            $channel = $options['channel'];
+            if ($reg->channelExists($channel)) {
+                $this->config->set('default_channel', $channel);
+            } else {
+                return $this->raiseError("Channel \"$channel\" does not exist");
+            }
+        }
+        $chan = $reg->getChannel($channel);
+        if (PEAR::isError($e = $cmd->_checkChannelForStatus($channel, $chan))) {
+            return $e;
+        }
+        if ($chan->supportsREST($this->config->get('preferred_mirror')) &&
+              $base = $chan->getBaseURL('REST1.0', $this->config->get('preferred_mirror'))) {
+            $rest = &$this->config->getREST('1.0', array());
+            $categories = $this->REST_listCategories(&$rest, $base);
+        } else {
+            return PEAR::raiseError($command.' only works for REST servers');
+        }
+        if (PEAR::isError($categories)) {
+            $this->config->set('default_channel', $savechannel);
+            return $this->raiseError('The category list could not be fetched from the remote server. Please try again. (Debug info: "' . $categories->getMessage() . '")');
+        }
+
+        $data = array(
+            'caption' => 'Channel ' . $channel . ' All categories:',
+            'border' => true,
+            'headline' => array('Channel', 'Category'),
+            'channel' => $channel,
+            );
+
+        if (count($categories) === 0) {
+            unset($data['headline']);
+            $data['data'] = 'No categories registered';
+        } else {
+            $data['data'] = array();
+            foreach($categories as $item) {
+                $array = array(
+                        $channel,
+                        $item['_content'],
+                            );
+                if (isset($options['packages']) && $options['packages']) {
+                    // get packagenames
+                    // TODO
+                    //$array[] = array('Tias1', 'Tias2');
+                }
+                $data['data'][] = $array;
+            }
+        }
+
+        $this->config->set('default_channel', $savechannel);
+        $this->ui->outputData($data, $command);
+        return true;
+    }
+
+    /**
+     * List all categories of a REST server
+     *
+     * @param string $base base URL of the server
+     * @return array of categorynames
+     */
+    // Reported in bug !UNREPORTED!
+    // Original file: REST/10.php
+    function REST_listCategories(&$rest, $base)
+    {
+        $categorylist = $rest->_rest->retrieveData($base . 'c/categories.xml');
+        if (PEAR::isError($categorylist)) {
+            return $categorylist;
+        }
+        if (!is_array($categorylist) || !isset($categorylist['c'])) {
+            return array();
+        }
+        if (!is_array($categorylist['c'])) {
+            $categorylist['c'] = array($categorylist['c']);
+        }
+        return $categorylist['c'];
+    }
+
+    // }}}
     // {{{ doListAll()
     // Reported in bug #10495 :: list-all with channel information etc
     // Original file: Command/Remote.php

@@ -296,6 +296,20 @@ if (is_null($command)) {
             $cmd->doListAll($command, $opts, $params);
 
             break;
+        case 'list-categories':
+            if (isset($_GET['chan']) && $_GET['chan'] != '') {
+                $opts['channel'] = $_GET['chan'];
+            } else {
+                $opts['allchannels'] = true;
+            }
+            if (isset($_GET['opt']) && $_GET['opt'] == 'packages') {
+                $opts['packages'] = true;
+            }
+            // Forward compatible (bug unsubmitted)
+            require_once('Frontend/Web_Command_Forward_Compatible.php');
+            $cmd = new Web_Command_Forward_Compatible($ui, $config);
+            $cmd->doListCategories($command, $opts, $params);
+            break;
         case 'list':
             $opts['allchannels'] = true;
             // Forward compatible (bug #10496)
