@@ -228,6 +228,84 @@ class Web_Command_Forward_Compatible extends PEAR_Command_Common
     }
 
     // }}}
+    // {{{ doListPackages()
+    // Reported in bug !UNSBUMITTED!
+    // Original file will be: Command/Remote.php
+    function doListPackages($command, $options, $params)
+    {
+        require_once 'PEAR/Command/Remote.php';
+        $cmd = new PEAR_Command_Remote(&$this->ui, &$this->config);
+
+        $reg = &$this->config->getRegistry();
+        if ($options['allchannels'] == true) {
+            // over all channels
+            unset($options['allchannels']);
+            $channels = $reg->getChannels();
+            foreach ($channels as $channel) {
+                if ($channel->getName() != '__uri') {
+                    $options['channel'] = $channel->getName();
+                    $ret = $this->doListPackages($command, $options, $params);
+                    if ($ret !== true) {
+                        return $ret;
+                    }
+                }
+            }
+            return true;
+        }
+
+        $savechannel = $channel = $this->config->get('default_channel');
+        if (isset($options['channel'])) {
+            $channel = $options['channel'];
+            if ($reg->channelExists($channel)) {
+                $this->config->set('default_channel', $channel);
+            } else {
+                return $this->raiseError("Channel \"$channel\" does not exist");
+            }
+        }
+        $chan = $reg->getChannel($channel);
+        if (PEAR::isError($e = $cmd->_checkChannelForStatus($channel, $chan))) {
+            return $e;
+        }
+        if ($chan->supportsREST($this->config->get('preferred_mirror')) &&
+              $base = $chan->getBaseURL('REST1.0', $this->config->get('preferred_mirror'))) {
+            $rest = &$this->config->getREST('1.0', array());
+            $packages = $rest->listPackages($base);
+        } else {
+            return PEAR::raiseError($command.' only works for REST servers');
+        }
+        if (PEAR::isError($packages)) {
+            $this->config->set('default_channel', $savechannel);
+            return $this->raiseError('The package list could not be fetched from the remote server. Please try again. (Debug info: "' . $packages->getMessage() . '")');
+        }
+
+        $data = array(
+            'caption' => 'Channel ' . $channel . ' All packages:',
+            'border' => true,
+            'headline' => array('Channel', 'Package'),
+            'channel' => $channel,
+            );
+
+        if (count($packages) === 0) {
+            unset($data['headline']);
+            $data['data'] = 'No packages registered';
+        } else {
+            $data['data'] = array();
+            foreach($packages as $item) {
+                $array = array(
+                        $channel,
+                        $item,
+                            );
+                $data['data'][] = $array;
+            }
+        }
+
+        $this->config->set('default_channel', $savechannel);
+        $this->ui->outputData($data, $command);
+        return true;
+    }
+
+
+    // }}}
     // {{{ doListCategories()
     // Reported in bug !UNSBUMITTED!
     // Original file will be: Command/Remote.php
@@ -307,6 +385,103 @@ class Web_Command_Forward_Compatible extends PEAR_Command_Common
         $this->config->set('default_channel', $savechannel);
         $this->ui->outputData($data, $command);
         return true;
+    }
+
+    // }}}
+    // {{{ doListCategory()
+    // Reported in bug !UNSBUMITTED!
+    // Original file will be: Command/Remote.php
+    function doListCategory($command, $options, $params)
+    {
+        require_once 'PEAR/Command/Remote.php';
+        $cmd = new PEAR_Command_Remote(&$this->ui, &$this->config);
+
+        $channel = array_shift($params);
+        if (count($params) > 1) {
+            foreach($params as $pkg) {
+                $ret = $this->doListCategory($command, $options, array($channel, $pkg));
+                if ($ret !== true) {
+                    return $ret;
+                }
+            }
+            return $ret;
+        }
+        $category = $params[0];
+            
+        $savechannel = $this->config->get('default_channel');
+        $reg = &$this->config->getRegistry();
+        if ($reg->channelExists($channel)) {
+            $this->config->set('default_channel', $channel);
+        } else {
+            return $this->raiseError("Channel \"$channel\" does not exist");
+        }
+
+        $chan = $reg->getChannel($channel);
+        if (PEAR::isError($e = $cmd->_checkChannelForStatus($channel, $chan))) {
+            return $e;
+        }
+        if ($chan->supportsREST($this->config->get('preferred_mirror')) &&
+              $base = $chan->getBaseURL('REST1.0', $this->config->get('preferred_mirror'))) {
+            $rest = &$this->config->getREST('1.0', array());
+        } else {
+            return PEAR::raiseError($command.' only works for REST servers');
+        }
+        if (PEAR::isError($categories)) {
+            $this->config->set('default_channel', $savechannel);
+            return $this->raiseError('The category list could not be fetched from the remote server. Please try again. (Debug info: "' . $categories->getMessage() . '")');
+        }
+
+        $data = array(
+            'caption' => 'Channel '.$channel.' Category '.$category.' All packages:',
+            'border' => true,
+            'headline' => array('Channel', 'Package'),
+            'channel' => $channel,
+            );
+        $packages = $this->REST_listCategory(&$rest, $base, $category);
+        if (count($packages) === 0) {
+            unset($data['headline']);
+            $data['data'] = 'No packages registered';
+        } else {
+            $data['data'] = array();
+            foreach($packages as $item) {
+                $array = array(
+                        $channel,
+                        $item['_content'],
+                            );
+                $data['data'][] = $array;
+            }
+        }
+
+        $this->config->set('default_channel', $savechannel);
+        $this->ui->outputData($data, $command);
+        return true;
+    }
+
+    /**
+     * List a category of a REST server
+     *
+     * @param string $base base URL of the server
+     * @param string $category name of the category
+     * @param boolean $info also download full package info TODO
+     * @return array of packagenames
+     */
+    // Reported in bug !UNREPORTED!
+    // Original file: REST/10.php
+    function REST_listCategory(&$rest, $base, $category, $info=false)
+    {
+        // gives '404 Not Found' error when category doesn't exist
+        $packagelist = $rest->_rest->retrieveData($base.'c/'.urlencode($category).'/packages.xml');
+        if (PEAR::isError($packagelist)) {
+            return $packagelist;
+        }
+        if (!is_array($packagelist) || !isset($packagelist['p'])) {
+            return array();
+        }
+        if (!is_array($packagelist['p']) ||
+            !isset($packagelist['p'][0])) { // only 1 pkg
+            $packagelist['p'] = array($packagelist['p']);
+        }
+        return $packagelist['p'];
     }
 
     /**

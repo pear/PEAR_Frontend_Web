@@ -456,16 +456,69 @@ class PEAR_Frontend_Web extends PEAR_Frontend
     }
 
     // }}}
-    // {{{ _outputListCategories()
+    // {{{ _outputListPackages()
 
     /**
-     * Output the list of categories of a channel
+     * Output packagenames (of a channel or category)
      *
-     * @param array   $data     array containing all data to display the list
+     * @param array $data array containing all information about the packages
      *
      * @return boolean true (yep. i am an optimist)
      */
-    function _outputListCategories($data)
+    function _outputListPackages($data)
+    {
+        $ROWSPAN=3;
+
+        $caption = sprintf('<a name="%s"><img src="%s?img=category" /> %s (%s)</a>',
+                            $data['channel'],
+                            $_SERVER['PHP_SELF'],
+                            $data['caption'],
+                            count($data['data']));
+
+        $newdata = null;
+        if (!is_array($data['data'])) {
+            $newdata = $data['data'];
+        } else {
+            $newdata = array(0 => array());
+            $row = 0;
+            $col = 0;
+            $rows = ceil(count($data['data'])/$ROWSPAN);
+            foreach ($data['data'] as $package) {
+                if ($row == $rows) { // row is full
+                    $row = 0;
+                    $col++;
+                }
+                if ($col == 0) { // create clean arrays
+                    $newdata[$row] = array();
+                }
+                $newdata[$row][$col] = sprintf('<img src="%s?img=package" /> <a href="%s?command=info&pkg=%s/%s">%s</a>',
+                                $_SERVER['PHP_SELF'],
+                                $_SERVER['PHP_SELF'],
+                                $package[0],
+                                $package[1],
+                                $package[1]);
+                $row++;
+            }
+            while ($row != $rows) {
+                $newdata[$row][$col] = '&nbsp;';
+                $row++;
+            }
+        }
+        
+        return $this->_outputGenericTableHorizontal($caption, $newdata);
+    }
+
+    // }}}
+    // {{{ _outputListCategories()
+
+    /**
+     * Prepare output per channel/category
+     *
+     * @param array   $data     array containing caption, channel and headline
+     *
+     * @return $tpl Template Object
+     */
+    function _prepareListCategories($data)
     {
         $channel = $data['channel'];
 
@@ -512,6 +565,19 @@ class PEAR_Frontend_Web extends PEAR_Frontend
         $tpl->setVariable('Text', $info);
         $tpl->parseCurrentBlock();
 
+        return $tpl;
+    }
+
+    /**
+     * Output the list of categories of a channel
+     *
+     * @param array   $data     array containing all data to display the list
+     *
+     * @return boolean true (yep. i am an optimist)
+     */
+    function _outputListCategories($data)
+    {
+        $tpl = $this->_prepareListCategories($data);
 
         if (isset($data['data']) && is_array($data['data'])) {
             foreach($data['data'] as $row) {
@@ -522,8 +588,9 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                 $tpl->parseCurrentBlock();
 
                 $tpl->setCurrentBlock('Data_row');
-                $info = sprintf('<a href="%s?command=list-category&cat=%s" class="green">%s</a>',
+                $info = sprintf('<a href="%s?command=list-category&chan=%s&cat=%s" class="green">%s</a>',
                             $_SERVER['PHP_SELF'],
+                            $channel,
                             $category,
                             $category
                                 );
@@ -550,6 +617,49 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                 }
 
                 $tpl->setCurrentBlock('Data');
+                $tpl->setVariable('Img', 'category');
+                $tpl->parseCurrentBlock();
+            }
+        }
+
+        $tpl->show();
+
+        return true;
+    }
+
+    /**
+     * Output the list of packages of a category of a channel
+     *
+     * @param array   $data     array containing all data to display the list
+     *
+     * @return boolean true (yep. i am an optimist)
+     */
+    function _outputListCategory($data)
+    {
+        $tpl = $this->_prepareListCategories($data);
+
+        if (isset($data['data']) && is_array($data['data'])) {
+            foreach($data['data'] as $row) {
+                list($channel, $package) = $row;
+
+                $tpl->setCurrentBlock('Data_row');
+                $tpl->setVariable('Text', $channel);
+                $tpl->parseCurrentBlock();
+
+                $tpl->setCurrentBlock('Data_row');
+                $info = sprintf('<a href="%s?command=info&pkg=%s/%s" class="green">%s</a>',
+                            $_SERVER['PHP_SELF'],
+                            $channel,
+                            $package,
+                            $package
+                                );
+                $tpl->setVariable('Text', $info);
+                $tpl->parseCurrentBlock();
+
+                // TODO: list full information for REST1.1 servers
+
+                $tpl->setCurrentBlock('Data');
+                $tpl->setVariable('Img', 'package');
                 $tpl->parseCurrentBlock();
             }
         }
@@ -799,7 +909,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                     $image);
         $data['data'][] = array('Weblinks', $output);
 
-        return $this->_outputGenericTable($data['caption'], $data['data']);
+        return $this->_outputGenericTableVertical($data['caption'], $data['data']);
     }
 
     /**
@@ -902,20 +1012,69 @@ class PEAR_Frontend_Web extends PEAR_Frontend
     }
 
     /**
-     * Output given data in a generic table, possibly prepend caption
+     * Output given data in a horizontal generic table:
+     * table headers in the top row.
+     * Possibly prepend caption
+     *
+     * @var string $caption possible caption for table
+     * @var array $data array of data items
+     * @return true optimist etc
      */
-    function _outputGenericTable($caption, $data) {
-        $tpl = $this->_initTemplate('generic_table.tpl.html');
+    function _outputGenericTableHorizontal($caption, $data) {
+        $tpl = $this->_initTemplate('generic_table_horizontal.tpl.html');
+        
+        if (!is_null($caption) && $caption != '') {
+            $tpl->setVariable('Caption', $caption);
+        }
+
+        if (!is_array($data)) {
+            $tpl->setCurrentBlock('Data_row');
+            $tpl->setVariable('Text', nl2br($data));
+            $tpl->parseCurrentBlock();
+        } else {
+            foreach ($data as $row) {
+                foreach ($row as $col) {
+                    $tpl->setCurrentBlock('Row_item');
+                    $tpl->setVariable('Text', nl2br($col));
+                    $tpl->parseCurrentBlock();
+                }
+                $tpl->setCurrentBlock('Data_row');
+                $tpl->parseCurrentBlock();
+            }
+        }
+
+        $tpl->show();
+        return true;
+    }
+
+    /**
+     * Output given data in a vertical generic table:
+     * table headers in the left column.
+     * Possibly prepend caption
+     *
+     * @var string $caption possible caption for table
+     * @var array $data array of data items
+     * @return true optimist etc
+     */
+    function _outputGenericTableVertical($caption, $data) {
+        $tpl = $this->_initTemplate('generic_table_vertical.tpl.html');
         
         if (!is_null($caption) && $caption != '') {
             $tpl->setVariable("Caption", $caption);
         }
 
-        foreach($data as $row) {
+        if (!is_array($data)) {
             $tpl->setCurrentBlock('Data_row');
-            $tpl->setVariable('Title', $row[0]);
-            $tpl->setVariable('Text', nl2br($row[1]));
+            $tpl->setVariable('Title', '&nbsp;');
+            $tpl->setVariable('Text', nl2br($data));
             $tpl->parseCurrentBlock();
+        } else {
+            foreach($data as $row) {
+                $tpl->setCurrentBlock('Data_row');
+                $tpl->setVariable('Title', $row[0]);
+                $tpl->setVariable('Text', nl2br($row[1]));
+                $tpl->parseCurrentBlock();
+            }
         }
 
         $tpl->show();
@@ -960,7 +1119,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
         }
         */
 
-        return $this->_outputGenericTable($data['main']['caption'], $data['main']['data']);
+        return $this->_outputGenericTableVertical($data['main']['caption'], $data['main']['data']);
     }
 
     /**
@@ -991,8 +1150,12 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                 return true;
             case 'list-all':
                 return $this->_outputListAll($data);
+            case 'list-packages':
+                return $this->_outputListPackages($data);
             case 'list-categories':
                 return $this->_outputListCategories($data);
+            case 'list-category':
+                return $this->_outputListCategory($data);
             case 'list-upgrades':
                 return $this->_outputListUpgrades($data);
             case 'list':
@@ -1041,6 +1204,29 @@ class PEAR_Frontend_Web extends PEAR_Frontend
         }
 
         return true;
+    }
+
+    /**
+     * Output a Table Of Channels:
+     * Table of contents like thing for all channels
+     * (using <a name= stuff
+     */
+    function outputTableOfChannels()
+    {
+        $tpl = $this->_initTemplate('tableofchannels.tpl.html');
+        $tpl->setVariable('Caption', 'All available channels:');
+
+        $reg = $this->config->getRegistry();
+        $channels = $reg->getChannels();
+        foreach ($channels as $channel) {
+            if ($channel->getName() != '__uri') {
+                $tpl->setCurrentBlock('Data_row');
+                $tpl->setVariable('Channel', $channel->getName());
+                $tpl->parseCurrentBlock();
+            }
+        }
+
+        $tpl->show();
     }
 
     /**
@@ -1765,7 +1951,8 @@ class PEAR_Frontend_Web extends PEAR_Frontend
             $command == 'list-upgrades' ||
             $command == 'list-all' ||
             $command == 'list-categories' ||
-            $command == 'list-category') {
+            $command == 'list-category' ||
+            $command == 'list-packages') {
             
             $tpl = $this->_initTemplate('package.submenu.tpl.html');
 
@@ -1773,6 +1960,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                 'list'              => 'list installed packages',
                 'list-upgrades'     => 'list available upgrades',
                 'list-categories'   => 'list all categories',
+                'list-packages'     => 'list all packagenames',
             );
             $highlight_map = array(
                 'list' => 'list',
@@ -1780,6 +1968,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                 'list-all' => 'list-categories',
                 'list-categories' => 'list-categories',
                 'list-category' => 'list-category',
+                'list-packages' => 'list-packages',
                     );
             foreach ($menus as $name => $text) {
                 $tpl->setCurrentBlock('Submenu');

@@ -220,14 +220,17 @@ if (is_null($command)) {
             $cmd = PEAR_Command::factory($command, $config);
             $ok = $cmd->run($command, $opts, $params);
             break;
-        case 'remote-info':
-            $params = array($_GET["pkg"]);
-            $cmd = PEAR_Command::factory($command, $config);
-            $ok = $cmd->run($command, $opts, $params);
-
-            break;
         case 'info':
-            $params = array(strtolower($_GET["pkg"]));
+        case 'remote-info':
+            $reg = &$config->getRegistry();
+            // we decide what it is:
+            if ($reg->packageExists(strtolower($_GET['pkg']))) {
+                $command = 'info';
+            } else {
+                $command = 'remote-info';
+            }
+
+            $params = array(strtolower($_GET['pkg']));
             $cmd = PEAR_Command::factory($command, $config);
             $ok = $cmd->run($command, $opts, $params);
 
@@ -297,9 +300,13 @@ if (is_null($command)) {
 
             break;
         case 'list-categories':
+        case 'list-packages':
             if (isset($_GET['chan']) && $_GET['chan'] != '') {
                 $opts['channel'] = $_GET['chan'];
             } else {
+                // show 'table of contents' before all channel output
+                $ui->outputTableOfChannels();
+
                 $opts['allchannels'] = true;
             }
             if (isset($_GET['opt']) && $_GET['opt'] == 'packages') {
@@ -308,7 +315,18 @@ if (is_null($command)) {
             // Forward compatible (bug unsubmitted)
             require_once('Frontend/Web_Command_Forward_Compatible.php');
             $cmd = new Web_Command_Forward_Compatible($ui, $config);
-            $cmd->doListCategories($command, $opts, $params);
+            if ($command == 'list-categories') {
+                $cmd->doListCategories($command, $opts, $params);
+            } else {
+                $cmd->doListPackages($command, $opts, $params);
+            }
+            break;
+        case 'list-category':
+            $params = array($_GET['chan'], $_GET['cat']);
+            // Forward compatible (bug unsubmitted)
+            require_once('Frontend/Web_Command_Forward_Compatible.php');
+            $cmd = new Web_Command_Forward_Compatible($ui, $config);
+            $cmd->doListCategory($command, $opts, $params);
             break;
         case 'list':
             $opts['allchannels'] = true;
