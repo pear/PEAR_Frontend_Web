@@ -640,26 +640,24 @@ class PEAR_Frontend_Web extends PEAR_Frontend
     function _outputListCategory($data)
     {
         $tpl = $this->_prepareListCategories($data);
+        $channel = $data['channel'];
 
         if (isset($data['data']) && is_array($data['data'])) {
             foreach($data['data'] as $row) {
-                list($channel, $package) = $row;
-
-                $tpl->setCurrentBlock('Data_row');
-                $tpl->setVariable('Text', $channel);
-                $tpl->parseCurrentBlock();
-
-                $tpl->setCurrentBlock('Data_row');
-                $info = sprintf('<a href="%s?command=info&pkg=%s/%s" class="green">%s</a>',
+                foreach ($row as $i => $col) {
+                    if ($i == 1) {
+                        // package name, make URL
+                        $col = sprintf('<a href="%s?command=info&pkg=%s/%s" class="green">%s</a>',
                             $_SERVER['PHP_SELF'],
                             $channel,
-                            $package,
-                            $package
-                                );
-                $tpl->setVariable('Text', $info);
-                $tpl->parseCurrentBlock();
-
-                // TODO: list full information for REST1.1 servers
+                            $col,
+                            $col);
+                    }
+                    
+                    $tpl->setCurrentBlock('Data_row');
+                    $tpl->setVariable('Text', $col);
+                    $tpl->parseCurrentBlock();
+                }
 
                 $tpl->setCurrentBlock('Data');
                 $tpl->setVariable('Img', 'package');

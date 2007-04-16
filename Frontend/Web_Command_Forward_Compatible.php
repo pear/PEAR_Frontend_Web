@@ -430,34 +430,49 @@ class Web_Command_Forward_Compatible extends PEAR_Command_Common
             return $e;
         }
         if ($chan->supportsREST($this->config->get('preferred_mirror')) &&
+              $base = $chan->getBaseURL('REST1.1', $this->config->get('preferred_mirror'))) {
+            $rest = &$this->config->getREST('1.1', array());
+            $packages = $this->REST_listCategory11(&$rest, $base, $category, true);
+        } elseif ($chan->supportsREST($this->config->get('preferred_mirror')) &&
               $base = $chan->getBaseURL('REST1.0', $this->config->get('preferred_mirror'))) {
             $rest = &$this->config->getREST('1.0', array());
+            $packages = $this->REST_listCategory10(&$rest, $base, $category, true);
         } else {
             return PEAR::raiseError($command.' only works for REST servers');
         }
-        if (PEAR::isError($categories)) {
+        if (PEAR::isError($packages)) {
             $this->config->set('default_channel', $savechannel);
-            return $this->raiseError('The category list could not be fetched from the remote server. Please try again. (Debug info: "' . $categories->getMessage() . '")');
+            return $this->raiseError('The package list could not be fetched from the remote server. Please try again. (Debug info: "' . $packages->getMessage() . '")');
         }
 
         $data = array(
             'caption' => 'Channel '.$channel.' Category '.$category.' All packages:',
             'border' => true,
-            'headline' => array('Channel', 'Package'),
+            'headline' => array('Channel', 'Package', 'Local', 'Remote', 'Summary'),
             'channel' => $channel,
             );
-        $packages = $this->REST_listCategory(&$rest, $base, $category);
         if (count($packages) === 0) {
             unset($data['headline']);
             $data['data'] = 'No packages registered';
         } else {
             $data['data'] = array();
-            foreach($packages as $item) {
-                $array = array(
-                        $channel,
-                        $item['_content'],
-                            );
-                $data['data'][] = $array;
+            foreach ($packages as $package_data) {
+                $package = $package_data['_content'];
+                $info = $package_data['info'];
+                if (!isset($info['v'])) {
+                    $remote = '-';
+                } else {
+                    $remote = $info['v'].' ('.$info['st'].')';
+                }
+                $summary = $info['s'];
+                if ($reg->packageExists($package, $channel)) {
+                    $local = sprintf('%s (%s)',
+                        $reg->packageInfo($package, 'version', $channel),
+                        $reg->packageInfo($package, 'release_state', $channel));
+                } else {
+                    $local = '-';
+                }
+                $data['data'][] = array($channel, $package, $local, $remote, $summary);
             }
         }
 
@@ -471,12 +486,12 @@ class Web_Command_Forward_Compatible extends PEAR_Command_Common
      *
      * @param string $base base URL of the server
      * @param string $category name of the category
-     * @param boolean $info also download full package info TODO
+     * @param boolean $info also download full package info
      * @return array of packagenames
      */
     // Reported in bug !UNREPORTED!
     // Original file: REST/10.php
-    function REST_listCategory(&$rest, $base, $category, $info=false)
+    function REST_listCategory10(&$rest, $base, $category, $info=false)
     {
         // gives '404 Not Found' error when category doesn't exist
         $packagelist = $rest->_rest->retrieveData($base.'c/'.urlencode($category).'/packages.xml');
@@ -488,9 +503,111 @@ class Web_Command_Forward_Compatible extends PEAR_Command_Common
         }
         if (!is_array($packagelist['p']) ||
             !isset($packagelist['p'][0])) { // only 1 pkg
-            $packagelist['p'] = array($packagelist['p']);
+            $packagelist = array($packagelist['p']);
+        } else {
+            $packagelist = $packagelist['p'];
         }
-        return $packagelist['p'];
+
+        if ($info == true) {
+            // get individual package info
+            PEAR::pushErrorHandling(PEAR_ERROR_RETURN);
+            foreach ($packagelist as $i => $packageitem) {
+                $url = sprintf('%s'.'r/%s/latest.txt',
+                        $base,
+                        strtolower($packageitem['_content']));
+                $version = $rest->_rest->retrieveData($url);
+                if (PEAR::isError($version)) {
+                    break; // skipit
+                }
+                $url = sprintf('%s'.'r/%s/%s.xml',
+                        $base,
+                        strtolower($packageitem['_content']),
+                        $version);
+                $info = $rest->_rest->retrieveData($url);
+                if (PEAR::isError($info)) {
+                    break; // skipit
+                }
+                $packagelist[$i]['info'] = $info;
+            }
+            PEAR::popErrorHandling();
+        }
+
+        return $packagelist;
+    }
+
+    /**
+     * List a category of a REST server
+     *
+     * @param string $base base URL of the server
+     * @param string $category name of the category
+     * @param boolean $info also download full package info
+     * @return array of packagenames
+     */
+    // Reported in bug !UNREPORTED!
+    // Original file: REST/11.php
+    function REST_listCategory11(&$rest, $base, $category, $info=false)
+    {
+        if ($info == false) {
+            $url = '%s'.'c/%s/packages.xml';
+        } else {
+            $url = '%s'.'c/%s/packagesinfo.xml';
+        }
+        $url = sprintf($url,
+                    $base,
+                    urlencode($category));
+            
+        // gives '404 Not Found' error when category doesn't exist
+        $packagelist = $rest->_rest->retrieveData($url);
+        if (PEAR::isError($packagelist)) {
+            return $packagelist;
+        }
+        if (!is_array($packagelist)) {
+            return array();
+        }
+
+        if ($info == false) {
+            if (!isset($packagelist['p'])) {
+                return array();
+            }
+            if (!is_array($packagelist['p']) ||
+                !isset($packagelist['p'][0])) { // only 1 pkg
+                $packagelist = array($packagelist['p']);
+            } else {
+                $packagelist = $packagelist['p'];
+            }
+            return $packagelist;
+        } else {
+            // info == true
+            if (!isset($packagelist['pi'])) {
+                return array();
+            }
+            if (!is_array($packagelist['pi']) ||
+                !isset($packagelist['pi'][0])) { // only 1 pkg
+                $packagelist_pre = array($packagelist['pi']);
+            } else {
+                $packagelist_pre = $packagelist['pi'];
+            }
+
+            $packagelist = array();
+            foreach ($packagelist_pre as $i => $item) {
+                // compatibility with r/<latest.txt>.xml
+                if (isset($item['a']['r'][0])) {
+                    // multiple releases
+                    $item['p']['v'] = $item['a']['r'][0]['v'];
+                    $item['p']['st'] = $item['a']['r'][0]['s'];
+                } elseif (isset($item['a'])) {
+                    // first and only release
+                    $item['p']['v'] = $item['a']['r']['v'];
+                    $item['p']['st'] = $item['a']['r']['s'];
+                }
+
+                $packagelist[$i] = array('attribs' => $item['p']['r'],
+                                         '_content' => $item['p']['n'],
+                                         'info' => $item['p']);
+            }
+        }
+
+        return $packagelist;
     }
 
     /**
