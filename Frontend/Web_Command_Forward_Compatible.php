@@ -362,21 +362,30 @@ class Web_Command_Forward_Compatible extends PEAR_Command_Common
             'headline' => array('Channel', 'Category'),
             'channel' => $channel,
             );
+        if (isset($options['packages']) && $options['packages']) {
+            $data['headline'][] = 'Packages';
+        }
 
         if (count($categories) === 0) {
             unset($data['headline']);
             $data['data'] = 'No categories registered';
         } else {
             $data['data'] = array();
+
             foreach($categories as $item) {
+                $category = $item['_content'];
                 $array = array(
                         $channel,
-                        $item['_content'],
-                            );
+                        $category);
+
                 if (isset($options['packages']) && $options['packages']) {
                     // get packagenames
-                    // TODO
-                    //$array[] = array('Tias1', 'Tias2');
+                    $cat_pkgs = $this->REST_listCategory(&$rest, $base, $category);
+                    $packages = array();
+                    foreach($cat_pkgs as $cat_pkg) {
+                        $packages[] = $cat_pkg['_content'];
+                    }
+                    $array[] = $packages;
                 }
                 $data['data'][] = $array;
             }

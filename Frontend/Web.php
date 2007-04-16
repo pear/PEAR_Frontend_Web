@@ -552,7 +552,6 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                         $_SERVER['PHP_SELF'],
                         $channel
                             );
-        //TODO implement this
         $tpl->setVariable('Text', $info);
         $tpl->parseCurrentBlock();
 
@@ -561,7 +560,6 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                         $_SERVER['PHP_SELF'],
                         $channel
                             );
-        //TODO implement this
         $tpl->setVariable('Text', $info);
         $tpl->parseCurrentBlock();
 
@@ -598,9 +596,14 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                 $tpl->parseCurrentBlock();
 
                 if (is_array($packages)) {
-                    $info = '';
+                    if (count($packages) == 0) {
+                        $info = '<i>(no packages registered)</i>';
+                    } else {
+                        $info = sprintf('<img src="%s?img=package" />: ',
+                                $_SERVER['PHP_SELF']);
+                    }
                     foreach($packages as $i => $package) {
-                        $info .= sprintf('<a href="%s?command=info&pkg=%s/%s" class="green">%s</a>',
+                        $info .= sprintf('<a href="%s?command=info&pkg=%s/%s">%s</a>',
                                     $_SERVER['PHP_SELF'],
                                     $channel,
                                     $package,
@@ -1959,8 +1962,8 @@ class PEAR_Frontend_Web extends PEAR_Frontend
             $menus = array(
                 'list'              => 'list installed packages',
                 'list-upgrades'     => 'list available upgrades',
-                'list-categories'   => 'list all categories',
                 'list-packages'     => 'list all packagenames',
+                'list-categories'   => 'list all categories',
             );
             $highlight_map = array(
                 'list' => 'list',

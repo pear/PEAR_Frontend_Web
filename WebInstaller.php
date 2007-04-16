@@ -224,7 +224,8 @@ if (is_null($command)) {
         case 'remote-info':
             $reg = &$config->getRegistry();
             // we decide what it is:
-            if ($reg->packageExists(strtolower($_GET['pkg']))) {
+            $pkg = $reg->parsePackageName($_GET['pkg']);
+            if ($reg->packageExists($pkg['package'], $pkg['channel'])) {
                 $command = 'info';
             } else {
                 $command = 'remote-info';
