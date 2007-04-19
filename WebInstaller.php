@@ -102,13 +102,15 @@ if (!file_exists($pear_user_config)) {
 
     print('Saving config file...');
     // First of all set some config-vars:
+    // Tries to be compatible with go-pear
+    // TODO: signature handling program and signature key directory
     $cmd = PEAR_Command::factory('config-set', $config);
     $ok = $cmd->run('config-set', array(), array('php_dir',  $dir.'PEAR'));
-    $ok = $cmd->run('config-set', array(), array('doc_dir',  $dir.'docs'));
+    $ok = $cmd->run('config-set', array(), array('doc_dir',  $dir.'PEAR/docs'));
     $ok = $cmd->run('config-set', array(), array('ext_dir',  $dir.'ext'));
     $ok = $cmd->run('config-set', array(), array('bin_dir',  $dir.'bin'));
-    $ok = $cmd->run('config-set', array(), array('data_dir', $dir.'data'));
-    $ok = $cmd->run('config-set', array(), array('test_dir', $dir.'test'));
+    $ok = $cmd->run('config-set', array(), array('data_dir', $dir.'PEAR/data'));
+    $ok = $cmd->run('config-set', array(), array('test_dir', $dir.'PEAR/test'));
     $ok = $cmd->run('config-set', array(), array('temp_dir', $dir.'temp'));
     $ok = $cmd->run('config-set', array(), array('download_dir', $dir.'temp/download'));
     $ok = $cmd->run('config-set', array(), array('cache_dir', $dir.'PEAR/cache'));
