@@ -89,7 +89,6 @@ class PEAR_Frontend_Web extends PEAR_Frontend
         'pear.php.net/Archive_Tar',
         'pear.php.net/Console_Getopt',
         'pear.php.net/HTML_Template_IT',
-        'pear.php.net/Net_UserAgent_Detect',
         'pear.php.net/PEAR',
         'pear.php.net/PEAR_Frontend_Web',
         'pear.php.net/Structures_Graph',
@@ -226,25 +225,6 @@ class PEAR_Frontend_Web extends PEAR_Frontend
     function displayFatalError($eobj, $title = 'Error', $img = 'error')
     {
         $this->displayError($eobj, $title, $img);
-    }
-
-    /**
-     * Display error as popup
-     */
-    function displayErrorImg($eobj)
-    {
-        $msg = '';
-        if (isset($GLOBALS['_PEAR_Frontend_Web_log']) && trim($GLOBALS['_PEAR_Frontend_Web_log']))
-            $msg = trim($GLOBALS['_PEAR_Frontend_Web_log'])."\n\n";
-
-        $_SESSION['_PEAR_Frontend_Web_LastError']     = $eobj;
-        $_SESSION['_PEAR_Frontend_Web_LastError_log'] = $msg;
-        echo '<script language="javascript">';
-        printf('window.open("%s?command=show-last-error", "PEAR", "width=600, height=400");',
-            $_SERVER["PHP_SELF"]);
-        echo ' </script>';
-        printf('<img src="%s?img=install_fail" border="0">', $_SERVER['PHP_SELF']);
-        exit;
     }
 
     // }}}
@@ -412,19 +392,19 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                 $compare = version_compare($pkgVersionLatest, $pkgVersionInstalled);
                 $id = 'id="'.$pkgName.'_href"';
                 if (!$pkgVersionInstalled || $pkgVersionInstalled == "- no -") {
-                    $inst = sprintf('<a href="%s" onClick="return perform(\'%s\');" %s>%s</a>',
+                    $inst = sprintf('<a href="%s" onClick="return installPkg(\'%s\');" %s>%s</a>',
                         $urls['install'], $pkgName, $id, $images['install']);
                     $del = '';
                     $info = sprintf('<a href="%s">%s</a>', $urls['remote-info'],    $images['info']);
                 } else if ($compare == 1) {
-                    $inst = sprintf('<a href="%s" onClick="return perform(\'%s\');" %s>%s</a>',
+                    $inst = sprintf('<a href="%s" onClick="return installPkg(\'%s\');" %s>%s</a>',
                         $urls['upgrade'], $pkgName, $id, $images['upgrade']);
-                    $del = sprintf('<a href="%s" onClick="return deletePkg(\'%s\');" %s >%s</a>',
+                    $del = sprintf('<a href="%s" onClick="return uninstallPkg(\'%s\');" %s >%s</a>',
                         $urls['uninstall'], $pkgName, $id, $images['uninstall']);
                     $info = sprintf('<a href="%s">%s</a>', $urls['info'],    $images['info']);
                 } else {
                     $inst = '';
-                    $del = sprintf('<a href="%s" onClick="return deletePkg(\'%s\');" %s >%s</a>',
+                    $del = sprintf('<a href="%s" onClick="return uninstallPkg(\'%s\');" %s >%s</a>',
                         $urls['uninstall'], $pkgName, $id, $images['uninstall']);
                     $info = sprintf('<a href="%s">%s</a>', $urls['info'],    $images['info']);
                 }
@@ -723,7 +703,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                 if (!in_array($package, $this->_no_delete_pkgs)) {
                     $img = sprintf('<img src="%s?img=uninstall" width="18" height="17"  border="0" alt="uninstall">', $_SERVER["PHP_SELF"]);
                     $url = sprintf('%s?command=uninstall&pkg=%s', $_SERVER["PHP_SELF"], $package);
-                    $uninst = sprintf('<a href="%s" onClick="return deletePkg(\'%s\');" id="%s">%s</a>', $url, $package, $package.'_href', $img);
+                    $uninst = sprintf('<a href="%s" onClick="return uninstallPkg(\'%s\');" id="%s">%s</a>', $url, $package, $package.'_href', $img);
                     $tpl->setVariable("Uninstall", $uninst);
                 }
 
@@ -795,7 +775,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                 // upgrade link
                     $img = sprintf('<img src="%s?img=install" width="18" height="17"  border="0" alt="upgrade">', $_SERVER["PHP_SELF"]);
                     $url = sprintf('%s?command=upgrade&pkg=%s', $_SERVER["PHP_SELF"], $package);
-                    $inst = sprintf('<a href="%s" onClick="return hideInstall(\'%s\');" id="%s">%s</a>', $url, $package, $package.'_href', $img);
+                    $inst = sprintf('<a href="%s" onClick="return installPkg(\'%s\');" id="%s">%s</a>', $url, $package, $package.'_href', $img);
                     $tpl->setVariable("Uninstall", $inst);
 
                 $img = sprintf('<img src="%s?img=info" width="17" height="19"  border="0" alt="info">', $_SERVER["PHP_SELF"]);
@@ -849,8 +829,9 @@ class PEAR_Frontend_Web extends PEAR_Frontend
 
                 // Print link if it's a PEAR package
                 if ($row['type'] == 'pkg') {
+                    $package = $row['channel'].'/'.$row['name'];
                     $row['name'] = sprintf('<a class="green" href="%s?command=remote-info&pkg=%s">%s</a>',
-                        $_SERVER['PHP_SELF'], $row['name'], $row['name']);
+                        $_SERVER['PHP_SELF'], $package, $package);
                 }
 
                 if (isset($rel_trans[$row['rel']])) {
@@ -891,7 +872,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                     '<a href="%s?command=uninstall&pkg=%s&redirect=info" class="green" %s>%s Uninstall package</a>',
                     $_SERVER["PHP_SELF"],
                     $package,
-                    'onClick="return confirm(\'Do you really want to uninstall \\\''.$data['name'].'\\\'?\')"',
+                    'onClick="return uninstallPkg(\''.$package.'\');"',
                     $image);
             $data['data'][] = array('Options', $output);
         }
@@ -938,6 +919,9 @@ class PEAR_Frontend_Web extends PEAR_Frontend
             $tpl->setVariable("DownloadURL", $_SERVER['PHP_SELF']);
         }
         */
+        $package = $data['channel'].'/'.$data['name'];
+        $package_full = $data['channel'].'/'.$data['name'].'-'.$data['stable'];
+
         $tpl->setVariable("Latest", $data['stable']);
         $tpl->setVariable("Installed", $data['installed']);
         $tpl->setVariable("Package", $data['name']);
@@ -960,40 +944,46 @@ class PEAR_Frontend_Web extends PEAR_Frontend
         $opt_text = array();
         if (!$data['installed'] || $data['installed'] == "- no -") {
             $opt_img[] = sprintf(
-                '<a href="%s?command=install&pkg=%s&redirect=info">%s</a>',
-                $_SERVER["PHP_SELF"], $data['name'], $images['install']);
+                '<a href="%s?command=install&pkg=%s&redirect=info" %s>%s</a>',
+                $_SERVER["PHP_SELF"], $package_full,
+                'onClick="return installPkg(\''.$package_full.'\');"',
+                $images['install']);
             $opt_text[] = sprintf(
-                '<a href="%s?command=install&pkg=%s&redirect=info" class="green">Install package</a>',
-                $_SERVER["PHP_SELF"], $data['name']);
+                '<a href="%s?command=install&pkg=%s&redirect=info" class="green" %s>Install package</a>',
+                $_SERVER["PHP_SELF"], $package_full,
+                'onClick="return installPkg(\''.$package_full.'\');"');
         } else if ($compare == 1) {
             $opt_img[] = sprintf(
-                '<a href="%s?command=upgrade&pkg=%s&redirect=info">%s</a><br>',
-                $_SERVER["PHP_SELF"], $data['name'], $images['upgrade']);
+                '<a href="%s?command=upgrade&pkg=%s&redirect=info" %s>%s</a><br>',
+                $_SERVER["PHP_SELF"], $package,
+                'onClick="return installPkg(\''.$package.'\');"',
+                $images['install']);
             $opt_text[] = sprintf(
-                '<a href="%s?command=upgrade&pkg=%s&redirect=info" class="green">Upgrade package</a>',
-                $_SERVER["PHP_SELF"], $data['name']);
-            if (!in_array($data['channel'].'/'.$data['name'], $this->_no_delete_pkgs)) {
+                '<a href="%s?command=upgrade&pkg=%s&redirect=info" class="green" %s>Upgrade package</a>',
+                $_SERVER["PHP_SELF"], $package,
+                'onClick="return installPkg(\''.$package.'\');"');
+            if (!in_array($package, $this->_no_delete_pkgs)) {
                 $opt_img[] = sprintf(
                     '<a href="%s?command=uninstall&pkg=%s&redirect=info" %s>%s</a>',
-                    $_SERVER["PHP_SELF"], $data['name'],
-                    'onClick="return confirm(\'Do you really want to uninstall \\\''.$data['name'].'\\\'?\')"',
+                    $_SERVER["PHP_SELF"], $package,
+                    'onClick="return uninstallPkg(\''.$package.'\');"',
                     $images['uninstall']);
                 $opt_text[] = sprintf(
                     '<a href="%s?command=uninstall&pkg=%s&redirect=info" class="green" %s>Uninstall package</a>',
-                    $_SERVER["PHP_SELF"], $data['name'],
-                    'onClick="return confirm(\'Do you really want to uninstall \\\''.$data['name'].'\\\'?\')"');
+                    $_SERVER["PHP_SELF"], $package,
+                    'onClick="return uninstallPkg(\''.$package.'\');"');
            }
         } else {
-            if (!in_array($data['channel'].'/'.$data['name'], $this->_no_delete_pkgs)) {
+            if (!in_array($package, $this->_no_delete_pkgs)) {
                 $opt_img[] = sprintf(
                     '<a href="%s?command=uninstall&pkg=%s&redirect=info" %s>%s</a>',
-                    $_SERVER["PHP_SELF"], $data['name'],
-                    'onClick="return confirm(\'Do you really want to uninstall \\\''.$data['name'].'\\\'?\')"',
+                    $_SERVER["PHP_SELF"], $package,
+                    'onClick="return uninstallPkg(\''.$package.'\');"',
                     $images['uninstall']);
                 $opt_text[] = sprintf(
                     '<a href="%s?command=uninstall&pkg=%s&redirect=info" class="green" %s>Uninstall package</a>',
-                    $_SERVER["PHP_SELF"], $data['name'],
-                    'onClick="return confirm(\'Do you really want to uninstall \\\''.$data['name'].'\\\'?\')"');
+                    $_SERVER["PHP_SELF"], $package,
+                    'onClick="return uninstallPkg(\''.$package.'\');"');
            }
         }
 
@@ -1171,11 +1161,6 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                 return $this->_outputPackageInfo($data);
             case 'channel-info':
                 return $this->_outputChannelInfo($data);
-            case 'install':
-            case 'upgrade':
-            case 'uninstall':
-            case 'channel-delete':
-                return true;
             case 'login':
                 if ($_SERVER["REQUEST_METHOD"] != "POST")
                     $this->_data[$command] = $data;
@@ -1183,6 +1168,10 @@ class PEAR_Frontend_Web extends PEAR_Frontend
             case 'logout':
                 $this->displayError($data, 'Logout', 'logout');
                 break;
+            case 'install':
+            case 'upgrade':
+            case 'uninstall':
+            case 'channel-delete':
             case 'package':
             case 'channel-discover':
             case 'update-channels':
@@ -1254,7 +1243,6 @@ class PEAR_Frontend_Web extends PEAR_Frontend
             }
         }
 
-        // TODO: search category name
         // search-types to display
         $arr = array(
               'name' => array('title' => 'Search package by name (fast)',
@@ -1704,8 +1692,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                 "dhtml" => "dhtml.css",
                 ),
             "js" => array(
-                "dhtml" => "dhtml.js",
-                "nodhtml" => "nodhtml.js",
+                "package" => "package.js",
                 ),
             "image" => array(
                 "logout" => array(
@@ -1923,27 +1910,6 @@ class PEAR_Frontend_Web extends PEAR_Frontend
         }
 
         $tpl->setCurrentBlock();
-
-        if ($useDHTML && Net_UserAgent_Detect::getBrowser('ie5up') == 'ie5up') {
-            $dhtml = true;
-        } else {
-            $dhtml = false;
-        }
-
-        if ($dhtml) {
-            $tpl->setVariable("JS", 'dhtml');
-            $css = '<link rel="stylesheet" href="'.$_SERVER['PHP_SELF'].'?css=dhtml" />';
-            $tpl->setVariable("DHTMLcss", $css);
-        } else {
-            $tpl->setVariable("JS", 'nodhtml');
-        }
-
-        if (!isset($_SESSION['_PEAR_Frontend_Web_js']) || $_SESSION['_PEAR_Frontend_Web_js'] == false) {
-            $tpl->setCurrentBlock('JSEnable');
-            $tpl->setVariable('RedirectURL', $_SERVER['REQUEST_URI']. (!empty($_GET) ? '&' : '?') .'enableJS=1');
-            $tpl->parseCurrentBlock();
-            $tpl->setCurrentBlock();
-        }
 
         $tpl->show();
 

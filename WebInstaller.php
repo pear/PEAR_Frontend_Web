@@ -41,14 +41,6 @@ define('PEAR_Frontend_Web',1);
 @session_start();
 $_SESSION['_PEAR_Frontend_Web_version'] = '0.6.0';
 
-if (!isset($_SESSION['_PEAR_Frontend_Web_js'])) {
-    $_SESSION['_PEAR_Frontend_Web_js'] = false;
-}
-if (isset($_GET['enableJS']) && $_GET['enableJS'] == 1) {
-    $_SESSION['_PEAR_Frontend_Web_js'] = true;
-}
-define('USE_DHTML_PROGRESS', (@$useDHTML && $_SESSION['_PEAR_Frontend_Web_js']));
-
 /**
  * base frontend class
  */
@@ -120,7 +112,6 @@ if (!file_exists($pear_user_config)) {
                                 'Archive_Tar',
                                 'Console_Getopt',
                                 'HTML_Template_IT',
-                                'Net_UserAgent_Detect',
                                 'PEAR',
                                 'PEAR_Frontend_Web',
                                 'Structures_Graph'
@@ -156,10 +147,8 @@ if (isset($_GET["command"])) {
     $command = null;
 }
 
-// Prepare and begin output (if not DHTML magic)
-if (!(USE_DHTML_PROGRESS && isset($_GET['dhtml']))) {
-    $ui->outputBegin($command);
-}
+// Prepare and begin output
+$ui->outputBegin($command);
 
 // Handle some different Commands
 if (is_null($command)) {
@@ -169,12 +158,6 @@ if (is_null($command)) {
         case 'install':
         case 'uninstall':
         case 'upgrade':
-            if (USE_DHTML_PROGRESS && isset($_GET['dhtml'])) {
-                PEAR::setErrorHandling(PEAR_ERROR_CALLBACK, array($ui, "displayErrorImg"));
-                // TODO: display error on new page...
-                // TODO: eliminate DHTML stuff
-            }
-
             if ($_GET['command'] == 'install') {
                 // also install dependencies
                 $opts['onlyreqdeps'] = true;
@@ -190,30 +173,8 @@ if (is_null($command)) {
             $cmd = PEAR_Command::factory($command, $config);
             $ok = $cmd->run($command, $opts, $params);
 
-            // success
-            if (USE_DHTML_PROGRESS && isset($_GET['dhtml'])) {
-                echo '<script language="javascript">';
-                if ($_GET["command"] == "uninstall") {
-                    printf(' parent.deleteVersion(\'%s\'); ',  $_GET["pkg"]);
-                    printf(' parent.displayInstall(\'%s\'); ', $_GET["pkg"]);
-                    printf(' parent.hideDelete(\'%s\'); ',     $_GET["pkg"]);
-                } else {
-                    printf(' parent.newestVersion(\'%s\'); ',  $_GET["pkg"]);
-                    printf(' parent.hideInstall(\'%s\'); ',    $_GET["pkg"]);
-                    printf(' parent.displayDelete(\'%s\'); ',  $_GET["pkg"]);
-                }
-                echo '</script>';
-                $html = sprintf('<img src="%s?img=install_ok" border="0">', $_SERVER['PHP_SELF']);
-                echo $js.$html;
-                exit;
-            } else {
-                print('<p>'.$command.' OK</p>');
-            }
-
-            if (!(USE_DHTML_PROGRESS && isset($_GET['dhtml']))) {
-                $ui->finishOutput('Back', array('link' => $URL.'?command=list',
-                'text' => 'Click here to go back'));
-            }
+            $ui->finishOutput('Back', array('link' => $URL.'?command=info&pkg='.$_GET['pkg'],
+                'text' => 'View package information'));
             break;
         case 'run-scripts' :
             $params = array($_GET["pkg"]);
@@ -290,16 +251,16 @@ if (is_null($command)) {
                 'text' => 'Back to the config'));
             break;
         case 'list-all':
-            // TODO: over all channels = show channel choice
-            if (isset($_GET["mode"]))
-                $opts['mode'] = $_GET["mode"];
+            // XXX Not used anymore, 'list-categories' is used instead
+            //if (isset($_GET["mode"]))
+            //    $opts['mode'] = $_GET["mode"];
             // Forward compatible (bug #10495)
-            require_once('Frontend/Web_Command_Forward_Compatible.php');
-            $cmd = new Web_Command_Forward_Compatible($ui, $config);
-            // TODO: get categories and only download info of current cats.
-            $cmd->doListAll($command, $opts, $params);
-
-            break;
+            //require_once('Frontend/Web_Command_Forward_Compatible.php');
+            //$cmd = new Web_Command_Forward_Compatible($ui, $config);
+            //$cmd->doListAll($command, $opts, $params);
+            //
+            //break;
+            $command = 'list-categories';
         case 'list-categories':
         case 'list-packages':
             if (isset($_GET['chan']) && $_GET['chan'] != '') {
@@ -357,6 +318,9 @@ if (is_null($command)) {
             $cmd = PEAR_Command::factory($command, $config);
             $ok = $cmd->run($command, $opts, $params);
 
+            $ui->finishOutput('Delete Channel', array('link' =>
+                $_SERVER['PHP_SELF'] . '?command=list-channels',
+                'text' => 'Click here to list all channels'));
             break;
         case 'channel-discover':
             if (isset($_GET["chan"]))
@@ -375,6 +339,9 @@ if (is_null($command)) {
             $cmd = PEAR_Command::factory($command, $config);
             $ok = $cmd->run($command, $opts, $params);
 
+            $ui->finishOutput('Delete Channel', array('link' =>
+                $_SERVER['PHP_SELF'] . '?command=list-channels',
+                'text' => 'Click here to list all channels'));
             break;
         case 'list-channels':
             $cmd = PEAR_Command::factory($command, $config);
@@ -403,10 +370,6 @@ if (is_null($command)) {
                 $_SERVER['PHP_SELF'] . '?command=list-channels',
                 'text' => 'Click here to list all channels'));
             break;
-        case 'show-last-error':
-            $GLOBALS['_PEAR_Frontend_Web_log'] = $_SESSION['_PEAR_Frontend_Web_LastError_log'];
-            $ui->displayError($_SESSION['_PEAR_Frontend_Web_LastError'], 'Error', 'error', true);
-            break;
         default:
             $cmd = PEAR_Command::factory($command, $config);
             $res = $cmd->run($command, $opts, $params);
@@ -417,9 +380,6 @@ if (is_null($command)) {
     }
 }
 
-// End and stop output (if not DHTML magic)
-if (!(USE_DHTML_PROGRESS && isset($_GET['dhtml']))) {
-    $ui->outputEnd($command);
-}
+$ui->outputEnd($command);
 
 ?>

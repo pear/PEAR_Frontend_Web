@@ -190,3 +190,7 @@ textarea.small {
 form {
     margin-bottom : 0;
 }
+
+table.DHTML_Category_Expand {
+    cursor: hand;
+}

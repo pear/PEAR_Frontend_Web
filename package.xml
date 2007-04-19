@@ -73,11 +73,8 @@
           <file baseinstalldir="PEAR" name="category.jpg" role="php"/>
           <file baseinstalldir="PEAR" name="channel.list.tpl.html" role="php"/>
           <file baseinstalldir="PEAR" name="config.gif" role="php"/>
-          <file baseinstalldir="PEAR" name="dhtml.css" role="php"/>
-          <file baseinstalldir="PEAR" name="dhtml.js" role="php"/>
           <file baseinstalldir="PEAR" name="download.gif" role="php"/>
           <file baseinstalldir="PEAR" name="error.gif" role="php"/>
-          <file baseinstalldir="PEAR" name="error.popup.tpl.html" role="php"/>
           <file baseinstalldir="PEAR" name="error.tpl.html" role="php"/>
           <file baseinstalldir="PEAR" name="footer.inc.tpl.html" role="php"/>
           <file baseinstalldir="PEAR" name="generic_table_horizontal.tpl.html" role="php"/>
@@ -93,9 +90,9 @@
           <file baseinstalldir="PEAR" name="login.gif" role="php"/>
           <file baseinstalldir="PEAR" name="logout.gif" role="php"/>
           <file baseinstalldir="PEAR" name="manual.gif" role="php"/>
-          <file baseinstalldir="PEAR" name="nodhtml.js" role="php"/>
           <file baseinstalldir="PEAR" name="package.info.tpl.html" role="php"/>
           <file baseinstalldir="PEAR" name="package.jpg" role="php"/>
+          <file baseinstalldir="PEAR" name="package.js" role="php"/>
           <file baseinstalldir="PEAR" name="package.list_nocat.tpl.html" role="php"/>
           <file baseinstalldir="PEAR" name="package.list.tpl.html" role="php"/>
           <file baseinstalldir="PEAR" name="package.manually.tpl.html" role="php"/>
@@ -114,6 +111,7 @@
         </dir>
 <!-- /Frontend/Web -->
         <file baseinstalldir="PEAR" name="Web.php" role="php"/>
+        <file baseinstalldir="PEAR" name="Web_Command_Forward_Compatible.php" role="php"/>
       </dir>
 <!-- /Frontend -->
       <file baseinstalldir="PEAR" name="WebInstaller.php" role="php"/>
@@ -128,10 +126,6 @@
       <pearinstaller>
         <min>1.4.3</min>
       </pearinstaller>
-      <package>
-        <name>Net_UserAgent_Detect</name>
-        <channel>pear.php.net</channel>
-      </package>
       <package>
         <name>HTML_Template_IT</name>
         <channel>pear.php.net</channel>
