@@ -39,7 +39,6 @@
  */
 define('PEAR_Frontend_Web',1);
 @session_start();
-$_SESSION['_PEAR_Frontend_Web_version'] = '0.6.0';
 
 /**
  * base frontend class
@@ -49,11 +48,22 @@ require_once 'PEAR/Registry.php';
 require_once 'PEAR/Config.php';
 require_once 'PEAR/Command.php';
 
+$URL = 'http://'.$_SERVER['HTTP_HOST'].$_SERVER['PHP_SELF'];
+$dir = substr(dirname(__FILE__), 0, -strlen('PEAR/PEAR')); // strip PEAR/PEAR
+$_ENV['TMPDIR'] = $_ENV['TEMP'] = $dir.'tmp';
+
 if (!isset($pear_user_config)) {
     if (OS_WINDOWS) {
-        $pear_user_config = PEAR_CONFIG_SYSCONFDIR . '/pear.ini';
+        $conf_name = 'pear.ini';
     } else {
-        $pear_user_config = PEAR_CONFIG_SYSCONFDIR . '/pear.conf';
+        $conf_name = 'pear.conf';
+    }
+
+    $pear_user_config = PEAR_CONFIG_SYSCONFDIR.'/'.$conf_name;
+    if (!file_exists($pear_user_config)) {
+        // if the global one doesn't exist,
+        // try the local one (will be created if unexisting)
+        $pear_user_config = $dir.$conf_name;
     }
 }
 
@@ -85,15 +95,12 @@ $cmdopts = array();
 $opts    = array();
 $params  = array();
 
-$URL = 'http://'.$_SERVER['HTTP_HOST'].$_SERVER['PHP_SELF'];
-$dir = substr(dirname(__FILE__), 0, -strlen('PEAR/PEAR')); // strip PEAR/PEAR
-
-$_ENV['TMPDIR'] = $_ENV['TEMP'] = $dir.'tmp';
-
 if (!file_exists($pear_user_config)) {
     // I think PEAR_Frontend_Web is running for the first time!
     // Install it properly ...
+    print('<h3>Preparing PEAR_Frontend_Web for its first time use...</h3>');
 
+    print('Saving config file...');
     // First of all set some config-vars:
     $cmd = PEAR_Command::factory('config-set', $config);
     $ok = $cmd->run('config-set', array(), array('php_dir',  $dir.'PEAR'));
@@ -102,11 +109,14 @@ if (!file_exists($pear_user_config)) {
     $ok = $cmd->run('config-set', array(), array('bin_dir',  $dir.'bin'));
     $ok = $cmd->run('config-set', array(), array('data_dir', $dir.'data'));
     $ok = $cmd->run('config-set', array(), array('test_dir', $dir.'test'));
-    $ok = $cmd->run('config-set', array(), array('cache_dir', $dir.'cache'));
+    $ok = $cmd->run('config-set', array(), array('temp_dir', $dir.'temp'));
+    $ok = $cmd->run('config-set', array(), array('download_dir', $dir.'temp/download'));
+    $ok = $cmd->run('config-set', array(), array('cache_dir', $dir.'PEAR/cache'));
     $ok = $cmd->run('config-set', array(), array('cache_ttl', 300));
     $ok = $cmd->run('config-set', array(), array('default_channel', 'pear.php.net'));
     $ok = $cmd->run('config-set', array(), array('preferred_mirror', 'pear.php.net'));
 
+    print('Checking package registry...');
     // Register packages
     $packages = array(
                                 'Archive_Tar',
@@ -131,6 +141,11 @@ if (!file_exists($pear_user_config)) {
         }
         $reg->updatePackage($pkg, $info, false);
     }
+
+    print('<p><em>PEAR_Frontend_Web configured succesfully !</em></p>');
+    $msg = sprintf('<p><a href="%s">Click here to continue</a></p>',
+                    $_SERVER['PHP_SELF']);
+    die($msg);
 }
 
 $cache_dir = $config->get('cache_dir');
@@ -141,19 +156,16 @@ if (!is_dir($cache_dir)) {
     }
 }
 
-if (isset($_GET["command"])) {
-    $command = $_GET["command"];
+if (isset($_GET['command']) && !is_null($_GET['command'])) {
+    $command = $_GET['command'];
 } else {
-    $command = null;
+    $command = 'list';
 }
 
 // Prepare and begin output
 $ui->outputBegin($command);
 
 // Handle some different Commands
-if (is_null($command)) {
-    $ui->displayStart();
-} else {
     switch ($command) {
         case 'install':
         case 'uninstall':
@@ -378,7 +390,6 @@ if (is_null($command)) {
             header("Location: ".$URL);
             break;
     }
-}
 
 $ui->outputEnd($command);
 

@@ -69,7 +69,6 @@ if (OS_WINDOWS) {
 };
 
 ini_set('include_path', '@include_path@');
-$useDHTML         = true;
 
 // Include WebInstaller
 require_once("PEAR/WebInstaller.php");

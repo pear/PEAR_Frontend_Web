@@ -128,19 +128,6 @@ class PEAR_Frontend_Web extends PEAR_Frontend
     }
 
     // }}}
-    // {{{ displayStart(prompt, [default])
-
-    /**
-     * Display the 'start' page, first page
-     */
-    function displayStart()
-    {
-        $tpl = $this->_initTemplate("start.tpl.html");
-        $tpl->setVariable('Version', $_SESSION['_PEAR_Frontend_Web_version']);
-        $tpl->show();
-    }
-
-    // }}}
     // {{{ _initTemplate()
 
     /**
@@ -1297,7 +1284,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
         }
         if ($redirectLink) {
             $tpl->setCurrentBlock('Infoloop');
-            $tpl->setVariable("Info", '<a href="' . $redirectLink['link'] . '">' .
+            $tpl->setVariable("Info", '<a href="' . $redirectLink['link'] . '" class="green">' .
                 $redirectLink['text'] . '</a>');
             $tpl->parseCurrentBlock();
         }

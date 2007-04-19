@@ -101,7 +101,6 @@
           <file baseinstalldir="PEAR" name="pkglist.png" role="php"/>
           <file baseinstalldir="PEAR" name="pkgsearch.png" role="php"/>
           <file baseinstalldir="PEAR" name="search.tpl.html" role="php"/>
-          <file baseinstalldir="PEAR" name="start.tpl.html" role="php"/>
           <file baseinstalldir="PEAR" name="style.css" role="php"/>
           <file baseinstalldir="PEAR" name="tableofchannels.tpl.html" role="php"/>
           <file baseinstalldir="PEAR" name="top.inc.tpl.html" role="php"/>
