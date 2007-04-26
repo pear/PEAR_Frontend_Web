@@ -1162,7 +1162,11 @@ class PEAR_Frontend_Web extends PEAR_Frontend
             case 'channel-discover':
             case 'update-channels':
             case 'channel-update':
-                print($data.'<br />');
+                if (is_array($data)) {
+                    print($data['data'].'<br />');
+                } else {
+                    print($data.'<br />');
+                }
                 break;
             case 'upgrade-all':
                 // for simple-array-ed data
