@@ -1871,7 +1871,14 @@ class PEAR_Frontend_Web extends PEAR_Frontend
      */
     function outputBegin($command)
     {
-        $tpl = $this->_initTemplate('top.inc.tpl.html');
+        if (is_null($command)) {
+            // just the header
+            $tpl = $this->_initTemplate('header.inc.tpl.html');
+        } else {
+            $tpl = $this->_initTemplate('top.inc.tpl.html');
+            $tpl->setCurrentBlock('Search');
+            $tpl->parseCurrentBlock();
+        }
 
         // Initialise begin vars
         if ($this->config->get('preferred_mirror') != $this->config->get('default_channel')) {
@@ -1951,7 +1958,14 @@ class PEAR_Frontend_Web extends PEAR_Frontend
             $tpl = $this->_initTemplate('package.manually.tpl.html');
             $tpl->show();
         }
-        $tpl = $this->_initTemplate('bottom.inc.tpl.html');
+
+        if (is_null($command)) {
+            // just the header
+            $tpl = $this->_initTemplate('footer.inc.tpl.html');
+        } else {
+            $tpl = $this->_initTemplate('bottom.inc.tpl.html');
+        }
+        $tpl->setVariable('Filler', '');
         $tpl->show();
     }
 

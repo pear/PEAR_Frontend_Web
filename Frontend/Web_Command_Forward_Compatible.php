@@ -304,7 +304,6 @@ class Web_Command_Forward_Compatible extends PEAR_Command_Common
         return true;
     }
 
-
     // }}}
     // {{{ doListCategories()
     // Reported in bug !UNSBUMITTED!
@@ -405,6 +404,9 @@ class Web_Command_Forward_Compatible extends PEAR_Command_Common
         require_once 'PEAR/Command/Remote.php';
         $cmd = new PEAR_Command_Remote(&$this->ui, &$this->config);
 
+        if (count($params) < 2) {
+            return PEAR::raiseError('Not enough parameters, use: '.$command.' <channel> <category> [<category>...]');
+        }
         $channel = array_shift($params);
         if (count($params) > 1) {
             foreach($params as $pkg) {

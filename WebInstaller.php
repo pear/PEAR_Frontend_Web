@@ -48,23 +48,30 @@ require_once 'PEAR/Registry.php';
 require_once 'PEAR/Config.php';
 require_once 'PEAR/Command.php';
 
-$URL = 'http://'.$_SERVER['HTTP_HOST'].$_SERVER['PHP_SELF'];
-$dir = substr(dirname(__FILE__), 0, -strlen('PEAR/PEAR')); // strip PEAR/PEAR
-$_ENV['TMPDIR'] = $_ENV['TEMP'] = $dir.'tmp';
-
-if (!isset($pear_user_config)) {
+// set $pear_user_config if it isn't set yet
+// finds an existing file, or proposes the default location
+if (!isset($pear_user_config) || $pear_user_config == '') {
     if (OS_WINDOWS) {
         $conf_name = 'pear.ini';
     } else {
         $conf_name = 'pear.conf';
     }
+    
+    $default_config_dirs = array(
+        substr(dirname(__FILE__), 0, -strlen('PEAR/PEAR')), // strip PEAR/PEAR
+        dirname($_SERVER['SCRIPT_FILENAME']),
+        PEAR_CONFIG_SYSCONFDIR,
+                );
+    // set the default: __FILE__ without PEAR/PEAR/
+    $pear_user_config = $default_config_dirs[0].DIRECTORY_SEPARATOR.$conf_name;
 
-    $pear_user_config = PEAR_CONFIG_SYSCONFDIR.'/'.$conf_name;
-    if (!file_exists($pear_user_config)) {
-        // if the global one doesn't exist,
-        // try the local one (will be created if unexisting)
-        $pear_user_config = $dir.$conf_name;
+    foreach ($default_config_dirs as $confdir) {
+        if (file_exists($confdir.DIRECTORY_SEPARATOR.$conf_name)) {
+            $pear_user_config = $confdir.DIRECTORY_SEPARATOR.$conf_name;
+            break;
+        }
     }
+    unset($conf_name, $default_config_dirs, $confdir);
 }
 
 // moving this here allows startup messages and errors to work properly
@@ -97,23 +104,47 @@ $params  = array();
 
 if (!file_exists($pear_user_config)) {
     // I think PEAR_Frontend_Web is running for the first time!
-    // Install it properly ...
+    // Create config and install it properly ...
+    $ui->outputBegin(null);
     print('<h3>Preparing PEAR_Frontend_Web for its first time use...</h3>');
 
-    print('Saving config file...');
+    // probable base_dir:
+    $dir = dirname(__FILE__); // eg .../example/PEAR/PEAR/WebInstaller.php
+    $dir = substr($dir, 0, strrpos($dir, DIRECTORY_SEPARATOR)); // eg .../example/PEAR
+    $dir = substr($dir, 0, strrpos($dir, DIRECTORY_SEPARATOR)); // eg .../example
+    $dir = '';
+    // if it doesn\'t work because of symlinks or who knows what,
+    // try with $pear_dir, it is set in the default frontend inclusion file
+    if (isset($pear_dir) && (!is_dir($dir) || !is_writable($dir))) {
+        $dir = $pear_dir;
+        if (substr($pear_dir, -1) == DIRECTORY_SEPARATOR) {
+            $dir = substr($pear_dir, 0, -1); // strip trailing /
+        }
+        $dir = substr($dir, 0, strrpos($dir, DIRECTORY_SEPARATOR)); // eg .../example
+    }
+
+    $dir .= DIRECTORY_SEPARATOR;
+    if (!is_dir($dir)) {
+        trigger_error('Can not find a base installation directory of PEAR ('.$dir.' doesn\'t work), so we can\'t create a config for it. Please supply it in the variable \'$pear_dir\'. The $pear_dir must have at least the subdirectory PEAR/ and be writable by this frontend.', E_USER_ERROR);
+        die();
+    }
+
+    print('Saving config file ('.$pear_user_config.')...');
     // First of all set some config-vars:
     // Tries to be compatible with go-pear
-    // TODO: signature handling program and signature key directory
+    if (!isset($pear_dir)) {
+        $pear_dir = $dir.'PEAR'; // default (go-pear compatible)
+    }
     $cmd = PEAR_Command::factory('config-set', $config);
-    $ok = $cmd->run('config-set', array(), array('php_dir',  $dir.'PEAR'));
-    $ok = $cmd->run('config-set', array(), array('doc_dir',  $dir.'PEAR/docs'));
+    $ok = $cmd->run('config-set', array(), array('php_dir',  $pear_dir));
+    $ok = $cmd->run('config-set', array(), array('doc_dir',  $pear_dir.'/docs'));
     $ok = $cmd->run('config-set', array(), array('ext_dir',  $dir.'ext'));
     $ok = $cmd->run('config-set', array(), array('bin_dir',  $dir.'bin'));
-    $ok = $cmd->run('config-set', array(), array('data_dir', $dir.'PEAR/data'));
-    $ok = $cmd->run('config-set', array(), array('test_dir', $dir.'PEAR/test'));
+    $ok = $cmd->run('config-set', array(), array('data_dir', $pear_dir.'/data'));
+    $ok = $cmd->run('config-set', array(), array('test_dir', $pear_dir.'/test'));
     $ok = $cmd->run('config-set', array(), array('temp_dir', $dir.'temp'));
     $ok = $cmd->run('config-set', array(), array('download_dir', $dir.'temp/download'));
-    $ok = $cmd->run('config-set', array(), array('cache_dir', $dir.'PEAR/cache'));
+    $ok = $cmd->run('config-set', array(), array('cache_dir', $pear_dir.'/cache'));
     $ok = $cmd->run('config-set', array(), array('cache_ttl', 300));
     $ok = $cmd->run('config-set', array(), array('default_channel', 'pear.php.net'));
     $ok = $cmd->run('config-set', array(), array('preferred_mirror', 'pear.php.net'));
@@ -129,8 +160,8 @@ if (!file_exists($pear_user_config)) {
                                 'Structures_Graph'
                         );
     $reg = &$config->getRegistry();
-    if (!file_exists($dir.'PEAR/.registry')) {
-        PEAR::raiseError('Directory "'.$dir.'PEAR/.registry" does not exist. please check your installation');
+    if (!file_exists($pear_dir.'/.registry')) {
+        PEAR::raiseError('Directory "'.$pear_dir.'/.registry" does not exist. please check your installation');
     }
 
     foreach($packages as $pkg) {
@@ -147,7 +178,9 @@ if (!file_exists($pear_user_config)) {
     print('<p><em>PEAR_Frontend_Web configured succesfully !</em></p>');
     $msg = sprintf('<p><a href="%s">Click here to continue</a></p>',
                     $_SERVER['PHP_SELF']);
-    die($msg);
+    print($msg);
+    $ui->outputEnd(null);
+    die();
 }
 
 $cache_dir = $config->get('cache_dir');
@@ -187,7 +220,7 @@ $ui->outputBegin($command);
             $cmd = PEAR_Command::factory($command, $config);
             $ok = $cmd->run($command, $opts, $params);
 
-            $ui->finishOutput('Back', array('link' => $URL.'?command=info&pkg='.$_GET['pkg'],
+            $ui->finishOutput('Back', array('link' => $_SERVER['PHP_SELF'].'?command=info&pkg='.$_GET['pkg'],
                 'text' => 'View package information'));
             break;
         case 'run-scripts' :
@@ -260,9 +293,7 @@ $ui->outputBegin($command);
             }
             print('<p><b>Config saved succesfully!</b></p>');
 
-            $URL .= '?command='.$command;
-            $ui->finishOutput('Back', array('link' => $URL,
-                'text' => 'Back to the config'));
+            $ui->finishOutput('Back', array('link' => $_SERVER['PHP_SELF'].'?command='.$command, 'text' => 'Back to the config'));
             break;
         case 'list-all':
             // XXX Not used anymore, 'list-categories' is used instead
@@ -323,7 +354,7 @@ $ui->outputBegin($command);
             $cmd = PEAR_Command::factory($command, $config);
             $ok = $cmd->run($command, $opts, $params);
 
-            $ui->finishOutput('Back', array('link' => $URL.'?command=list',
+            $ui->finishOutput('Back', array('link' => $_SERVER['PHP_SELF'].'?command=list',
                 'text' => 'Click here to go back'));
             break;
         case 'channel-info':
@@ -388,8 +419,6 @@ $ui->outputBegin($command);
             $cmd = PEAR_Command::factory($command, $config);
             $res = $cmd->run($command, $opts, $params);
 
-            $URL .= '?command='.$_GET["command"];
-            header("Location: ".$URL);
             break;
     }
 

@@ -34,11 +34,11 @@
     <email>pajoye@pearfr.org</email>
     <active>no</active>
   </lead>
-  <date>2007-04-03</date>
-  <time>23:30:44</time>
+  <date>2007-04-26</date>
+  <time>22:14:44</time>
   <version>
-    <release>0.6.0a</release>
-    <api>0.5.2</api>
+    <release>0.6.0</release>
+    <api>0.6.0</api>
   </version>
   <stability>
     <release>alpha</release>
@@ -46,23 +46,23 @@
   </stability>
   <license uri="http://www.php.net/license">PHP License</license>
   <notes>
-* Fix Bug #10427: wrong dependencies [tias]
-* Fix Bug #10428: install dependencies of package [tias]
-* Fix Bug #10429: some small bugfixes [tias]
-* Fix Bug #10430: remote-info broken for installed packages [tias]
-* Small changes in the templates files, that makes stuff much nicer
-* config-show submit: only config-set what has changed (and never the buggy Filename that can not be changed this way), and output it nicely.
+Reworked webfrontend: [Tias]
+* Use 'list' and 'list-upgrades' commands instead of the slow 'list-all' when possible 
+* Use command 'info' for installed packages 
+* Add proper documentation 
+* Make 'search' work over all channels 
+* Change 'list all packages' too 'list all categories' and list it for _all_ channels (also provide dry list of package names) 
+* Remove unnecessary DHTML stuff 
+* Make it easy to set up the frontend for an existing pear installation
   </notes>
   <contents>
     <dir name="/">
+      <file baseinstalldir="PEAR" name="README" role="doc"/>
       <dir name="docs">
-        <file baseinstalldir="PEAR" name="example.php" role="doc">
-          <tasks:replace from="@php_bin@" to="php_bin" type="pear-config"/>
-          <tasks:replace from="@bin_dir@" to="bin_dir" type="pear-config"/>
-          <tasks:replace from="@php_dir@" to="php_dir" type="pear-config"/>
-          <tasks:replace from="@pear_version@" to="version" type="package-info"/>
-          <tasks:replace from="@include_path@" to="php_dir" type="pear-config"/>
+        <file baseinstalldir="PEAR" name="index.php.txt" role="doc">
+          <tasks:replace from="@pear_dir@" to="php_dir" type="pear-config"/>
         </file>
+        <file baseinstalldir="PEAR" name="htaccess" role="doc"/>
       </dir>
 <!-- /docs -->
       <dir name="Frontend">
@@ -138,6 +138,28 @@
   </dependencies>
   <phprelease/>
   <changelog>
+    <release>
+      <date>2007-04-26</date>
+      <version>
+        <release>0.6.0</release>
+        <api>0.6.0</api>
+      </version>
+      <stability>
+        <release>alpha</release>
+        <api>alpha</api>
+      </stability>
+      <license uri="http://www.php.net/license">PHP License</license>
+      <notes>
+Reworked webfrontend: [Tias]
+* Use 'list' and 'list-upgrades' commands instead of the slow 'list-all' when possible 
+* Use command 'info' for installed packages 
+* Add proper documentation 
+* Make 'search' work over all channels 
+* Change 'list all packages' too 'list all categories' and list it for _all_ channels (also provide dry list of package names) 
+* Remove unnecessary DHTML stuff 
+* Make it easy to set up the frontend for an existing pear installation
+ </notes>
+    </release>
     <release>
       <date>2007-04-03</date>
       <version>
