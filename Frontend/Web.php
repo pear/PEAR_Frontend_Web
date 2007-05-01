@@ -282,6 +282,8 @@ class PEAR_Frontend_Web extends PEAR_Frontend
      * @param boolean $paging   (optional) use Paging or not
      *
      * @return boolean true (yep. i am an optimist)
+     *
+     * DEPRECATED BY list-categories
      */
     function _outputListAll($data, $paging=true)
     {
@@ -677,6 +679,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
         if (isset($data['data']) && is_array($data['data'])) {
             foreach($data['data'] as $row) {
                 $package = $row[0].'/'.$row[1];
+                $package_name = $row[1];
 
                 foreach($row as $text) {
                     $tpl->setCurrentBlock('Data_row');
@@ -699,7 +702,17 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                 $tpl->setVariable("Info", $info);
 
                 $img = sprintf('<img src="%s?img=infoplus" width="18" height="19"  border="0" alt="extended info">', $_SERVER["PHP_SELF"]);
-                $url = sprintf('http://%s/package/%s', $this->config->get('preferred_mirror'), $package);
+
+                // extended information:
+                if ($channel == 'pear.php.net' || $channel == 'pecl.php.net') {
+                    $url_raw = 'http://%s/package/%s/download';
+                } else {
+                    // the normal default
+                    $url_raw = 'http://%s/index.php?package=%s';
+                }
+                $url = sprintf($url_raw,
+                    $this->config->get('preferred_mirror', null, $channel),
+                    $package_name);
                 $infoExt = sprintf('<a href="%s">%s</a>', $url, $img);
                 $tpl->setVariable("InfoExt", $infoExt);
 
@@ -749,6 +762,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
         if (isset($data['data']) && is_array($data['data'])) {
             foreach($data['data'] as $row) {
                 $package = $channel.'/'.$row[1];
+                $package_name = $row[1];
 
                 foreach($row as $text) {
                     $tpl->setCurrentBlock('Data_row');
@@ -769,8 +783,17 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                 $info = sprintf('<a href="%s">%s</a>', $url, $img);
                 $tpl->setVariable("Info", $info);
 
+                // extended information:
+                if ($channel == 'pear.php.net' || $channel == 'pecl.php.net') {
+                    $url_raw = 'http://%s/package/%s/download';
+                } else {
+                    // the normal default
+                    $url_raw = 'http://%s/index.php?package=%s';
+                }
+                $url = sprintf($url_raw,
+                    $this->config->get('preferred_mirror', null, $channel),
+                    $package_name);
                 $img = sprintf('<img src="%s?img=infoplus" width="18" height="19"  border="0" alt="extended info">', $_SERVER["PHP_SELF"]);
-                $url = sprintf('http://%s/package/%s', $this->config->get('preferred_mirror'), $package);
                 $infoExt = sprintf('<a href="%s">%s</a>', $url, $img);
                 $tpl->setVariable("InfoExt", $infoExt);
 
@@ -865,7 +888,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
         }
         // More: Extended Package Information
         $image = sprintf('<img src="%s?img=infoplus" border="0" alt="extra info">', $_SERVER["PHP_SELF"]);
-        if ($channel == 'pear.php.net') {
+        if ($channel == 'pear.php.net' || $channel == 'pecl.php.net') {
             $url = 'http://%s/package/%s/download/%s';
         } else {
             // the normal default
@@ -926,6 +949,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
             $tpl->setVariable("DownloadURL", $_SERVER['PHP_SELF']);
         }
         */
+        $channel = $data['channel'];
         $package = $data['channel'].'/'.$data['name'];
         $package_full = $data['channel'].'/'.$data['name'].'-'.$data['stable'];
 
@@ -1008,7 +1032,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
         $tpl->setVariable('More_Title', 'More');
         // More: Extended Package Information
         $image = sprintf('<img src="%s?img=infoplus" border="0" alt="extra info">', $_SERVER["PHP_SELF"]);
-        if ($channel == 'pear.php.net') {
+        if ($channel == 'pear.php.net' || $channel == 'pecl.php.net') {
             $url = 'http://%s/package/%s/download/%s';
         } else {
             // the normal default

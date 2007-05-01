@@ -160,7 +160,8 @@ class Web_Command_Forward_Compatible extends PEAR_Command_Common
             $caption = $channel . ' Available Upgrades';
             $chan = $reg->getChannel($channel);
             if (PEAR::isError($e = $cmd->_checkChannelForStatus($channel, $chan))) {
-                return $e;
+                $this->ui->outputData($e->getMessage());
+                continue;
             }
             if ($chan->supportsREST($this->config->get('preferred_mirror')) &&
                   $base = $chan->getBaseURL('REST1.0', $this->config->get('preferred_mirror'))) {
@@ -189,10 +190,6 @@ class Web_Command_Forward_Compatible extends PEAR_Command_Common
                 continue;
             }
             $caption .= ':';
-            if (PEAR::isError($latest)) {
-                $this->config->set('default_channel', $savechannel);
-                return $latest;
-            }
             $data = array(
                 'caption' => $caption,
                 'border' => 1,
