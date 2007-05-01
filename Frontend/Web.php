@@ -181,7 +181,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
         $msg = nl2br($msg."\n");
 
         $tplfile = ($popup ? "error.popup.tpl.html" : "error.tpl.html");
-        $tpl = $this->_initTemplate($tplfile, $title, $img);
+        $tpl = $this->_initTemplate($tplfile);
 
         $tpl->setVariable("Error", $msg);
         $command_map = array(
@@ -219,8 +219,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
     /**
      * Output the list of channels
      */
-    function _outputListChannels($data, $title = 'Manage Installer Channels',
-                            $img = 'pkglist', $useDHTML = false)
+    function _outputListChannels($data)
     {
         $tpl = $this->_initTemplate('channel.list.tpl.html');
 
@@ -291,7 +290,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
             return true;
         }
 
-        $tpl = $this->_initTemplate("package.list.tpl.html", $title, $img, $useDHTML);
+        $tpl = $this->_initTemplate('package.list.tpl.html');
         $tpl->setVariable('Caption', $data['caption']);
 
         if (!is_array($data['data'])) {
@@ -307,7 +306,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                        'current' => '&mode='.$mode,
                        );
         if (isset($_GET['command']) && $_GET['command'] == 'search') {
-            $links['current'] .= '&redirect=search&0='.$_REQUEST[0].'&1='.$_REQUEST[1];
+            $links['current'] .= '&0='.$_REQUEST[0].'&1='.$_REQUEST[1];
         }
 
         if ($paging) {
@@ -547,7 +546,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
 
         if (isset($data['data']) && is_array($data['data'])) {
             foreach($data['data'] as $row) {
-                list($channel, $category, $packages) = $row;
+                @list($channel, $category, $packages) = $row;
 
                 $tpl->setCurrentBlock('Data_row');
                 $tpl->setVariable('Text', $channel);
@@ -657,7 +656,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
             return true;
         }
 
-        $tpl = $this->_initTemplate("package.list_nocat.tpl.html", $title, $img, $useDHTML);
+        $tpl = $this->_initTemplate('package.list_nocat.tpl.html');
 
         $tpl->setVariable('categoryName', $data['caption']);
         //$tpl->setVariable('Border', $data['border']);
@@ -737,7 +736,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
      */
     function _outputListUpgrades($data)
     {
-        $tpl = $this->_initTemplate("package.list_nocat.tpl.html", $title, $img, $useDHTML);
+        $tpl = $this->_initTemplate('package.list_nocat.tpl.html');
 
         $tpl->setVariable('categoryName', $data['caption']);
         //$tpl->setVariable('Border', $data['border']);
@@ -871,7 +870,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
     function _outputPackageInfo($data)
     {
         array_walk_recursive($data['data'], 'htmlentities');
-        if (!isset($channel)) {
+        if (!isset($data['raw']['channel'])) {
             // Unbelievable but true, see bug #10905
             $channel = 'pear.php.net';
             $package_name = $data['raw']['package'];
@@ -886,7 +885,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
             $output = '';
             $image = sprintf('<img src="%s?img=uninstall" width="18" height="17"  border="0" alt="uninstall">', $_SERVER["PHP_SELF"]);
             $output .= sprintf(
-                    '<a href="%s?command=uninstall&pkg=%s&redirect=info" class="green" %s>%s Uninstall package</a>',
+                    '<a href="%s?command=uninstall&pkg=%s" class="green" %s>%s Uninstall package</a>',
                     $_SERVER["PHP_SELF"],
                     $package,
                     'onClick="return uninstallPkg(\''.$package.'\');"',
@@ -946,7 +945,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
     function _outputPackageRemoteInfo($data)
     {
         include_once "PEAR/Downloader.php";
-        $tpl = $this->_initTemplate("package.info.tpl.html", 'Package Management :: '.$data['name'], 'pkglist');
+        $tpl = $this->_initTemplate('package.info.tpl.html');
 
         $tpl->setVariable("PreferredMirror", $this->config->get('preferred_mirror'));
         /*
@@ -987,44 +986,44 @@ class PEAR_Frontend_Web extends PEAR_Frontend
         $opt_text = array();
         if (!$data['installed'] || $data['installed'] == "- no -") {
             $opt_img[] = sprintf(
-                '<a href="%s?command=install&pkg=%s&redirect=info" %s>%s</a>',
+                '<a href="%s?command=install&pkg=%s" %s>%s</a>',
                 $_SERVER["PHP_SELF"], $package_full,
                 'onClick="return installPkg(\''.$package_full.'\');"',
                 $images['install']);
             $opt_text[] = sprintf(
-                '<a href="%s?command=install&pkg=%s&redirect=info" class="green" %s>Install package</a>',
+                '<a href="%s?command=install&pkg=%s" class="green" %s>Install package</a>',
                 $_SERVER["PHP_SELF"], $package_full,
                 'onClick="return installPkg(\''.$package_full.'\');"');
         } else if ($compare == 1) {
             $opt_img[] = sprintf(
-                '<a href="%s?command=upgrade&pkg=%s&redirect=info" %s>%s</a><br>',
+                '<a href="%s?command=upgrade&pkg=%s" %s>%s</a><br>',
                 $_SERVER["PHP_SELF"], $package,
                 'onClick="return installPkg(\''.$package.'\');"',
                 $images['install']);
             $opt_text[] = sprintf(
-                '<a href="%s?command=upgrade&pkg=%s&redirect=info" class="green" %s>Upgrade package</a>',
+                '<a href="%s?command=upgrade&pkg=%s" class="green" %s>Upgrade package</a>',
                 $_SERVER["PHP_SELF"], $package,
                 'onClick="return installPkg(\''.$package.'\');"');
             if (!in_array($package, $this->_no_delete_pkgs)) {
                 $opt_img[] = sprintf(
-                    '<a href="%s?command=uninstall&pkg=%s&redirect=info" %s>%s</a>',
+                    '<a href="%s?command=uninstall&pkg=%s" %s>%s</a>',
                     $_SERVER["PHP_SELF"], $package,
                     'onClick="return uninstallPkg(\''.$package.'\');"',
                     $images['uninstall']);
                 $opt_text[] = sprintf(
-                    '<a href="%s?command=uninstall&pkg=%s&redirect=info" class="green" %s>Uninstall package</a>',
+                    '<a href="%s?command=uninstall&pkg=%s" class="green" %s>Uninstall package</a>',
                     $_SERVER["PHP_SELF"], $package,
                     'onClick="return uninstallPkg(\''.$package.'\');"');
            }
         } else {
             if (!in_array($package, $this->_no_delete_pkgs)) {
                 $opt_img[] = sprintf(
-                    '<a href="%s?command=uninstall&pkg=%s&redirect=info" %s>%s</a>',
+                    '<a href="%s?command=uninstall&pkg=%s" %s>%s</a>',
                     $_SERVER["PHP_SELF"], $package,
                     'onClick="return uninstallPkg(\''.$package.'\');"',
                     $images['uninstall']);
                 $opt_text[] = sprintf(
-                    '<a href="%s?command=uninstall&pkg=%s&redirect=info" class="green" %s>Uninstall package</a>',
+                    '<a href="%s?command=uninstall&pkg=%s" class="green" %s>Uninstall package</a>',
                     $_SERVER["PHP_SELF"], $package,
                     'onClick="return uninstallPkg(\''.$package.'\');"');
            }
@@ -1368,7 +1367,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
     function finishOutput($command, $redirectLink = false)
     {
         unset($_SESSION['_PEAR_Frontend_Web_SavedOutput']);
-        $tpl = $this->_initTemplate('info.tpl.html', "$command output");
+        $tpl = $this->_initTemplate('info.tpl.html');
         foreach($this->_savedOutput as $row) {
             $tpl->setCurrentBlock('Infoloop');
             $tpl->setVariable("Info", $row);
@@ -1691,7 +1690,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
             $icon = 'login';
         }
 
-        $tpl = $this->_initTemplate("userDialog.tpl.html", $title, $icon);
+        $tpl = $this->_initTemplate('userDialog.tpl.html');
         $tpl->setVariable("Command", $command);
         $extrap = '';
         if (count($extra)) {
@@ -1767,7 +1766,6 @@ class PEAR_Frontend_Web extends PEAR_Frontend
         $handles = array(
             "css" => array(
                 "style" => "style.css",
-                "dhtml" => "dhtml.css",
                 ),
             "js" => array(
                 "package" => "package.js",
@@ -1984,19 +1982,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
         }
         $tpl->setVariable("_default_channel", $this->config->get('default_channel') . $mirror);
         $tpl->setVariable("ImgPEAR", $_SERVER["PHP_SELF"].'?img=pear');
-        if ($title) {
-            $tpl->setVariable("Title", $title);
-        } else {
-            $tpl->setVariable("Title", 'Web-based PEAR Frontend');
-        }
-
-        if ($icon) {
-            $tpl->setCurrentBlock("TitleBlock");
-            $tpl->setVariable("_InstallerURL", $_SERVER["PHP_SELF"]);
-            $tpl->setVariable("_Title", $title);
-            $tpl->setVariable("_Icon", $icon);
-            $tpl->parseCurrentBlock();
-        }
+        $tpl->setVariable("Title", 'Web-based PEAR Frontend');
 
         $tpl->setCurrentBlock();
 

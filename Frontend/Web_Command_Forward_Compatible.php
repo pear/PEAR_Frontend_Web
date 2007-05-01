@@ -69,7 +69,7 @@ class Web_Command_Forward_Compatible extends PEAR_Command_Common
         require_once 'PEAR/Command/Registry.php';
         $cmd = new PEAR_Command_Registry(&$this->ui, &$this->config);
 
-        if (isset($options['allchannels'])) {
+        if (isset($options['allchannels']) && $options['allchannels'] == true) {
             return $this->reg_doListAll($command, array(), $params);
         }
         $reg = &$this->config->getRegistry();
@@ -244,7 +244,7 @@ class Web_Command_Forward_Compatible extends PEAR_Command_Common
         $cmd = new PEAR_Command_Remote(&$this->ui, &$this->config);
 
         $reg = &$this->config->getRegistry();
-        if ($options['allchannels'] == true) {
+        if (isset($options['allchannels']) && $options['allchannels'] == true) {
             // over all channels
             unset($options['allchannels']);
             $channels = $reg->getChannels();
@@ -327,7 +327,7 @@ class Web_Command_Forward_Compatible extends PEAR_Command_Common
         $cmd = new PEAR_Command_Remote(&$this->ui, &$this->config);
 
         $reg = &$this->config->getRegistry();
-        if ($options['allchannels'] == true) {
+        if (isset($options['allchannels']) && $options['allchannels'] == true) {
             // over all channels
             unset($options['allchannels']);
             $channels = $reg->getChannels();
@@ -1038,7 +1038,7 @@ class Web_Command_Forward_Compatible extends PEAR_Command_Common
         };
 
         $reg = &$this->config->getRegistry();
-        if ($options['allchannels'] == true) {
+        if (isset($options['allchannels']) && $options['allchannels'] == true) {
             // search all channels
             unset($options['allchannels']);
             $channels = $reg->getChannels();
