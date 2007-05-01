@@ -393,6 +393,14 @@ $ui->outputBegin($command);
             $ok = $cmd->run($command, $opts, $params);
 
             break;
+        case 'channel-update':
+            if (isset($_GET['chan'])) {
+                $params = array($_GET['chan']);
+            }
+            $cmd = PEAR_Command::factory($command, $config);
+            $ok = $cmd->run($command, $opts, $params);
+
+            break;
         case 'update-channels':
             // update every channel manually,
             // fixes bug PEAR/#10275 (XML_RPC dependency)

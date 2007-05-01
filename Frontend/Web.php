@@ -1265,6 +1265,18 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                     break;
                 }
                 if (!is_array($data)) {
+                    // WARNING: channel "pear.php.net" has updated its protocols, use "channel-update pear.php.net" to update: auto-URL
+                    if (preg_match('/use "channel-update ([\S]+)" to update$/', $data, $matches)) {
+                        $channel = $matches[1];
+                        $url = sprintf('<a href="%s?command=channel-update&chan=%s" class="green">channel-update %s</a>',
+                                $_SERVER['PHP_SELF'],
+                                $channel,
+                                $channel);
+                        $data = preg_replace('/channel-update '.$channel.'/',
+                                                $url,
+                                                $data);
+                    }
+                                
                     // TODO: div magic, give it a color and a box etc.
                     print('<div>'.$data.'<div>');
                 }
