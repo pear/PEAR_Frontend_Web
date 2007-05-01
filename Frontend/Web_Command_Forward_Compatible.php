@@ -114,11 +114,21 @@ class Web_Command_Forward_Compatible extends PEAR_Command_Common
     {
         $reg = &$this->config->getRegistry();
         $channels = $reg->getChannels();
+        $errors = array();
         foreach($channels as $channel) {
             $options['channel'] = $channel->getName();
-            $this->doList($command, $options, $params);
+            $ret = $this->doList($command, $options, $params);
+
+            if ($ret !== true) {
+                $errors[] = $ret;
+            }
         }
-        return true;
+        if (count($errors) === 0) {
+            return true;
+        } else {
+            // for now, only give first error
+            return $errors[0];
+        }
     }
 
     // }}}
@@ -241,16 +251,22 @@ class Web_Command_Forward_Compatible extends PEAR_Command_Common
             // over all channels
             unset($options['allchannels']);
             $channels = $reg->getChannels();
+            $errors = array();
             foreach ($channels as $channel) {
                 if ($channel->getName() != '__uri') {
                     $options['channel'] = $channel->getName();
                     $ret = $this->doListPackages($command, $options, $params);
                     if ($ret !== true) {
-                        return $ret;
+                        $errors[] = $ret;
                     }
                 }
             }
-            return true;
+            if (count($errors) === 0) {
+                return true;
+            } else {
+                // for now, only give first error
+                return $errors[0];
+            }
         }
 
         $savechannel = $channel = $this->config->get('default_channel');
@@ -318,16 +334,22 @@ class Web_Command_Forward_Compatible extends PEAR_Command_Common
             // over all channels
             unset($options['allchannels']);
             $channels = $reg->getChannels();
+            $errors = array();
             foreach ($channels as $channel) {
                 if ($channel->getName() != '__uri') {
                     $options['channel'] = $channel->getName();
                     $ret = $this->doListCategories($command, $options, $params);
                     if ($ret !== true) {
-                        return $ret;
+                        $errors[] = $ret;
                     }
                 }
             }
-            return true;
+            if (count($errors) === 0) {
+                return true;
+            } else {
+                // for now, only give first error
+                return $errors[0];
+            }
         }
 
         $savechannel = $channel = $this->config->get('default_channel');
@@ -340,19 +362,23 @@ class Web_Command_Forward_Compatible extends PEAR_Command_Common
             }
         }
         $chan = $reg->getChannel($channel);
+        PEAR::pushErrorHandling(PEAR_ERROR_RETURN);
         if (PEAR::isError($e = $cmd->_checkChannelForStatus($channel, $chan))) {
             return $e;
         }
-        if ($chan->supportsREST($this->config->get('preferred_mirror')) &&
+        if ($channel != 'pearified.com' && // Tias hack, no buggy stuff
+            $chan->supportsREST($this->config->get('preferred_mirror')) &&
+              $base = $chan->getBaseURL('REST1.1', $this->config->get('preferred_mirror'))) {
+            $rest = &$this->config->getREST('1.1', array());
+            $TIAS_rest_version='1.1';
+            $categories = $this->REST_listCategories11(&$rest, $base);
+        } elseif ($chan->supportsREST($this->config->get('preferred_mirror')) &&
               $base = $chan->getBaseURL('REST1.0', $this->config->get('preferred_mirror'))) {
             $rest = &$this->config->getREST('1.0', array());
-            $categories = $this->REST_listCategories(&$rest, $base);
+            $TIAS_rest_version='1.0';
+            $categories = $this->REST_listCategories10(&$rest, $base);
         } else {
             return PEAR::raiseError($command.' only works for REST servers');
-        }
-        if (PEAR::isError($categories)) {
-            $this->config->set('default_channel', $savechannel);
-            return $this->raiseError('The category list could not be fetched from the remote server. Please try again. (Debug info: "' . $categories->getMessage() . '")');
         }
 
         $data = array(
@@ -365,7 +391,10 @@ class Web_Command_Forward_Compatible extends PEAR_Command_Common
             $data['headline'][] = 'Packages';
         }
 
-        if (count($categories) === 0) {
+        if (PEAR::isError($categories)) {
+            unset($data['headline']);
+            $data['data'] = 'The category list could not be fetched from the remote server. Please try again. (Debug info: "' . $categories->getMessage() . '")';
+        } elseif (count($categories) === 0) {
             unset($data['headline']);
             $data['data'] = 'No categories registered';
         } else {
@@ -379,16 +408,27 @@ class Web_Command_Forward_Compatible extends PEAR_Command_Common
 
                 if (isset($options['packages']) && $options['packages']) {
                     // get packagenames
-                    $cat_pkgs = $this->REST_listCategory(&$rest, $base, $category);
+                    if ($TIAS_rest_version == '1.0') {
+                        $cat_pkgs = $this->REST_listCategory10(&$rest, $base, $category);
+                    } else {
+                        $cat_pkgs = $this->REST_listCategory11(&$rest, $base, $category);
+                    }
                     $packages = array();
-                    foreach($cat_pkgs as $cat_pkg) {
-                        $packages[] = $cat_pkg['_content'];
+
+                    if (PEAR::isError($cat_pkgs)) {
+                        // soft-failure:
+                        $packages[] = 'Error: '.$cat_pkgs->getMessage();
+                    } else {
+                        foreach($cat_pkgs as $cat_pkg) {
+                            $packages[] = $cat_pkg['_content'];
+                        }
                     }
                     $array[] = $packages;
                 }
                 $data['data'][] = $array;
             }
         }
+        PEAR::popErrorHandling();
 
         $this->config->set('default_channel', $savechannel);
         $this->ui->outputData($data, $command);
@@ -409,13 +449,19 @@ class Web_Command_Forward_Compatible extends PEAR_Command_Common
         }
         $channel = array_shift($params);
         if (count($params) > 1) {
+            $errors = array();
             foreach($params as $pkg) {
                 $ret = $this->doListCategory($command, $options, array($channel, $pkg));
                 if ($ret !== true) {
-                    return $ret;
+                    $errors[] = $ret;
                 }
             }
-            return $ret;
+            if (count($errors) === 0) {
+                return true;
+            } else {
+                // for now, only give first error
+                return $errors[0];
+            }
         }
         $category = $params[0];
             
@@ -620,7 +666,49 @@ class Web_Command_Forward_Compatible extends PEAR_Command_Common
      */
     // Reported in bug !UNREPORTED!
     // Original file: REST/10.php
-    function REST_listCategories(&$rest, $base)
+    function REST_listCategories10(&$rest, $base)
+    {
+        $categories = array();
+
+        // c/categories.xml does not exist;
+        // check for every package its category manually
+        // This is SLOOOWWWW : ///
+        $packagelist = $rest->_rest->retrieveData($base . 'p/packages.xml');
+        if (PEAR::isError($packagelist)) {
+            return $packagelist;
+        }
+        if (!is_array($packagelist) || !isset($packagelist['p'])) {
+            $ret = array();
+            return $ret;
+        }
+        if (!is_array($packagelist['p'])) {
+            $packagelist['p'] = array($packagelist['p']);
+        }
+
+        PEAR::pushErrorHandling(PEAR_ERROR_RETURN);
+        foreach ($packagelist['p'] as $package) {
+                $inf = $rest->_rest->retrieveData($base . 'p/' . strtolower($package) . '/info.xml');
+                if (PEAR::isError($inf)) {
+                    PEAR::popErrorHandling();
+                    return $inf;
+                }
+                $cat = $inf['ca']['_content'];
+                if (!isset($categories[$cat])) {
+                    $categories[$cat] = $inf['ca'];
+                }
+        }
+        return array_values($categories);
+    }
+
+    /**
+     * List all categories of a REST server
+     *
+     * @param string $base base URL of the server
+     * @return array of categorynames
+     */
+    // Reported in bug !UNREPORTED!
+    // Original file: REST/11.php
+    function REST_listCategories11(&$rest, $base)
     {
         $categorylist = $rest->_rest->retrieveData($base . 'c/categories.xml');
         if (PEAR::isError($categorylist)) {
@@ -629,7 +717,8 @@ class Web_Command_Forward_Compatible extends PEAR_Command_Common
         if (!is_array($categorylist) || !isset($categorylist['c'])) {
             return array();
         }
-        if (!is_array($categorylist['c'])) {
+        if (isset($categorylist['c']['_content'])) {
+            // only 1 category
             $categorylist['c'] = array($categorylist['c']);
         }
         return $categorylist['c'];
@@ -956,16 +1045,22 @@ class Web_Command_Forward_Compatible extends PEAR_Command_Common
             // search all channels
             unset($options['allchannels']);
             $channels = $reg->getChannels();
+            $errors = array();
             foreach ($channels as $channel) {
                 if ($channel->getName() != '__uri') {
                     $options['channel'] = $channel->getName();
                     $ret = $this->doSearch($command, $options, $params);
                     if ($ret !== true) {
-                        return $ret;
+                        $errors[] = $ret;
                     }
                 }
             }
-            return true;
+            if (count($errors) === 0) {
+                return true;
+            } else {
+                // for now, only give first error
+                return $errors[0];
+            }
         }
 
         require_once 'PEAR/Command/Remote.php';
