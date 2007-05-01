@@ -871,8 +871,15 @@ class PEAR_Frontend_Web extends PEAR_Frontend
     function _outputPackageInfo($data)
     {
         array_walk_recursive($data['data'], 'htmlentities');
-        $channel = $data['raw']['channel'];
-        $package = $channel.'/'.$data['raw']['name'];
+        if (!isset($channel)) {
+            // Unbelievable but true, see bug #10905
+            $channel = 'pear.php.net';
+            $package_name = $data['raw']['package'];
+        } else {
+            $channel = $data['raw']['channel'];
+            $package_name = $data['raw']['name'];
+        }
+        $package = $channel.'/'.$package_name;
 
         // parse extra options
         if (!in_array($package, $this->_no_delete_pkgs)) {
@@ -897,24 +904,29 @@ class PEAR_Frontend_Web extends PEAR_Frontend
         $output = sprintf(
                     '<a href="'.$url.'" class="green" target="_new">%s Extended Package Information</a>',
                     $this->config->get('preferred_mirror', null, $channel),
-                    $data['raw']['name'],
+                    $package_name,
                     $data['raw']['version']['release'],
                     $image);
         // More: Local Documentation
-        $image = sprintf('<img src="%s?img=manual" border="0" alt="manual">', $_SERVER["PHP_SELF"]);
-        // TODO: docs viewer
-        /*$output .= '<br />';
-        $output = sprintf(
-                    '<a href="http://%s/index.php?package=%s&release=%s" class="green" target="_new">%s Extended Package Information</a>',
-                    $this->config->get('preferred_mirror', null, $channel),
-                    $data['raw']['name'],
-                    $data['raw']['version']['release'],
-                    $image);
-        */
-        // More: Package Manual
-        if ($channel == 'pear.php.net') {
+        if (count($this->_getDocFiles($package_name, $channel)) !== 0) {
             $output .= '<br />';
             $image = sprintf('<img src="%s?img=manual" border="0" alt="manual">', $_SERVER["PHP_SELF"]);
+            $output .= sprintf(
+                    '<a href="%s?command=list-docs&pkg=%s" class="green">%s Package Documentation</a>',
+                    $_SERVER["PHP_SELF"],
+                    $package,
+                    $image);
+        }
+        // More: Developer Documentation && Package Manual
+        if ($channel == 'pear.php.net') {
+            $output .= '<br />';
+            $image = sprintf('<img src="%s?img=manualplus" border="0" alt="manual">', $_SERVER["PHP_SELF"]);
+            $output .= sprintf(
+                        '<a href="http://pear.php.net/package/%s/docs/latest" class="green" target="_new">%s pear.php.net Developer Documentation</a>',
+                        $package_name,
+                        $image);
+            $output .= '<br />';
+            $image = sprintf('<img src="%s?img=manualplus" border="0" alt="manual">', $_SERVER["PHP_SELF"]);
             $output .= sprintf(
                         '<a href="http://pear.php.net/manual/en/" class="green" target="_new">%s pear.php.net Package Manual </a>',
                         $image);
@@ -1044,10 +1056,16 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                     $data['name'],
                     $data['stable'],
                     $image);
-        // More: Package Manual
+        // More: Developer Documentation && Package Manual
         if ($channel == 'pear.php.net') {
             $output .= '<br />';
-            $image = sprintf('<img src="%s?img=manual" border="0" alt="manual">', $_SERVER["PHP_SELF"]);
+            $image = sprintf('<img src="%s?img=manualplus" border="0" alt="manual">', $_SERVER["PHP_SELF"]);
+            $output .= sprintf(
+                        '<a href="http://pear.php.net/package/%s/docs/latest" class="green" target="_new">%s pear.php.net Developer Documentation</a>',
+                        $data['name'],
+                        $image);
+            $output .= '<br />';
+            $image = sprintf('<img src="%s?img=manualplus" border="0" alt="manual">', $_SERVER["PHP_SELF"]);
             $output .= sprintf(
                         '<a href="http://pear.php.net/manual/en/" class="green" target="_new">%s pear.php.net Package Manual </a>',
                         $image);
@@ -1823,6 +1841,10 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                     "type" => "gif",
                     "file" => "manual.gif",
                     ),
+                "manualplus" => array(
+                    "type" => "gif",
+                    "file" => "manualplus.gif",
+                    ),
                 "download" => array(
                     "type" => "gif",
                     "file" => "download.gif",
@@ -2044,6 +2066,27 @@ class PEAR_Frontend_Web extends PEAR_Frontend
     }
 
     // }}}
+
+    /**
+     * Get the files with role 'doc' of the given package
+     *
+     * @param $package
+     * @param $channel
+     * @return array('name' => 'installed_as', ...
+     */
+    function _getDocFiles($package_name, $channel)
+    {
+        // TODO: docs viewer
+        $reg = $this->config->getRegistry();
+        $files_all = $reg->packageInfo($package_name, 'filelist', $channel);
+        $files_doc = array();
+        foreach($files_all as $name => $file) {
+            if ($file['role'] == 'doc') {
+                $files_doc[$name] = $file['installed_as'];
+            }
+        }
+        return $files_doc;
+    }
 
 }
 

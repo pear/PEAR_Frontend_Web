@@ -88,6 +88,7 @@ Put docs/example.php back in place: go-pear uses this ! index.php.txt continues 
           <file baseinstalldir="PEAR" name="login.gif" role="php"/>
           <file baseinstalldir="PEAR" name="logout.gif" role="php"/>
           <file baseinstalldir="PEAR" name="manual.gif" role="php"/>
+          <file baseinstalldir="PEAR" name="manualplus.gif" role="php"/>
           <file baseinstalldir="PEAR" name="package.info.tpl.html" role="php"/>
           <file baseinstalldir="PEAR" name="package.jpg" role="php"/>
           <file baseinstalldir="PEAR" name="package.js" role="php"/>
