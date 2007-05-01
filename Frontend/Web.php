@@ -848,7 +848,8 @@ class PEAR_Frontend_Web extends PEAR_Frontend
     function _outputPackageInfo($data)
     {
         array_walk_recursive($data['data'], 'htmlentities');
-        $package = $data['raw']['channel'].'/'.$data['raw']['name'];
+        $channel = $data['raw']['channel'];
+        $package = $channel.'/'.$data['raw']['name'];
 
         // parse extra options
         if (!in_array($package, $this->_no_delete_pkgs)) {
@@ -862,20 +863,40 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                     $image);
             $data['data'][] = array('Options', $output);
         }
-        // Weblinks: Package Manual and Extende Package Information
+        // More: Extended Package Information
         $image = sprintf('<img src="%s?img=infoplus" border="0" alt="extra info">', $_SERVER["PHP_SELF"]);
+        if ($channel == 'pear.php.net') {
+            $url = 'http://%s/package/%s/download/%s';
+        } else {
+            // the normal default
+            $url = 'http://%s/index.php?package=%s&release=%s';
+        }
         $output = sprintf(
-                    '<a href="http://%s/package/%s/download/%s" class="green" target="_new">%s Extended Package Information</a>',
-                    $this->config->get('preferred_mirror'),
+                    '<a href="'.$url.'" class="green" target="_new">%s Extended Package Information</a>',
+                    $this->config->get('preferred_mirror', null, $channel),
                     $data['raw']['name'],
                     $data['raw']['version']['release'],
                     $image);
-        $output .= '<br />';
+        // More: Local Documentation
         $image = sprintf('<img src="%s?img=manual" border="0" alt="manual">', $_SERVER["PHP_SELF"]);
-        $output .= sprintf(
-                    '<a href="http://pear.php.net/manual/en/" class="green" target="_new">%s Package Manual</a>',
+        // TODO: docs viewer
+        /*$output .= '<br />';
+        $output = sprintf(
+                    '<a href="http://%s/index.php?package=%s&release=%s" class="green" target="_new">%s Extended Package Information</a>',
+                    $this->config->get('preferred_mirror', null, $channel),
+                    $data['raw']['name'],
+                    $data['raw']['version']['release'],
                     $image);
-        $data['data'][] = array('Weblinks', $output);
+        */
+        // More: Package Manual
+        if ($channel == 'pear.php.net') {
+            $output .= '<br />';
+            $image = sprintf('<img src="%s?img=manual" border="0" alt="manual">', $_SERVER["PHP_SELF"]);
+            $output .= sprintf(
+                        '<a href="http://pear.php.net/manual/en/" class="green" target="_new">%s pear.php.net Package Manual </a>',
+                        $image);
+        }
+        $data['data'][] = array('More', $output);
 
         return $this->_outputGenericTableVertical($data['caption'], $data['data']);
     }
@@ -975,14 +996,39 @@ class PEAR_Frontend_Web extends PEAR_Frontend
 
         if (isset($opt_img[0]))
         {
-            $tpl->setVariable("Opt_Img_1", $opt_img[0]);
-            $tpl->setVariable("Opt_Text_1", $opt_text[0]);
+            $tpl->setVariable('Opt_Img_1', $opt_img[0]);
+            $tpl->setVariable('Opt_Text_1', $opt_text[0]);
         }
         if (isset($opt_img[1]))
         {
-            $tpl->setVariable("Opt_Img_2", $opt_img[1]);
-            $tpl->setVariable("Opt_Text_2", $opt_text[1]);
+            $tpl->setVariable('Opt_Img_2', $opt_img[1]);
+            $tpl->setVariable('Opt_Text_2', $opt_text[1]);
         }
+
+        $tpl->setVariable('More_Title', 'More');
+        // More: Extended Package Information
+        $image = sprintf('<img src="%s?img=infoplus" border="0" alt="extra info">', $_SERVER["PHP_SELF"]);
+        if ($channel == 'pear.php.net') {
+            $url = 'http://%s/package/%s/download/%s';
+        } else {
+            // the normal default
+            $url = 'http://%s/index.php?package=%s&release=%s';
+        }
+        $output = sprintf(
+                    '<a href="'.$url.'" class="green" target="_new">%s Extended Package Information</a>',
+                    $this->config->get('preferred_mirror', null, $channel),
+                    $data['name'],
+                    $data['stable'],
+                    $image);
+        // More: Package Manual
+        if ($channel == 'pear.php.net') {
+            $output .= '<br />';
+            $image = sprintf('<img src="%s?img=manual" border="0" alt="manual">', $_SERVER["PHP_SELF"]);
+            $output .= sprintf(
+                        '<a href="http://pear.php.net/manual/en/" class="green" target="_new">%s pear.php.net Package Manual </a>',
+                        $image);
+        }
+        $tpl->setVariable('More_Data', $output);
 
         $tpl->show();
         return true;
