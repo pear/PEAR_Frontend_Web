@@ -34,10 +34,10 @@
     <email>pajoye@pearfr.org</email>
     <active>no</active>
   </lead>
-  <date>2007-04-26</date>
-  <time>22:14:44</time>
+  <date>2007-04-27</date>
+  <time>16:49:44</time>
   <version>
-    <release>0.6.0</release>
+    <release>0.6.1</release>
     <api>0.6.0</api>
   </version>
   <stability>
@@ -46,20 +46,18 @@
   </stability>
   <license uri="http://www.php.net/license">PHP License</license>
   <notes>
-Reworked webfrontend: [Tias]
-* Use 'list' and 'list-upgrades' commands instead of the slow 'list-all' when possible 
-* Use command 'info' for installed packages 
-* Add proper documentation 
-* Make 'search' work over all channels 
-* Change 'list all packages' too 'list all categories' and list it for _all_ channels (also provide dry list of package names) 
-* Remove unnecessary DHTML stuff 
-* Make it easy to set up the frontend for an existing pear installation
+Emergency release for go-pear compatibility:
+Put docs/example.php back in place: go-pear uses this ! index.php.txt continues to exist because imho docs may not be executable things (so example.php is only there for BC)
++ Bug #10853  "Array" printed when upgrading or installing
   </notes>
   <contents>
     <dir name="/">
       <file baseinstalldir="PEAR" name="README" role="doc"/>
       <dir name="docs">
         <file baseinstalldir="PEAR" name="index.php.txt" role="doc">
+          <tasks:replace from="@pear_dir@" to="php_dir" type="pear-config"/>
+        </file>
+        <file baseinstalldir="PEAR" name="example.php" role="doc">
           <tasks:replace from="@pear_dir@" to="php_dir" type="pear-config"/>
         </file>
         <file baseinstalldir="PEAR" name="htaccess" role="doc"/>
@@ -138,6 +136,23 @@ Reworked webfrontend: [Tias]
   </dependencies>
   <phprelease/>
   <changelog>
+    <release>
+      <date>2007-04-27</date>
+      <version>
+        <release>0.6.1</release>
+        <api>0.6.0</api>
+      </version>
+      <stability>
+        <release>alpha</release>
+        <api>alpha</api>
+      </stability>
+      <license uri="http://www.php.net/license">PHP License</license>
+      <notes>
+Emergency release for go-pear compatibility:
+Put docs/example.php back in place: go-pear uses this ! index.php.txt continues to exist because imho docs may not be executable things (so example.php is only there for BC)
++ Bug #10853  "Array" printed when upgrading or installing
+  </notes>
+    </release>
     <release>
       <date>2007-04-26</date>
       <version>
