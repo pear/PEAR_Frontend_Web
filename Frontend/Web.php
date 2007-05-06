@@ -1156,9 +1156,9 @@ class PEAR_Frontend_Web extends PEAR_Frontend
     function _outputChannelInfo($data)
     {
         array_walk_recursive($data['main']['data'], 'htmlentities');
-        $package = $data['main']['data']['vpackage'][1];
 
         /* WTF is this validation package ? TODO
+        $package = $data['main']['data']['vpackage'][1];
         // parse extra options
         if (!in_array($data['main']['data']['server'][1], array('pear.php.net', '__uri'))) {
             // see if the validation package is installed.  If not, allow the user to install it
@@ -1700,7 +1700,6 @@ class PEAR_Frontend_Web extends PEAR_Frontend
         // Assign title and icon to some commands
         if ($command == 'login') {
             $title = 'Login';
-            $icon = 'login';
         }
 
         $tpl = $this->_initTemplate('userDialog.tpl.html');

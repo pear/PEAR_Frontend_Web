@@ -67,7 +67,7 @@ class Web_Command_Forward_Compatible extends PEAR_Command_Common
     function doList($command, $options, $params)
     {
         require_once 'PEAR/Command/Registry.php';
-        $cmd = new PEAR_Command_Registry(&$this->ui, &$this->config);
+        $cmd = new PEAR_Command_Registry($this->ui, $this->config);
 
         if (isset($options['allchannels']) && $options['allchannels'] == true) {
             return $this->reg_doListAll($command, array(), $params);
@@ -87,7 +87,6 @@ class Web_Command_Forward_Compatible extends PEAR_Command_Common
         }
         $installed = $reg->packageInfo(null, null, $channel);
         usort($installed, array(&$cmd, '_sortinfo'));
-        $i = $j = 0;
         $data = array(
             'caption' => 'Installed packages, channel ' .
                 $channel . ':',
@@ -138,7 +137,7 @@ class Web_Command_Forward_Compatible extends PEAR_Command_Common
     function doListUpgrades($command, $options, $params)
     {
         require_once 'PEAR/Command/Remote.php';
-        $cmd = new PEAR_Command_Remote(&$this->ui, &$this->config);
+        $cmd = new PEAR_Command_Remote($this->ui, $this->config);
 
         require_once 'PEAR/Common.php';
         if (isset($params[0]) && !is_array(PEAR_Common::betterStates($params[0]))) {
@@ -241,7 +240,7 @@ class Web_Command_Forward_Compatible extends PEAR_Command_Common
     function doListPackages($command, $options, $params)
     {
         require_once 'PEAR/Command/Remote.php';
-        $cmd = new PEAR_Command_Remote(&$this->ui, &$this->config);
+        $cmd = new PEAR_Command_Remote($this->ui, $this->config);
 
         $reg = &$this->config->getRegistry();
         if (isset($options['allchannels']) && $options['allchannels'] == true) {
@@ -324,7 +323,7 @@ class Web_Command_Forward_Compatible extends PEAR_Command_Common
     function doListCategories($command, $options, $params)
     {
         require_once 'PEAR/Command/Remote.php';
-        $cmd = new PEAR_Command_Remote(&$this->ui, &$this->config);
+        $cmd = new PEAR_Command_Remote($this->ui, $this->config);
 
         $reg = &$this->config->getRegistry();
         if (isset($options['allchannels']) && $options['allchannels'] == true) {
@@ -368,12 +367,12 @@ class Web_Command_Forward_Compatible extends PEAR_Command_Common
               $base = $chan->getBaseURL('REST1.1', $this->config->get('preferred_mirror'))) {
             $rest = &$this->config->getREST('1.1', array());
             $TIAS_rest_version='1.1';
-            $categories = $this->REST_listCategories11(&$rest, $base);
+            $categories = $this->REST_listCategories11($rest, $base);
         } elseif ($chan->supportsREST($this->config->get('preferred_mirror')) &&
               $base = $chan->getBaseURL('REST1.0', $this->config->get('preferred_mirror'))) {
             $rest = &$this->config->getREST('1.0', array());
             $TIAS_rest_version='1.0';
-            $categories = $this->REST_listCategories10(&$rest, $base);
+            $categories = $this->REST_listCategories10($rest, $base);
         } else {
             return PEAR::raiseError($command.' only works for REST servers');
         }
@@ -406,9 +405,9 @@ class Web_Command_Forward_Compatible extends PEAR_Command_Common
                 if (isset($options['packages']) && $options['packages']) {
                     // get packagenames
                     if ($TIAS_rest_version == '1.0') {
-                        $cat_pkgs = $this->REST_listCategory10(&$rest, $base, $category);
+                        $cat_pkgs = $this->REST_listCategory10($rest, $base, $category);
                     } else {
-                        $cat_pkgs = $this->REST_listCategory11(&$rest, $base, $category);
+                        $cat_pkgs = $this->REST_listCategory11($rest, $base, $category);
                     }
                     $packages = array();
 
@@ -439,7 +438,7 @@ class Web_Command_Forward_Compatible extends PEAR_Command_Common
     function doListCategory($command, $options, $params)
     {
         require_once 'PEAR/Command/Remote.php';
-        $cmd = new PEAR_Command_Remote(&$this->ui, &$this->config);
+        $cmd = new PEAR_Command_Remote($this->ui, $this->config);
 
         if (count($params) < 2) {
             return PEAR::raiseError('Not enough parameters, use: '.$command.' <channel> <category> [<category>...]');
@@ -477,11 +476,11 @@ class Web_Command_Forward_Compatible extends PEAR_Command_Common
         if ($chan->supportsREST($this->config->get('preferred_mirror')) &&
               $base = $chan->getBaseURL('REST1.1', $this->config->get('preferred_mirror'))) {
             $rest = &$this->config->getREST('1.1', array());
-            $packages = $this->REST_listCategory11(&$rest, $base, $category, true);
+            $packages = $this->REST_listCategory11($rest, $base, $category, true);
         } elseif ($chan->supportsREST($this->config->get('preferred_mirror')) &&
               $base = $chan->getBaseURL('REST1.0', $this->config->get('preferred_mirror'))) {
             $rest = &$this->config->getREST('1.0', array());
-            $packages = $this->REST_listCategory10(&$rest, $base, $category, true);
+            $packages = $this->REST_listCategory10($rest, $base, $category, true);
         } else {
             return PEAR::raiseError($command.' only works for REST servers');
         }
@@ -728,7 +727,7 @@ class Web_Command_Forward_Compatible extends PEAR_Command_Common
     function doListAll($command, $options, $params)
     {
         require_once 'PEAR/Command/Remote.php';
-        $cmd = new PEAR_Command_Remote(&$this->ui, &$this->config);
+        $cmd = new PEAR_Command_Remote($this->ui, $this->config);
 
         $savechannel = $channel = $this->config->get('default_channel');
         $reg = &$this->config->getRegistry();
@@ -1061,7 +1060,7 @@ class Web_Command_Forward_Compatible extends PEAR_Command_Common
         }
 
         require_once 'PEAR/Command/Remote.php';
-        $cmd = new PEAR_Command_Remote(&$this->ui, &$this->config);
+        $cmd = new PEAR_Command_Remote($this->ui, $this->config);
 
         $savechannel = $channel = $this->config->get('default_channel');
         $package = $params[0];
@@ -1082,7 +1081,7 @@ class Web_Command_Forward_Compatible extends PEAR_Command_Common
         if ($chan->supportsREST($this->config->get('preferred_mirror')) &&
               $base = $chan->getBaseURL('REST1.0', $this->config->get('preferred_mirror'))) {
             $rest = &$this->config->getREST('1.0', array());
-            $available = $this->REST_listAll(&$rest, $base, false, false, $package, $summary);
+            $available = $this->REST_listAll($rest, $base, false, false, $package, $summary);
         } else {
             $r = &$this->config->getRemote();
             $available = $r->call('package.search', $package, $summary, true, 
