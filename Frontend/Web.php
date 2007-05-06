@@ -882,15 +882,26 @@ class PEAR_Frontend_Web extends PEAR_Frontend
 
         // parse extra options
         if (!in_array($package, $this->_no_delete_pkgs)) {
-            $output = '';
             $image = sprintf('<img src="%s?img=uninstall" width="18" height="17"  border="0" alt="uninstall">', $_SERVER["PHP_SELF"]);
-            $output .= sprintf(
+            $output = sprintf(
                     '<a href="%s?command=uninstall&pkg=%s" class="green" %s>%s Uninstall package</a>',
                     $_SERVER["PHP_SELF"],
                     $package,
                     'onClick="return uninstallPkg(\''.$package.'\');"',
                     $image);
             $data['data'][] = array('Options', $output);
+        }
+
+        $output = '';
+        // More: Local Documentation
+        if (count($this->_getDocFiles($package_name, $channel)) !== 0) {
+            $image = sprintf('<img src="%s?img=manual" border="0" alt="manual">', $_SERVER["PHP_SELF"]);
+            $output .= sprintf(
+                    '<a href="%s?command=list-docs&pkg=%s" class="green">%s Package Documentation</a>',
+                    $_SERVER["PHP_SELF"],
+                    $package,
+                    $image);
+            $output .= '<br />';
         }
         // More: Extended Package Information
         $image = sprintf('<img src="%s?img=infoplus" border="0" alt="extra info">', $_SERVER["PHP_SELF"]);
@@ -900,22 +911,12 @@ class PEAR_Frontend_Web extends PEAR_Frontend
             // the normal default
             $url = 'http://%s/index.php?package=%s&release=%s';
         }
-        $output = sprintf(
+        $output .= sprintf(
                     '<a href="'.$url.'" class="green" target="_new">%s Extended Package Information</a>',
                     $this->config->get('preferred_mirror', null, $channel),
                     $package_name,
                     $data['raw']['version']['release'],
                     $image);
-        // More: Local Documentation
-        if (count($this->_getDocFiles($package_name, $channel)) !== 0) {
-            $output .= '<br />';
-            $image = sprintf('<img src="%s?img=manual" border="0" alt="manual">', $_SERVER["PHP_SELF"]);
-            $output .= sprintf(
-                    '<a href="%s?command=list-docs&pkg=%s" class="green">%s Package Documentation</a>',
-                    $_SERVER["PHP_SELF"],
-                    $package,
-                    $image);
-        }
         // More: Developer Documentation && Package Manual
         if ($channel == 'pear.php.net') {
             $output .= '<br />';
