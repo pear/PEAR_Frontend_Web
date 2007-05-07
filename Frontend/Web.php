@@ -227,38 +227,29 @@ class PEAR_Frontend_Web extends PEAR_Frontend
         $reg = &$this->config->getRegistry();
         foreach($data['data'] as $row) {
             list($channel, $summary) = $row;
-            $tpl->setCurrentBlock("Row");
-            $tpl->setVariable("ImgPackage", $_SERVER["PHP_SELF"].'?img=package');
-            $images = array(
-                'delete' => '<img src="'.$_SERVER["PHP_SELF"].'?img=uninstall" width="18" height="17"  border="0" alt="delete">',
-                'info' => '<img src="'.$_SERVER["PHP_SELF"].'?img=info"  width="17" height="19" border="0" alt="info">',
-                );
-            $urls   = array(
-                'delete' => sprintf('%s?command=channel-delete&chan=%s',
-                    $_SERVER["PHP_SELF"], urlencode($channel)),
-                'info' => sprintf('%s?command=channel-info&chan=%s',
-                    $_SERVER["PHP_SELF"], urlencode($channel)),
-                );
+            $url = sprintf('%s?command=channel-info&chan=%s',
+                    $_SERVER['PHP_SELF'], urlencode($channel));
+            $channel_info = sprintf('<a href="%s" class="blue">%s</a>', $url, $channel);
 
             // detect whether any packages from this channel are installed
             $anyinstalled = $reg->listPackages($channel);
             $id = 'id="'.$channel.'_href"';
-            if (is_array($anyinstalled) && count($anyinstalled)) {
-                $del = '';
+            if (in_array($channel, $this->_no_delete_chans) || (is_array($anyinstalled) && count($anyinstalled))) {
+                // dont delete
+                $del = '&nbsp;';
             } else {
+                $img = '<img src="'.$_SERVER["PHP_SELF"].'?img=uninstall" width="18" height="17"  border="0" alt="delete">';
+                $url = sprintf('%s?command=channel-delete&chan=%s',
+                    $_SERVER["PHP_SELF"], urlencode($channel));
                 $del = sprintf('<a href="%s" onClick="return deleteChan(\'%s\');" %s >%s</a>',
-                    $urls['delete'], $channel, $id, $images['delete']);
-            }
-            $info    = sprintf('<a href="%s">%s</a>', $urls['info'],    $images['info']);
-
-            if (in_array($channel, $this->_no_delete_chans)) {
-                $del = '';
+                    $url, $channel, $id, $img);
             }
 
+            $tpl->setCurrentBlock("Row");
+            $tpl->setVariable("ImgPackage", $_SERVER["PHP_SELF"].'?img=package');
             $tpl->setVariable("UpdateChannelsURL", $_SERVER['PHP_SELF']);
             $tpl->setVariable("Delete", $del);
-            $tpl->setVariable("Info", $info);
-            $tpl->setVariable("Channel", $channel);
+            $tpl->setVariable("Channel", $channel_info);
             $tpl->setVariable("Summary", nl2br($summary));
             $tpl->parseCurrentBlock();
         }
@@ -450,7 +441,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                 if ($col == 0) { // create clean arrays
                     $newdata[$row] = array();
                 }
-                $newdata[$row][$col] = sprintf('<img src="%s?img=package" /> <a href="%s?command=info&pkg=%s/%s">%s</a>',
+                $newdata[$row][$col] = sprintf('<img src="%s?img=package" /> <a href="%s?command=info&pkg=%s/%s" class="blue">%s</a>',
                                 $_SERVER['PHP_SELF'],
                                 $_SERVER['PHP_SELF'],
                                 $package[0],
@@ -562,7 +553,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                                 $_SERVER['PHP_SELF']);
                     }
                     foreach($packages as $i => $package) {
-                        $info .= sprintf('<a href="%s?command=info&pkg=%s/%s">%s</a>',
+                        $info .= sprintf('<a href="%s?command=info&pkg=%s/%s" class="blue">%s</a>',
                                     $_SERVER['PHP_SELF'],
                                     $channel,
                                     $package,
