@@ -598,19 +598,23 @@ class PEAR_Frontend_Web extends PEAR_Frontend
      */
     function _outputListCategory($data)
     {
+        // create place for install/uninstall icon:
+        $summary = array_pop($data['headline']);
+        $data['headline'][] = '&nbsp;'; // icon
+        $data['headline'][] = $summary; // restore summary
         $tpl = $this->_prepareListCategories($data);
         $channel = $data['channel'];
 
         if (isset($data['data']) && is_array($data['data'])) {
             foreach($data['data'] as $row) {
+                // output summary after install icon
+                $summary = array_pop($row);
+
                 foreach ($row as $i => $col) {
                     if ($i == 1) {
+                        $package = $col;
                         // package name, make URL
-                        $col = sprintf('<a href="%s?command=info&pkg=%s/%s" class="green">%s</a>',
-                            $_SERVER['PHP_SELF'],
-                            $channel,
-                            $col,
-                            $col);
+                        $col = $this->_prepPkgName($package, $channel);
                     }
                     
                     $tpl->setCurrentBlock('Data_row');
@@ -618,6 +622,17 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                     $tpl->parseCurrentBlock();
                 }
 
+                // install or uninstall icon
+                $tpl->setCurrentBlock('Data_row');
+                $tpl->setVariable('Text', $this->_prepIcons($package, $channel));
+                $tpl->parseCurrentBlock();
+
+                // now the summary
+                $tpl->setCurrentBlock('Data_row');
+                $tpl->setVariable('Text', $summary);
+                $tpl->parseCurrentBlock();
+
+                // and finish.
                 $tpl->setCurrentBlock('Data');
                 $tpl->setVariable('Img', 'package');
                 $tpl->parseCurrentBlock();
@@ -655,6 +670,8 @@ class PEAR_Frontend_Web extends PEAR_Frontend
 
         // set headlines
         if (isset($data['headline']) && is_array($data['headline'])) {
+            // overwrite
+            $data['headline'] = array('Channel', 'Package', 'Local', '&nbsp;', 'Summary');
             foreach($data['headline'] as $text) {
                 $tpl->setCurrentBlock('Headline');
                 $tpl->setVariable('Text', $text);
@@ -671,42 +688,37 @@ class PEAR_Frontend_Web extends PEAR_Frontend
             foreach($data['data'] as $row) {
                 $package = $row[0].'/'.$row[1];
                 $package_name = $row[1];
+                $local = sprintf('%s (%s)', $row[2], $row[3]);
 
-                foreach($row as $text) {
-                    $tpl->setCurrentBlock('Data_row');
-                    $tpl->setVariable('Text', $text);
-                    $tpl->parseCurrentBlock();
-                }
+                // Channel
+                $tpl->setCurrentBlock('Data_row');
+                $tpl->setVariable('Text', $channel);
+                $tpl->parseCurrentBlock();
+
+                // Package
+                $tpl->setCurrentBlock('Data_row');
+                $tpl->setVariable('Text', $this->_prepPkgName($package_name, $channel));
+                $tpl->parseCurrentBlock();
+
+                // Local
+                $tpl->setCurrentBlock('Data_row');
+                $tpl->setVariable('Text', $local);
+                $tpl->parseCurrentBlock();
+
+                // Icons (uninstall)
+                $tpl->setCurrentBlock('Data_row');
+                $tpl->setVariable('Text', $this->_prepIcons($package_name, $channel, true));
+                $tpl->parseCurrentBlock();
+
+                // Summary
+                $tpl->setCurrentBlock('Data_row');
+                $reg = $this->config->getRegistry();
+                $tpl->setVariable('Text', $reg->packageInfo($package_name, 'summary', $channel));
+                $tpl->parseCurrentBlock();
+
+                // and finish.
                 $tpl->setCurrentBlock('Data');
                 $tpl->setVariable("ImgPackage", $_SERVER["PHP_SELF"].'?img=package');
-
-                if (!in_array($package, $this->_no_delete_pkgs)) {
-                    $img = sprintf('<img src="%s?img=uninstall" width="18" height="17"  border="0" alt="uninstall">', $_SERVER["PHP_SELF"]);
-                    $url = sprintf('%s?command=uninstall&pkg=%s', $_SERVER["PHP_SELF"], $package);
-                    $uninst = sprintf('<a href="%s" onClick="return uninstallPkg(\'%s\');" id="%s">%s</a>', $url, $package, $package.'_href', $img);
-                    $tpl->setVariable("Uninstall", $uninst);
-                }
-
-                $img = sprintf('<img src="%s?img=info" width="17" height="19"  border="0" alt="info">', $_SERVER["PHP_SELF"]);
-                $url = sprintf('%s?command=info&pkg=%s', $_SERVER["PHP_SELF"], $package);
-                $info = sprintf('<a href="%s">%s</a>', $url, $img);
-                $tpl->setVariable("Info", $info);
-
-                $img = sprintf('<img src="%s?img=infoplus" width="18" height="19"  border="0" alt="extended info">', $_SERVER["PHP_SELF"]);
-
-                // extended information:
-                if ($channel == 'pear.php.net' || $channel == 'pecl.php.net') {
-                    $url_raw = 'http://%s/package/%s/download';
-                } else {
-                    // the normal default
-                    $url_raw = 'http://%s/index.php?package=%s';
-                }
-                $url = sprintf($url_raw,
-                    $this->config->get('preferred_mirror', null, $channel),
-                    $package_name);
-                $infoExt = sprintf('<a href="%s">%s</a>', $url, $img);
-                $tpl->setVariable("InfoExt", $infoExt);
-
                 $tpl->parseCurrentBlock();
             }
         }
@@ -738,6 +750,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
 
         // set headlines
         if (isset($data['headline']) && is_array($data['headline'])) {
+            $data['headline'][] = '&nbsp;';
             foreach($data['headline'] as $text) {
                 $tpl->setCurrentBlock('Headline');
                 $tpl->setVariable('Text', $text);
@@ -755,38 +768,26 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                 $package = $channel.'/'.$row[1];
                 $package_name = $row[1];
 
-                foreach($row as $text) {
+                foreach($row as $i => $text) {
+                    if ($i == 1) {
+                        // package name
+                        $text = $this->_prepPkgName($text, $channel);
+                    }
                     $tpl->setCurrentBlock('Data_row');
                     $tpl->setVariable('Text', $text);
                     $tpl->parseCurrentBlock();
                 }
+                // upgrade link
+                $tpl->setCurrentBlock('Data_row');
+                $img = sprintf('<img src="%s?img=install" width="18" height="17"  border="0" alt="upgrade">', $_SERVER["PHP_SELF"]);
+                $url = sprintf('%s?command=upgrade&pkg=%s', $_SERVER["PHP_SELF"], $package);
+                $text = sprintf('<a href="%s" onClick="return installPkg(\'%s\');" id="%s">%s</a>', $url, $package, $package.'_href', $img);
+                $tpl->setVariable('Text', $text);
+                $tpl->parseCurrentBlock();
+
+                // and finish.
                 $tpl->setCurrentBlock('Data');
                 $tpl->setVariable("ImgPackage", $_SERVER["PHP_SELF"].'?img=package');
-
-                // upgrade link
-                    $img = sprintf('<img src="%s?img=install" width="18" height="17"  border="0" alt="upgrade">', $_SERVER["PHP_SELF"]);
-                    $url = sprintf('%s?command=upgrade&pkg=%s', $_SERVER["PHP_SELF"], $package);
-                    $inst = sprintf('<a href="%s" onClick="return installPkg(\'%s\');" id="%s">%s</a>', $url, $package, $package.'_href', $img);
-                    $tpl->setVariable("Uninstall", $inst);
-
-                $img = sprintf('<img src="%s?img=info" width="17" height="19"  border="0" alt="info">', $_SERVER["PHP_SELF"]);
-                $url = sprintf('%s?command=info&pkg=%s', $_SERVER["PHP_SELF"], $package);
-                $info = sprintf('<a href="%s">%s</a>', $url, $img);
-                $tpl->setVariable("Info", $info);
-
-                // extended information:
-                if ($channel == 'pear.php.net' || $channel == 'pecl.php.net') {
-                    $url_raw = 'http://%s/package/%s/download';
-                } else {
-                    // the normal default
-                    $url_raw = 'http://%s/index.php?package=%s';
-                }
-                $url = sprintf($url_raw,
-                    $this->config->get('preferred_mirror', null, $channel),
-                    $package_name);
-                $img = sprintf('<img src="%s?img=infoplus" width="18" height="19"  border="0" alt="extended info">', $_SERVER["PHP_SELF"]);
-                $infoExt = sprintf('<a href="%s">%s</a>', $url, $img);
-                $tpl->setVariable("InfoExt", $infoExt);
 
                 $tpl->parseCurrentBlock();
             }
@@ -2122,6 +2123,57 @@ class PEAR_Frontend_Web extends PEAR_Frontend
         return $files_doc;
     }
 
+    /**
+     * Prepare packagename for HTML output:
+     * make it a link
+     *
+     * @param $package package name (evt 'chan/pkg')
+     * @param $channel channel name (when pkg not 'chan/pkg')
+     */
+    function _prepPkgName($package, $channel=null)
+    {
+        if (is_null($channel)) {
+            $full = $package;
+        } else {
+            $full = $channel.'/'.$package;
+        }
+        
+        return sprintf('<a href="%s?command=info&pkg=%s" class="blue">%s</a>',
+                            $_SERVER['PHP_SELF'],
+                            $full,
+                            $package);
+    }
+
+    /**
+     * Prepare Icons (install/uninstall) for HTML output:
+     * make img and url
+     *
+     * @param $package package name
+     * @param $channel channel name
+     * @param $installed optional when we already know the package is installed
+     */
+    function _prepIcons($package_name, $channel, $installed=false)
+    {
+        $reg = $this->config->getRegistry();
+        $package = $channel.'/'.$package_name;
+
+        if ($installed || $reg->packageExists($package_name, $channel)) {
+            if (in_array($package, $this->_no_delete_pkgs)) {
+                // don't allow to uninstall
+                $out = '&nbsp;';
+            } else {
+                $img = sprintf('<img src="%s?img=uninstall" width="18" height="17"  border="0" alt="uninstall">', $_SERVER["PHP_SELF"]);
+                $url = sprintf('%s?command=uninstall&pkg=%s', $_SERVER["PHP_SELF"], $package);
+                $out = sprintf('<a href="%s" onClick="return uninstallPkg(\'%s\');" id="%s">%s</a>', $url, $package, $package.'_href', $img);
+            }
+        } elseif (!$installed) {
+            $img = sprintf('<img src="%s?img=install" width="13" height="13"  border="0" alt="install">', $_SERVER["PHP_SELF"]);
+            $url = sprintf('%s?command=install&pkg=%s', $_SERVER["PHP_SELF"], $package);
+            $out = sprintf('<a href="%s" onClick="return installPkg(\'%s\');" id="%s">%s</a>', $url, $package, $package.'_href', $img);
+        }
+
+        return $out;
+    }
 }
 
 ?>

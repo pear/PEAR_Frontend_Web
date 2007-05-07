@@ -224,7 +224,7 @@ $ui->outputBegin($command);
                 'text' => 'View package information'));
             break;
         case 'run-scripts' :
-            $params = array($_GET["pkg"]);
+            $params = array($_GET['pkg']);
             $cmd = PEAR_Command::factory($command, $config);
             $ok = $cmd->run($command, $opts, $params);
             break;
@@ -363,9 +363,6 @@ $ui->outputBegin($command);
             $cmd = PEAR_Command::factory($command, $config);
             $ok = $cmd->run($command, $opts, $params);
 
-            $ui->finishOutput('Delete Channel', array('link' =>
-                $_SERVER['PHP_SELF'] . '?command=list-channels',
-                'text' => 'Click here to list all channels'));
             break;
         case 'channel-discover':
             if (isset($_GET["chan"]))
