@@ -118,7 +118,6 @@ class PEAR_Frontend_Web extends PEAR_Frontend
     function PEAR_Frontend_Web()
     {
         parent::PEAR();
-        $GLOBALS['_PEAR_Frontend_Web_log'] = '';
         $this->config = &$GLOBALS['_PEAR_Frontend_Web_config'];
     }
 
@@ -168,10 +167,6 @@ class PEAR_Frontend_Web extends PEAR_Frontend
     function displayError($eobj, $title = 'Error', $img = 'error', $popup = false)
     {
         $msg = '';
-        if (isset($GLOBALS['_PEAR_Frontend_Web_log']) && trim($GLOBALS['_PEAR_Frontend_Web_log'])) {
-            $msg = trim($GLOBALS['_PEAR_Frontend_Web_log'])."\n\n";
-        }
-
         if (PEAR::isError($eobj)) {
             $msg .= trim($eobj->getMessage());
         } else {
@@ -305,9 +300,6 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                        'next' => '',
                        'current' => '&mode='.$mode,
                        );
-        if (isset($_GET['command']) && $_GET['command'] == 'search') {
-            $links['current'] .= '&0='.$_REQUEST[0].'&1='.$_REQUEST[1];
-        }
 
         if ($paging) {
             // Generate Linkinformation to redirect to _this_ page after performing an action
@@ -812,7 +804,6 @@ class PEAR_Frontend_Web extends PEAR_Frontend
         if (count($deps) == 0) {
             return "<i>No dependencies registered.</i>\n";
         } else {
-            $lastversion = '';
             $rel_trans = array(
                 'lt' => 'older than %s',
                 'le' => 'version %s or older',
@@ -850,10 +841,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                 } else {
                     $result .= sprintf("%s: %s", $dep_type_desc[$row['type']], $row['name']);
                 }
-                $lastversion = $row['version'];
                 $result .= '<br>';
-            }
-            if ($lastversion) {
             }
             $result .= "      </dl>\n";
         }
@@ -871,7 +859,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
     {
         array_walk_recursive($data['data'], 'htmlentities');
         if (!isset($data['raw']['channel'])) {
-            // Unbelievable but true, see bug #10905
+            // package1.xml, channel by default pear
             $channel = 'pear.php.net';
             $package_name = $data['raw']['package'];
         } else {
@@ -1277,6 +1265,27 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                                                 $url,
                                                 $data);
                     }
+
+                    // pearified/Role_Web has post-install scripts: bold
+                    if (strpos($data, 'has post-install scripts:') !== false) {
+                        $data = '<br /><i>'.$data.'</i>';
+                    }
+                    // Use "pear run-scripts pearified/Role_Web" to run
+                    if (preg_match('/^Use "pear run-scripts ([\S]+)" to run$/', $data, $matches)) {
+                        $pkg = $matches[1];
+                        $url = sprintf('<a href="%s?command=run-scripts&pkg=%s" class="green">pear run-scripts %s</a>',
+                                $_SERVER['PHP_SELF'],
+                                $pkg,
+                                $pkg);
+                        $pkg = str_replace('/', '\/', $pkg);
+                        $data = preg_replace('/pear run-scripts '.$pkg.'/',
+                                                $url,
+                                                $data);
+                        $data = '<b>Attention !</b> '.$data.' !';
+                    }
+                    if (strpos($data, 'DO NOT RUN SCRIPTS FROM UNTRUSTED SOURCES') !== false) {
+                        break;
+                    }
                                 
                     // TODO: div magic, give it a color and a box etc.
                     print('<div>'.$data.'<div>');
@@ -1442,10 +1451,11 @@ class PEAR_Frontend_Web extends PEAR_Frontend
         }
         $this->_installScript = false;
         unset($_SESSION['_PEAR_Frontend_Web_Scripts']);
-        $this->finishOutput($pkg->getPackage() . ' Install Script',
-            array('link' => $GLOBALS['URL'] .
-            '?command=info&pkg='.$pkg->getPackage(),
-                'text' => 'Click for ' .$pkg->getPackage() . ' Information'));
+        $pkg_full = $pkg->getChannel().'/'.$pkg->getPackage();
+        $this->finishOutput($pkg_full . ' Install Script',
+            array('link' => $_SERVER['PHP_SELF'] .
+            '?command=info&pkg='.$pkg_full,
+                'text' => 'Click for ' .$pkg_full. ' Information'));
     }
 
     /**
@@ -1464,6 +1474,17 @@ class PEAR_Frontend_Web extends PEAR_Frontend
 
     /**
      * @param array $xml contents of postinstallscript tag
+     *  example: Array (
+                [paramgroup] => Array (
+                    [id] => webSetup
+                    [param] => Array (
+                        [name] => webdirpath
+                        [prompt] => Where should... ?
+                        [default] => '/var/www/htdocs/webpear
+                        [type] => string
+                        )
+                    )
+                )
      * @param object $script post-installation script
      * @param PEAR_PackageFile_v1|PEAR_PackageFile_v2 $pkg
      * @param string $contents contents of the install script
@@ -1489,7 +1510,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
             $script->run(array(), '_default');
         } else {
             if (!isset($xml['paramgroup'][0])) {
-                $xml['paramgroup'][0] = array($xml['paramgroup']);
+                $xml['paramgroup'] = array($xml['paramgroup']);
             }
             foreach ($xml['paramgroup'] as $i => $group) {
                 if (isset($_SESSION['_PEAR_Frontend_Web_ScriptSkipSections'][$group['id']])) {
@@ -1562,10 +1583,12 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                             }
                         }
                         $answers = array_merge($answers,
-                            $this->confirmDialog($prompts, $pkg->getPackage()));
+                            $this->confirmDialog($prompts,
+                                $pkg->getChannel().'/'.$pkg->getPackage()));
                     } else {
                         $answers = array_merge($answers,
-                            $this->confirmDialog($group['param'], $pkg->getPackage()));
+                            $this->confirmDialog($group['param'],
+                                $pkg->getChannel().'/'.$pkg->getPackage()));
                     }
                 }
                 if ($answers) {
@@ -1758,9 +1781,23 @@ class PEAR_Frontend_Web extends PEAR_Frontend
      */
     function log($text)
     {
-        $GLOBALS['_PEAR_Frontend_Web_log'] .= $text."\n";
-        $this->_savedOutput[] = $text;
+        if ($text == '.') {
+            print($text);
+        } else {
+            print($text.'<br />');
+        }
+
         return true;
+    }
+
+    /**
+     * Totaly deprecated function
+     * Needed to install pearified's role_web : /
+     * Don't use this !
+     */
+    function bold($text)
+    {
+        print('<b>'.$text.'</b><br />');
     }
 
     /**
