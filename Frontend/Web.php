@@ -1144,33 +1144,32 @@ class PEAR_Frontend_Web extends PEAR_Frontend
     function _outputChannelInfo($data)
     {
         array_walk_recursive($data['main']['data'], 'htmlentities');
+        $channel = $data['main']['data']['server'][1];
+        $output = '';
 
-        /* WTF is this validation package ? TODO
-        $package = $data['main']['data']['vpackage'][1];
-        // parse extra options
-        if (!in_array($data['main']['data']['server'][1], array('pear.php.net', '__uri'))) {
-            // see if the validation package is installed.  If not, allow the user to install it
-            $reg = &$this->config->getRegistry();
-            if (!$reg->packageExists($package, $data['main']['data']['server'][1])
-                || $reg->packageInfo($package, 'version', $data['main']['data']['server'][1]) != $data['main']['data']['vpackageversion'][1]) {
-                // allow to install the validation package
-                $output = '';
-                $pname = $reg->parsedPackageNameToString(array('channel' =>
-                    $data['main']['data']['server'][1],
-                    'package' => $package,
-                    'version' => $data['main']['data']['vpackageversion'][1]));
-                $output .= sprintf(
-                    '<a href="%s?command=install&pkg=%s&redirect=info">%s</a>',
-                    $_SERVER["PHP_SELF"], $pname
-                    , '<img src="'.$_SERVER["PHP_SELF"].'?img=install" width="13" height="13" border="0" alt="install">');
-                $output .= '&nbsp;';
-                $output .= sprintf(
-                    '<a href="%s?command=install&pkg=%s&redirect=info" class="green">(beta) Install validation package</a>',
-                    $_SERVER["PHP_SELF"], $package);
-                $data['main']['data'][] = array('Options', $output);
-            }
+        if ($channel != '__uri') {
+            // add 'More' options
+            $image = sprintf('<img src="%s?img=package" border="0" alt="manual">', $_SERVER["PHP_SELF"]);
+            $output .= sprintf(
+                    '<a href="%s?command=list-packages&chan=%s" class="green">%s List all packagenames of this channel</a>',
+                    $_SERVER["PHP_SELF"],
+                    $channel,
+                    $image);
+            $output .= '<br />';
+            $image = sprintf('<img src="%s?img=category" border="0" alt="manual">', $_SERVER["PHP_SELF"]);
+            $output .= sprintf(
+                    '<a href="%s?command=list-categories&chan=%s" class="green">%s List all categories of this channel</a>',
+                    $_SERVER["PHP_SELF"],
+                    $channel,
+                    $image);
+            $output .= '<br />';
+            $output .= sprintf(
+                    '<a href="%s?command=list-categories&chan=%s&opt=packages" class="green">%s List all categories, with packagenames, of this channel</a>',
+                    $_SERVER["PHP_SELF"],
+                    $channel,
+                    $image);
+            $data['main']['data']['more'] = array('More', $output);
         }
-        */
 
         return $this->_outputGenericTableVertical($data['main']['caption'], $data['main']['data']);
     }
