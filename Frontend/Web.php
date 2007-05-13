@@ -406,6 +406,49 @@ class PEAR_Frontend_Web extends PEAR_Frontend
     }
 
     // }}}
+    // {{{ _outputListDocs()
+
+    /**
+     * Output a list of documentation files of a packagenames
+     *
+     * @param array $data array containing all documentation files of a packages
+     *
+     * @return boolean true (yep. i am an optimist)
+     */
+    function _outputListDocs($data)
+    {
+        $tpl = $this->_initTemplate('caption.tpl.html');
+        $tpl->setVariable('Caption', $data['caption']);
+        $tpl->show();
+
+        print $this->_getListDocsDiv($data['channel'].'/'.$data['package'], $data['data']);
+        return true;
+    }
+
+    /**
+     * Get list of the docs of a package in a HTML div
+     *
+     * @param string $pkg full package name (channel/package)
+     * @param array $files array of all files and there location
+     * @return string HTML
+     */
+    function _getListDocsDiv($pkg, $files) {
+        $out = '<div id="listdocs"><ul>';
+        foreach($files as $name => $location) {
+            $out .= sprintf('<li><a href="%s?command=doc-show&pkg=%s&file=%s" title="%s">%s</a></li>',
+                    $_SERVER['PHP_SELF'],
+                    $pkg,
+                    urlencode($name),
+                    $location,
+                    $name);
+        }
+        $out .= '</ul></div>';
+
+        return $out;
+    }
+        
+
+    // }}}
     // {{{ _outputListPackages()
 
     /**
@@ -874,7 +917,8 @@ class PEAR_Frontend_Web extends PEAR_Frontend
 
         $output = '';
         // More: Local Documentation
-        if (count($this->_getDocFiles($package_name, $channel)) !== 0) {
+        require_once('PEAR/Frontend/Web/Docviewer.php');
+        if (count(PEAR_Frontend_Web_Docviewer::getDocFiles($package_name, $channel)) !== 0) {
             $image = sprintf('<img src="%s?img=manual" border="0" alt="manual">', $_SERVER["PHP_SELF"]);
             $output .= sprintf(
                     '<a href="%s?command=list-docs&pkg=%s" class="green">%s Package Documentation</a>',
@@ -1192,6 +1236,8 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                 $GLOBALS['_PEAR_Frontend_Web_Config'] =
                     $this->userDialog($command, $prompt, array(), $default, $title, 'config');
                 return true;
+            case 'list-docs':
+                return $this->_outputListDocs($data);
             case 'list-all':
                 return $this->_outputListAll($data);
             case 'list-packages':
@@ -2092,27 +2138,6 @@ class PEAR_Frontend_Web extends PEAR_Frontend
     }
 
     // }}}
-
-    /**
-     * Get the files with role 'doc' of the given package
-     *
-     * @param $package
-     * @param $channel
-     * @return array('name' => 'installed_as', ...
-     */
-    function _getDocFiles($package_name, $channel)
-    {
-        // TODO: docs viewer
-        $reg = $this->config->getRegistry();
-        $files_all = $reg->packageInfo($package_name, 'filelist', $channel);
-        $files_doc = array();
-        foreach($files_all as $name => $file) {
-            if ($file['role'] == 'doc') {
-                $files_doc[$name] = $file['installed_as'];
-            }
-        }
-        return $files_doc;
-    }
 
     /**
      * Prepare packagename for HTML output:

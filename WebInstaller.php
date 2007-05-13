@@ -295,6 +295,19 @@ $ui->outputBegin($command);
 
             $ui->finishOutput('Back', array('link' => $_SERVER['PHP_SELF'].'?command='.$command, 'text' => 'Back to the config'));
             break;
+        case 'list-docs':
+            if (!isset($_GET['pkg'])) {
+                PEAR::raiseError('The webfrontend-command list-docs needs at least one \'pkg\' argument.');
+                break;
+            }
+            
+            require_once('PEAR/Frontend/Web/Docviewer.php');
+            $reg = $config->getRegistry();
+            $pkg = $reg->parsePackageName($_GET['pkg']);
+
+            $docview = new PEAR_Frontend_Web_Docviewer($ui);
+            $docview->outputListDocs($pkg['package'], $pkg['channel']);
+            break;
         case 'list-all':
             // XXX Not used anymore, 'list-categories' is used instead
             //if (isset($_GET["mode"]))
