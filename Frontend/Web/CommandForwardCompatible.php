@@ -1,6 +1,6 @@
 <?php
 /**
- * Web_Command_Forward_Compatible
+ * PEAR_Frontend_Web_CommandForwardCompatible
  * Slightly different implementations of PEAR Commands,
  * Forward compatible class for submited bugs that will be fixed 'later'
  *
@@ -40,7 +40,7 @@ require_once 'PEAR/Command/Common.php';
  * @link       http://pear.php.net/package/PEAR_Frontend_Web
  * @since      File available since Release 0.6.0
  */
-class Web_Command_Forward_Compatible extends PEAR_Command_Common
+class PEAR_Frontend_Web_CommandForwardCompatible extends PEAR_Command_Common
 {
     // {{{ properties
 
@@ -54,7 +54,7 @@ class Web_Command_Forward_Compatible extends PEAR_Command_Common
      *
      * @access public
      */
-    function Web_Command_Forward_Compatible(&$ui, &$config)
+    function PEAR_Frontend_Web_CommandForwardCompatible(&$ui, &$config)
     {
         parent::PEAR_Command_Common($ui, $config);
     }
