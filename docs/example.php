@@ -29,5 +29,5 @@ require_once('PEAR.php');
 
 // Include WebInstaller
 putenv('PHP_PEAR_INSTALL_DIR='.$pear_dir); // needed if unexisting config
-require_once('PEAR/WebInstaller.php');
+require_once('pearweb.php');
 ?>

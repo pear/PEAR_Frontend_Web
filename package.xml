@@ -65,54 +65,64 @@ Put docs/example.php back in place: go-pear uses this ! index.php.txt continues 
 <!-- /docs -->
       <dir name="Frontend">
         <dir name="Web">
-          <file baseinstalldir="PEAR" name="bottom.inc.tpl.html" role="php"/>
-          <file baseinstalldir="PEAR" name="caption.tpl.html" role="php"/>
-          <file baseinstalldir="PEAR" name="categories.list.tpl.html" role="php"/>
-          <file baseinstalldir="PEAR" name="category.jpg" role="php"/>
-          <file baseinstalldir="PEAR" name="channel.list.tpl.html" role="php"/>
-          <file baseinstalldir="PEAR" name="config.gif" role="php"/>
-          <file baseinstalldir="PEAR" name="download.gif" role="php"/>
-          <file baseinstalldir="PEAR" name="error.gif" role="php"/>
-          <file baseinstalldir="PEAR" name="error.tpl.html" role="php"/>
-          <file baseinstalldir="PEAR" name="footer.inc.tpl.html" role="php"/>
-          <file baseinstalldir="PEAR" name="generic_table_horizontal.tpl.html" role="php"/>
-          <file baseinstalldir="PEAR" name="generic_table_vertical.tpl.html" role="php"/>
-          <file baseinstalldir="PEAR" name="header.inc.tpl.html" role="php"/>
-          <file baseinstalldir="PEAR" name="info.gif" role="php"/>
-          <file baseinstalldir="PEAR" name="infoplus.gif" role="php"/>
-          <file baseinstalldir="PEAR" name="info.tpl.html" role="php"/>
-          <file baseinstalldir="PEAR" name="install_fail.gif" role="php"/>
-          <file baseinstalldir="PEAR" name="install.gif" role="php"/>
-          <file baseinstalldir="PEAR" name="install_ok.gif" role="php"/>
-          <file baseinstalldir="PEAR" name="install_wait.gif" role="php"/>
-          <file baseinstalldir="PEAR" name="login.gif" role="php"/>
-          <file baseinstalldir="PEAR" name="logout.gif" role="php"/>
-          <file baseinstalldir="PEAR" name="manual.gif" role="php"/>
-          <file baseinstalldir="PEAR" name="manualplus.gif" role="php"/>
-          <file baseinstalldir="PEAR" name="package.info.tpl.html" role="php"/>
-          <file baseinstalldir="PEAR" name="package.jpg" role="php"/>
-          <file baseinstalldir="PEAR" name="package.js" role="php"/>
-          <file baseinstalldir="PEAR" name="package.list_nocat.tpl.html" role="php"/>
-          <file baseinstalldir="PEAR" name="package.list.tpl.html" role="php"/>
-          <file baseinstalldir="PEAR" name="package.manually.tpl.html" role="php"/>
-          <file baseinstalldir="PEAR" name="package.submenu.tpl.html" role="php"/>
-          <file baseinstalldir="PEAR" name="pearsmall.gif" role="php"/>
-          <file baseinstalldir="PEAR" name="pkglist.png" role="php"/>
-          <file baseinstalldir="PEAR" name="pkgsearch.png" role="php"/>
-          <file baseinstalldir="PEAR" name="search.tpl.html" role="php"/>
-          <file baseinstalldir="PEAR" name="style.css" role="php"/>
-          <file baseinstalldir="PEAR" name="tableofchannels.tpl.html" role="php"/>
-          <file baseinstalldir="PEAR" name="top.inc.tpl.html" role="php"/>
-          <file baseinstalldir="PEAR" name="trash.gif" role="php"/>
-          <file baseinstalldir="PEAR" name="upgrade_all.tpl.html" role="php"/>
-          <file baseinstalldir="PEAR" name="userDialog.tpl.html" role="php"/>
+          <dir name="data">
+            <dir name="images">
+              <file baseinstalldir="PEAR" name="category.jpg" role="php"/>
+              <file baseinstalldir="PEAR" name="config.gif" role="php"/>
+              <file baseinstalldir="PEAR" name="download.gif" role="php"/>
+              <file baseinstalldir="PEAR" name="error.gif" role="php"/>
+              <file baseinstalldir="PEAR" name="info.gif" role="php"/>
+              <file baseinstalldir="PEAR" name="infoplus.gif" role="php"/>
+              <file baseinstalldir="PEAR" name="install_fail.gif" role="php"/>
+              <file baseinstalldir="PEAR" name="install.gif" role="php"/>
+              <file baseinstalldir="PEAR" name="install_ok.gif" role="php"/>
+              <file baseinstalldir="PEAR" name="install_wait.gif" role="php"/>
+              <file baseinstalldir="PEAR" name="login.gif" role="php"/>
+              <file baseinstalldir="PEAR" name="logout.gif" role="php"/>
+              <file baseinstalldir="PEAR" name="manual.gif" role="php"/>
+              <file baseinstalldir="PEAR" name="manualplus.gif" role="php"/>
+              <file baseinstalldir="PEAR" name="package.jpg" role="php"/>
+              <file baseinstalldir="PEAR" name="pearsmall.gif" role="php"/>
+              <file baseinstalldir="PEAR" name="pkglist.png" role="php"/>
+              <file baseinstalldir="PEAR" name="pkgsearch.png" role="php"/>
+              <file baseinstalldir="PEAR" name="trash.gif" role="php"/>
+            </dir>
+<!-- /Frontend/Web/data/images -->
+            <dir name="templates">
+              <file baseinstalldir="PEAR" name="search.tpl.html" role="php"/>
+              <file baseinstalldir="PEAR" name="bottom.inc.tpl.html" role="php"/>
+              <file baseinstalldir="PEAR" name="caption.tpl.html" role="php"/>
+              <file baseinstalldir="PEAR" name="categories.list.tpl.html" role="php"/>
+              <file baseinstalldir="PEAR" name="channel.list.tpl.html" role="php"/>
+              <file baseinstalldir="PEAR" name="error.tpl.html" role="php"/>
+              <file baseinstalldir="PEAR" name="footer.inc.tpl.html" role="php"/>
+              <file baseinstalldir="PEAR" name="generic_table_horizontal.tpl.html" role="php"/>
+              <file baseinstalldir="PEAR" name="generic_table_vertical.tpl.html" role="php"/>
+              <file baseinstalldir="PEAR" name="header.inc.tpl.html" role="php"/>
+              <file baseinstalldir="PEAR" name="info.tpl.html" role="php"/>
+              <file baseinstalldir="PEAR" name="package.info.tpl.html" role="php"/>
+              <file baseinstalldir="PEAR" name="package.list_nocat.tpl.html" role="php"/>
+              <file baseinstalldir="PEAR" name="package.list.tpl.html" role="php"/>
+              <file baseinstalldir="PEAR" name="package.manually.tpl.html" role="php"/>
+              <file baseinstalldir="PEAR" name="package.submenu.tpl.html" role="php"/>
+              <file baseinstalldir="PEAR" name="tableofchannels.tpl.html" role="php"/>
+              <file baseinstalldir="PEAR" name="top.inc.tpl.html" role="php"/>
+              <file baseinstalldir="PEAR" name="upgrade_all.tpl.html" role="php"/>
+              <file baseinstalldir="PEAR" name="userDialog.tpl.html" role="php"/>
+            </dir>
+<!-- /Frontend/Web/data/templates -->
+            <file baseinstalldir="PEAR" name="package.js" role="php"/>
+            <file baseinstalldir="PEAR" name="style.css" role="php"/>
+          </dir>
+<!-- /Frontend/Web/data -->
+          <file baseinstalldir="PEAR" name="CommandForwardCompatible.php" role="php"/>
+          <file baseinstalldir="PEAR" name="Docviewer.php" role="php"/>
         </dir>
 <!-- /Frontend/Web -->
         <file baseinstalldir="PEAR" name="Web.php" role="php"/>
-        <file baseinstalldir="PEAR" name="Web_Command_Forward_Compatible.php" role="php"/>
       </dir>
 <!-- /Frontend -->
-      <file baseinstalldir="PEAR" name="WebInstaller.php" role="php"/>
+      <file baseinstalldir="/" name="pearweb.php" role="php"/>
     </dir>
 <!-- / -->
   </contents>

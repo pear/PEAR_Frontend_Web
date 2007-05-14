@@ -141,7 +141,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
         // Errors here can not be displayed using the UI
         PEAR::staticPushErrorHandling(PEAR_ERROR_PRINT);
 
-        $tpl = new HTML_Template_IT(dirname(__FILE__)."/Web");
+        $tpl = new HTML_Template_IT(dirname(__FILE__).'/Web/data/templates');
         $tpl->loadTemplateFile($file);
         $tpl->setVariable("InstallerURL", $_SERVER["PHP_SELF"]);
 
@@ -1940,10 +1940,10 @@ class PEAR_Frontend_Web extends PEAR_Frontend
         switch ($group) {
             case 'css':
                 header("Content-Type: text/css");
-                readfile(dirname(__FILE__).'/Web/'.$file);
+                readfile(dirname(__FILE__).'/Web/data/'.$file);
                 exit;
             case 'image':
-                $filename = dirname(__FILE__).'/Web/'.$file['file'];
+                $filename = dirname(__FILE__).'/Web/data/images/'.$file['file'];
                 header("Content-Type: image/".$file['type']);
                 header("Expires: ".gmdate("D, d M Y H:i:s \G\M\T", time() + 60*60*24*100));
                 header("Last-Modified: ".gmdate("D, d M Y H:i:s \G\M\T", filemtime($filename)));
@@ -1953,7 +1953,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                 exit;
             case 'js':
                 header("Content-Type: text/javascript");
-                readfile(dirname(__FILE__).'/Web/'.$file);
+                readfile(dirname(__FILE__).'/Web/data/'.$file);
                 exit;
         }
     }
