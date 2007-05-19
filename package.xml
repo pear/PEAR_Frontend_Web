@@ -1,9 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<package xmlns="http://pear.php.net/dtd/package-2.0" xmlns:tasks="http://pear.php.net/dtd/tasks-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" packagerversion="1.4.9" version="2.0" xsi:schemaLocation="http://pear.php.net/dtd/tasks-1.0 http://pear.php.net/dtd/tasks-1.0.xsd http://pear.php.net/dtd/package-2.0 http://pear.php.net/dtd/package-2.0.xsd">
-  <name>PEAR_Frontend_Web</name>
-  <channel>pear.php.net</channel>
-  <summary>HTML (Web) PEAR Installer</summary>
-  <description>Web Interface to the PEAR Installer</description>
+<package packagerversion="1.5.4" version="2.0" xmlns="http://pear.php.net/dtd/package-2.0" xmlns:tasks="http://pear.php.net/dtd/tasks-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://pear.php.net/dtd/tasks-1.0 http://pear.php.net/dtd/tasks-1.0.xsd http://pear.php.net/dtd/package-2.0 http://pear.php.net/dtd/package-2.0.xsd">
+ <name>PEAR_Frontend_Web</name>
+ <channel>pear.php.net</channel>
+ <summary>Webbased PEAR Package Manager</summary>
+ <description>The most accessible way to manage your pear-compatible packages.
+
+This frontend&apos;s most valuable features are:
+* Webbased: no remote shell access needed.
+* Fully channel aware: no default channel, all channels are managed at the same time
+* Unique docviewer: read the installed documentation in your borwser.
+* Plus all features of the PEAR Installer.</description>
   <lead>
     <name>Gregory Beaver</name>
     <user>cellog</user>
@@ -34,21 +40,31 @@
     <email>pajoye@pearfr.org</email>
     <active>no</active>
   </lead>
-  <date>2007-04-27</date>
-  <time>16:49:44</time>
-  <version>
-    <release>0.6.1</release>
-    <api>0.6.0</api>
-  </version>
-  <stability>
-    <release>alpha</release>
-    <api>alpha</api>
-  </stability>
-  <license uri="http://www.php.net/license">PHP License</license>
-  <notes>
-Emergency release for go-pear compatibility:
-Put docs/example.php back in place: go-pear uses this ! index.php.txt continues to exist because imho docs may not be executable things (so example.php is only there for BC)
-+ Bug #10853  "Array" printed when upgrading or installing
+ <date>2007-05-19</date>
+ <time>12:30:22</time>
+ <version>
+  <release>0.7.0</release>
+  <api>0.7.0</api>
+ </version>
+ <stability>
+  <release>beta</release>
+  <api>beta</api>
+ </stability>
+ <license uri="http://www.php.net/license">PHP License</license>
+ <notes>
+Make more stable:
+* Rewrite launch script [Done]
+* Rewrite documentation [Done]
+* Make postinstallscripts work [Done]
+* Some auto-urling [Done]
+* Remove E_Notices and checkcode warnings [Done]
+* Unify list of packages output [Done]
+* Rename files to standard [Done]
+* Add 'Docviewer' [Done]
+
+ * Fix Bug #11028: Post Install shows numerous empty variables errors. [tias]
+ * Fix Bug #11029: Post Install Error Message - Depreciated Function Call [tias]
+ * Implement Feature #10887: list-category for channels like pearified.com [tias]
   </notes>
   <contents>
     <dir name="/" baseinstalldir="PEAR">
@@ -73,8 +89,7 @@ Put docs/example.php back in place: go-pear uses this ! index.php.txt continues 
           <file name="pkglist.png" role="data" />
           <file name="pkgsearch.png" role="data" />
           <file name="trash.gif" role="data" />
-        </dir>
-<!-- /data/images -->
+        </dir> <!-- /data/images -->
         <dir name="templates">
           <file name="bottom.inc.tpl.html" role="data" />
           <file name="caption.tpl.html" role="data" />
@@ -96,12 +111,10 @@ Put docs/example.php back in place: go-pear uses this ! index.php.txt continues 
           <file name="top.inc.tpl.html" role="data" />
           <file name="upgrade_all.tpl.html" role="data" />
           <file name="userDialog.tpl.html" role="data" />
-        </dir>
-<!-- /data/templates -->
+        </dir> <!-- /data/templates -->
         <file name="package.js" role="data"/>
         <file name="style.css" role="data"/>
-      </dir>
-<!-- /data -->
+      </dir> <!-- /data -->
       <dir name="docs">
         <file name="index.php.txt" role="doc">
           <tasks:replace from="@pear_dir@" to="php_dir" type="pear-config" />
@@ -110,21 +123,17 @@ Put docs/example.php back in place: go-pear uses this ! index.php.txt continues 
           <tasks:replace from="@pear_dir@" to="php_dir" type="pear-config" />
         </file>
         <file name="htaccess" role="doc" />
-      </dir>
-<!-- /docs -->
+      </dir> <!-- /docs -->
       <dir name="Frontend">
         <dir name="Web">
           <file name="CommandForwardCompatible.php" role="php" />
           <file name="Docviewer.php" role="php" />
-        </dir>
-<!-- /Frontend/Web -->
+        </dir> <!-- /Frontend/Web -->
         <file name="Web.php" role="php" />
-      </dir>
-<!-- /Frontend -->
+      </dir> <!-- /Frontend -->
       <file baseinstalldir="/" name="pearfrontendweb.php" role="php"/>
       <file name="README" role="doc"/>
-    </dir>
-<!-- / -->
+    </dir> <!-- / -->
   </contents>
   <dependencies>
     <required>
@@ -161,7 +170,7 @@ Put docs/example.php back in place: go-pear uses this ! index.php.txt continues 
       <notes>
 Emergency release for go-pear compatibility:
 Put docs/example.php back in place: go-pear uses this ! index.php.txt continues to exist because imho docs may not be executable things (so example.php is only there for BC)
-+ Bug #10853  "Array" printed when upgrading or installing
++ Bug #10853  &quot;Array&quot; printed when upgrading or installing
   </notes>
     </release>
     <release>
@@ -177,11 +186,11 @@ Put docs/example.php back in place: go-pear uses this ! index.php.txt continues 
       <license uri="http://www.php.net/license">PHP License</license>
       <notes>
 Reworked webfrontend: [Tias]
-* Use 'list' and 'list-upgrades' commands instead of the slow 'list-all' when possible 
-* Use command 'info' for installed packages 
+* Use &apos;list&apos; and &apos;list-upgrades&apos; commands instead of the slow &apos;list-all&apos; when possible 
+* Use command &apos;info&apos; for installed packages 
 * Add proper documentation 
-* Make 'search' work over all channels 
-* Change 'list all packages' too 'list all categories' and list it for _all_ channels (also provide dry list of package names) 
+* Make &apos;search&apos; work over all channels 
+* Change &apos;list all packages&apos; too &apos;list all categories&apos; and list it for _all_ channels (also provide dry list of package names) 
 * Remove unnecessary DHTML stuff 
 * Make it easy to set up the frontend for an existing pear installation
  </notes>
@@ -238,7 +247,6 @@ Reworked webfrontend: [Tias]
       <license uri="http://www.php.net/license">PHP License</license>
       <notes>Major features addition: channel support
 Also, support for post-install scripts on install, and package.xml 2.0
-
    </notes>
     </release>
     <release>
@@ -256,7 +264,6 @@ Also, support for post-install scripts on install, and package.xml 2.0
 - Fix a bug while using both CLI and Web installer
   (Invalid characters, bug #23516)
 - Installs correctly the CLI tools
-
    </notes>
     </release>
     <release>
@@ -273,9 +280,8 @@ Also, support for post-install scripts on install, and package.xml 2.0
       <notes>Bugfixes release:
 - Remove Pager dep
 - Should work well on non apache system (ie IIS)
-- The 'installed packages' is now the entry page
+- The &apos;installed packages&apos; is now the entry page
   (no more remote connection during startup)
-
    </notes>
     </release>
   </changelog>
