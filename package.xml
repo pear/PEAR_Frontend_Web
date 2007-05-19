@@ -121,7 +121,7 @@ Put docs/example.php back in place: go-pear uses this ! index.php.txt continues 
         <file name="Web.php" role="php" />
       </dir>
 <!-- /Frontend -->
-      <file baseinstalldir="/" name="pearweb.php" role="php"/>
+      <file baseinstalldir="/" name="pearfrontendweb.php" role="php"/>
       <file name="README" role="doc"/>
     </dir>
 <!-- / -->

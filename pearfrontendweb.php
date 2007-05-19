@@ -269,8 +269,8 @@ $ui->outputBegin($command);
                 }
 
                 // Forward compatible (bug #10495)
-                require_once('Frontend/Web_Command_Forward_Compatible.php');
-                $cmd = new Web_Command_Forward_Compatible($ui, $config);
+                require_once('PEAR/Frontend/Web/CommandForwardCompatible.php');
+                $cmd = new PEAR_Frontend_Web_CommandForwardCompatible($ui, $config);
                 $cmd->doSearch($command, $opts, $params);
             }
 
@@ -313,8 +313,8 @@ $ui->outputBegin($command);
             //if (isset($_GET["mode"]))
             //    $opts['mode'] = $_GET["mode"];
             // Forward compatible (bug #10495)
-            //require_once('Frontend/Web_Command_Forward_Compatible.php');
-            //$cmd = new Web_Command_Forward_Compatible($ui, $config);
+            //require_once('PEAR/Frontend/Web/CommandForwardCompatible.php');
+            //$cmd = new PEAR_Frontend_Web_CommandForwardCompatible($ui, $config);
             //$cmd->doListAll($command, $opts, $params);
             //
             //break;
@@ -333,8 +333,8 @@ $ui->outputBegin($command);
                 $opts['packages'] = true;
             }
             // Forward compatible (bug unsubmitted)
-            require_once('Frontend/Web_Command_Forward_Compatible.php');
-            $cmd = new Web_Command_Forward_Compatible($ui, $config);
+            require_once('PEAR/Frontend/Web/CommandForwardCompatible.php');
+            $cmd = new PEAR_Frontend_Web_CommandForwardCompatible($ui, $config);
             if ($command == 'list-categories') {
                 $cmd->doListCategories($command, $opts, $params);
             } else {
@@ -344,21 +344,21 @@ $ui->outputBegin($command);
         case 'list-category':
             $params = array($_GET['chan'], $_GET['cat']);
             // Forward compatible (bug unsubmitted)
-            require_once('Frontend/Web_Command_Forward_Compatible.php');
-            $cmd = new Web_Command_Forward_Compatible($ui, $config);
+            require_once('PEAR/Frontend/Web/CommandForwardCompatible.php');
+            $cmd = new PEAR_Frontend_Web_CommandForwardCompatible($ui, $config);
             $cmd->doListCategory($command, $opts, $params);
             break;
         case 'list':
             $opts['allchannels'] = true;
             // Forward compatible (bug #10496)
-            require_once('Frontend/Web_Command_Forward_Compatible.php');
-            $cmd = new Web_Command_Forward_Compatible($ui, $config);
+            require_once('PEAR/Frontend/Web/CommandForwardCompatible.php');
+            $cmd = new PEAR_Frontend_Web_CommandForwardCompatible($ui, $config);
             $cmd->doList($command, $opts, $params);
             break;
         case 'list-upgrades':
             // Forward compatible (bug #10515)
-            require_once('Frontend/Web_Command_Forward_Compatible.php');
-            $cmd = new Web_Command_Forward_Compatible($ui, $config);
+            require_once('PEAR/Frontend/Web/CommandForwardCompatible.php');
+            $cmd = new PEAR_Frontend_Web_CommandForwardCompatible($ui, $config);
             $cmd->doListUpgrades($command, $opts, $params);
 
             $ui->outputUpgradeAll();
