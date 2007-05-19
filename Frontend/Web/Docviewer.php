@@ -103,11 +103,43 @@ class PEAR_Frontend_Web_Docviewer
 
         $files = $this->getDocFiles($package_name, $channel);
         if (count($files) == 0) {
-            $data = '(no documentation available)';
+            $data['data'] = '(no documentation available)';
         } else {
             foreach ($files as $name => $location) {
                 $data['data'][$name] = $location;
             }
+        }
+        $this->ui->outputData($data, $command);
+
+        return true;
+     }
+
+    /**
+     * Output in HTML the documentation file of given package
+     *
+     * @param string $package package name
+     * @param string $channel
+     * @param string $file
+     * @return true (uses the User Interface object)
+     */
+     function outputDocShow($package_name, $channel, $file)
+     {
+        $this->outputListDocs($package_name, $channel);
+
+        $command = 'doc-show';
+        $data = array(
+            'caption' => $channel.'/'.$package_name.' :: '.$file.':',
+            'border' => true,
+            'channel' => $channel,
+            'package' => $package_name,
+            );
+
+        $files = $this->getDocFiles($package_name, $channel);
+        if (!isset($files[$file])) {
+            $data['data'] = 'File '.$file.' is not part of the documentation of this package.';
+        } else {
+            $data['data'] = file_get_contents($files[$file]);
+            //$data['data'] = $file;
         }
         $this->ui->outputData($data, $command);
 

@@ -211,3 +211,8 @@ form {
 table.DHTML_Category_Expand {
     cursor: hand;
 }
+
+#docshow {
+    padding: 0.5em 0.5em 0.5em 0.5em;
+    border-style: double;
+}

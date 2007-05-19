@@ -421,7 +421,11 @@ class PEAR_Frontend_Web extends PEAR_Frontend
         $tpl->setVariable('Caption', $data['caption']);
         $tpl->show();
 
-        print $this->_getListDocsDiv($data['channel'].'/'.$data['package'], $data['data']);
+        if (is_array($data['data'])) {
+            print $this->_getListDocsDiv($data['channel'].'/'.$data['package'], $data['data']);
+        } else {
+            print $data['data'];
+        }
         return true;
     }
 
@@ -447,6 +451,25 @@ class PEAR_Frontend_Web extends PEAR_Frontend
         return $out;
     }
         
+    // }}}
+    // {{{ _outputDocShow()
+
+    /**
+     * Output a documentation file of a packagename
+     *
+     * @param array $data array containing all documentation files of a packages
+     *
+     * @return boolean true (yep. i am an optimist)
+     */
+    function _outputDocShow($data)
+    {
+        $tpl = $this->_initTemplate('caption.tpl.html');
+        $tpl->setVariable('Caption', $data['caption']);
+        $tpl->show();
+
+        print '<div id="docshow">'.nl2br(htmlentities($data['data'])).'</div>';
+        return true;
+    }
 
     // }}}
     // {{{ _outputListPackages()
@@ -1238,6 +1261,8 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                 return true;
             case 'list-docs':
                 return $this->_outputListDocs($data);
+            case 'doc-show':
+                return $this->_outputDocShow($data);
             case 'list-all':
                 return $this->_outputListAll($data);
             case 'list-packages':

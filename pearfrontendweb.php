@@ -308,6 +308,19 @@ $ui->outputBegin($command);
             $docview = new PEAR_Frontend_Web_Docviewer($ui);
             $docview->outputListDocs($pkg['package'], $pkg['channel']);
             break;
+        case 'doc-show':
+            if (!isset($_GET['pkg']) || !isset($_GET['file'])) {
+                PEAR::raiseError('The webfrontend-command list-docs needs one \'pkg\' and one \'file\' argument.');
+                break;
+            }
+            
+            require_once('PEAR/Frontend/Web/Docviewer.php');
+            $reg = $config->getRegistry();
+            $pkg = $reg->parsePackageName($_GET['pkg']);
+
+            $docview = new PEAR_Frontend_Web_Docviewer($ui);
+            $docview->outputDocShow($pkg['package'], $pkg['channel'], $_GET['file']);
+            break;
         case 'list-all':
             // XXX Not used anymore, 'list-categories' is used instead
             //if (isset($_GET["mode"]))
