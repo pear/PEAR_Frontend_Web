@@ -406,12 +406,28 @@ class PEAR_Frontend_Web extends PEAR_Frontend
     }
 
     // }}}
+    // {{{ _outputListFiles()
+
+    /**
+     * Output a list of files of a packagename
+     *
+     * @param array $data array containing all files of a package
+     *
+     * @return boolean true (yep. i am an optimist)
+     */
+    function _outputListFiles($data)
+    {
+        sort($data['data']);
+        return $this->_outputGenericTableVertical($data['caption'], $data['data']);
+    }
+
+    // }}}
     // {{{ _outputListDocs()
 
     /**
-     * Output a list of documentation files of a packagenames
+     * Output a list of documentation files of a packagename
      *
-     * @param array $data array containing all documentation files of a packages
+     * @param array $data array containing all documentation files of a package
      *
      * @return boolean true (yep. i am an optimist)
      */
@@ -950,6 +966,11 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                     $image);
             $output .= '<br />';
         }
+        $output .= sprintf(
+                    '<a href="%s?command=list-files&pkg=%s" class="green">./.. List Files</a>',
+                    $_SERVER["PHP_SELF"],
+                    $package);
+        $output .= '<br />';
         // More: Extended Package Information
         $image = sprintf('<img src="%s?img=infoplus" border="0" alt="extra info">', $_SERVER["PHP_SELF"]);
         if ($channel == 'pear.php.net' || $channel == 'pecl.php.net') {
@@ -1259,6 +1280,8 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                 $GLOBALS['_PEAR_Frontend_Web_Config'] =
                     $this->userDialog($command, $prompt, array(), $default, $title, 'config');
                 return true;
+            case 'list-files':
+                return $this->_outputListFiles($data);
             case 'list-docs':
                 return $this->_outputListDocs($data);
             case 'doc-show':

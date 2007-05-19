@@ -295,6 +295,11 @@ $ui->outputBegin($command);
 
             $ui->finishOutput('Back', array('link' => $_SERVER['PHP_SELF'].'?command='.$command, 'text' => 'Back to the config'));
             break;
+        case 'list-files':
+            $params = array($_GET['pkg']);
+            $cmd = PEAR_Command::factory($command, $config);
+            $res = $cmd->run($command, $opts, $params);
+            break;
         case 'list-docs':
             if (!isset($_GET['pkg'])) {
                 PEAR::raiseError('The webfrontend-command list-docs needs at least one \'pkg\' argument.');
