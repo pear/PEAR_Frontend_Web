@@ -11,6 +11,10 @@ $pear_dir = '@pear_dir@'; // default of install
 // uncomment and supply it here:
 //$pear_user_config = '';
 
+// OPTIONAL: If you have protected this webfrontend with a password in a
+// custom way, then uncomment to disable the 'not protected' warning:
+//$pear_frontweb_protected = true;
+
 
 /***********************************************************
  * Following code tests $pear_dir and loads the webfrontend:

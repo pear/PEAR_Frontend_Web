@@ -33,19 +33,19 @@ a.green:hover {
 }
 
 a.blue {
-    color:#3163ce; 
+    color:#0022cc; 
     text-decoration: none;
 }
 a.blue:visited {
-    color:#3163ce; 
+    color:#0022cc; 
     text-decoration: none;
 }
 a.blue:active {
-    color:#3163ce; 
+    color:#0022cc; 
     text-decoration: none;
 }
 a.blue:hover {
-    color:#3163ce; 
+    color:#0022cc; 
     text-decoration: underline;
 }
 
@@ -215,4 +215,12 @@ table.DHTML_Category_Expand {
 #docshow {
     padding: 0.5em 0.5em 0.5em 0.5em;
     border-style: double;
+}
+
+#warning {
+    padding: 0.5em 0em 0.5em 0.5em;
+    margin: 1em 2em 1em 2em;
+    border-style: solid;
+    border-color: #ff0000;
+    background-color: #ffbaba;
 }

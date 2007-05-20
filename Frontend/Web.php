@@ -2106,6 +2106,12 @@ class PEAR_Frontend_Web extends PEAR_Frontend
             $tpl = $this->_initTemplate('top.inc.tpl.html');
             $tpl->setCurrentBlock('Search');
             $tpl->parseCurrentBlock();
+
+            if (!$this->_isProtected()) {
+                $tpl->setCurrentBlock('NotProtected');
+                $tpl->setVariable('Filler', ' ');
+                $tpl->parseCurrentBlock();
+            }
         }
 
         // Initialise begin vars
@@ -2186,6 +2192,30 @@ class PEAR_Frontend_Web extends PEAR_Frontend
     }
 
     // }}}
+
+    /**
+     * Checks if this webfrontend is protected:
+     *  - when the client sais so
+     *  - when having .htaccess authentication
+     *
+     * @return boolean
+     */
+    function _isProtected()
+    {
+        if ($GLOBALS['_PEAR_Frontend_Web_protected'] === true) {
+            return true;
+        }
+
+        if (isset($_SERVER['PHP_AUTH_USER'])) {
+            return true;
+        }
+            
+        if (!empty($_SERVER['PHP_AUTH_DIGEST'])) {
+            return true;
+        }
+
+        return false;
+    }
 
     /**
      * Prepare packagename for HTML output:

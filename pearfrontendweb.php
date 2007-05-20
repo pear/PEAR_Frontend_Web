@@ -183,6 +183,11 @@ if (!file_exists($pear_user_config)) {
     die();
 }
 
+// Check _isProtected() override (disables the 'not protected' warning)
+if (isset($pear_frontweb_protected) && $pear_frontweb_protected === true) {
+    $GLOBALS['_PEAR_Frontend_Web_protected'] = true;
+}
+
 $cache_dir = $config->get('cache_dir');
 if (!is_dir($cache_dir)) {
     include_once 'System.php';
