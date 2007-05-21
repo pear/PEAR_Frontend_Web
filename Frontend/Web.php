@@ -2120,9 +2120,10 @@ class PEAR_Frontend_Web extends PEAR_Frontend
         } else {
             $mirror = '';
         }
-        $tpl->setVariable("_default_channel", $this->config->get('default_channel') . $mirror);
-        $tpl->setVariable("ImgPEAR", $_SERVER["PHP_SELF"].'?img=pear');
-        $tpl->setVariable("Title", 'Web-based PEAR Frontend');
+        $tpl->setVariable('_default_channel', $this->config->get('default_channel') . $mirror);
+        $tpl->setVariable('ImgPEAR', $_SERVER['PHP_SELF'].'?img=pear');
+        $tpl->setVariable('Title', 'PEAR Package Manager, '.$command);
+        $tpl->setVariable('Headline', 'Webbased PEAR Package Manager on '.$_SERVER['SERVER_NAME']);
 
         $tpl->setCurrentBlock();
 
