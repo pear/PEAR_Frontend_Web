@@ -11,15 +11,15 @@ This frontend&apos;s most valuable features are:
 * Unique docviewer: read the installed documentation in your borwser.
 * Plus all features of the PEAR Installer.</description>
   <lead>
-    <name>Gregory Beaver</name>
-    <user>cellog</user>
-    <email>cellog@php.net</email>
-    <active>yes</active>
-  </lead>
-  <lead>
     <name>Tias Guns</name>
     <user>tias</user>
     <email>tias@ulyssis.org</email>
+    <active>yes</active>
+  </lead>
+  <lead>
+    <name>Gregory Beaver</name>
+    <user>cellog</user>
+    <email>cellog@php.net</email>
     <active>yes</active>
   </lead>
   <lead>
@@ -40,8 +40,8 @@ This frontend&apos;s most valuable features are:
     <email>pajoye@pearfr.org</email>
     <active>no</active>
   </lead>
- <date>2007-05-19</date>
- <time>12:30:22</time>
+ <date>2007-05-22</date>
+ <time>17:08:40</time>
  <version>
   <release>0.7.0</release>
   <api>0.7.0</api>
@@ -52,7 +52,7 @@ This frontend&apos;s most valuable features are:
  </stability>
  <license uri="http://www.php.net/license">PHP License</license>
  <notes>
-Make more stable:
+Make more stable: [tias]
 * Rewrite launch script [Done]
 * Rewrite documentation [Done]
 * Make postinstallscripts work [Done]
