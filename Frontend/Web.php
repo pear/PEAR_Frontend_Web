@@ -2203,7 +2203,8 @@ class PEAR_Frontend_Web extends PEAR_Frontend
      */
     function _isProtected()
     {
-        if ($GLOBALS['_PEAR_Frontend_Web_protected'] === true) {
+        if (isset($GLOBALS['_PEAR_Frontend_Web_protected']) &&
+              $GLOBALS['_PEAR_Frontend_Web_protected'] === true) {
             return true;
         }
 

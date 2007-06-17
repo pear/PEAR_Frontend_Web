@@ -40,34 +40,28 @@ This frontend&apos;s most valuable features are:
     <email>pajoye@pearfr.org</email>
     <active>no</active>
   </lead>
- <date>2007-05-22</date>
- <time>17:08:40</time>
+ <date>2007-06-17</date>
+ <time>13:08:40</time>
  <version>
-  <release>0.7.0</release>
-  <api>0.7.0</api>
+  <release>1.0.0</release>
+  <api>1.0.0</api>
  </version>
  <stability>
-  <release>beta</release>
-  <api>beta</api>
+  <release>stable</release>
+  <api>stable</api>
  </stability>
  <license uri="http://www.php.net/license">PHP License</license>
  <notes>
-Make more stable: [tias]
-* Rewrite launch script [Done]
-* Rewrite documentation [Done]
-* Make postinstallscripts work [Done]
-* Some auto-urling [Done]
-* Remove E_Notices and checkcode warnings [Done]
-* Unify list of packages output [Done]
-* Rename files to standard [Done]
-* Add 'Docviewer' [Done]
-
- * Fix Bug #11028: Post Install shows numerous empty variables errors. [tias]
- * Fix Bug #11029: Post Install Error Message - Depreciated Function Call [tias]
- * Implement Feature #10887: list-category for channels like pearified.com [tias]
+  * Remove CommandForwardCompatible stuff as it has almost all been merged into PEAR
+  * Add Command/Categories for the category stuff that was not merged
+  * Remove a rogue php notice
   </notes>
   <contents>
     <dir name="/" baseinstalldir="PEAR">
+      <dir name="Command">
+        <file name="Categories.php" role="php" />
+        <file name="Categories.xml" role="php" />
+      </dir> <!-- /Command -->
       <dir name="data">
         <dir name="images">
           <file name="category.jpg" role="data" />
@@ -126,7 +120,6 @@ Make more stable: [tias]
       </dir> <!-- /docs -->
       <dir name="Frontend">
         <dir name="Web">
-          <file name="CommandForwardCompatible.php" role="php" />
           <file name="Docviewer.php" role="php" />
         </dir> <!-- /Frontend/Web -->
         <file name="Web.php" role="php" />
@@ -141,7 +134,7 @@ Make more stable: [tias]
         <min>4.3.0</min>
       </php>
       <pearinstaller>
-        <min>1.4.3</min>
+        <min>1.6.0</min>
       </pearinstaller>
       <package>
         <name>HTML_Template_IT</name>
@@ -150,12 +143,38 @@ Make more stable: [tias]
       <package>
         <name>PEAR</name>
         <channel>pear.php.net</channel>
-        <min>1.4.6</min>
+        <min>1.6.0</min>
       </package>
     </required>
   </dependencies>
   <phprelease/>
   <changelog>
+    <release>
+      <date>2007-05-22</date>
+      <version>
+        <release>1.0.0</release>
+        <api>0.7.0</api>
+      </version>
+      <stability>
+        <release>beta</release>
+        <api>beta</api>
+      </stability>
+      <license uri="http://www.php.net/license">PHP License</license>
+      <notes>
+Make more stable: [tias]
+* Rewrite launch script [Done]
+* Rewrite documentation [Done]
+* Make postinstallscripts work [Done]
+* Some auto-urling [Done]
+* Remove E_Notices and checkcode warnings [Done]
+* Unify list of packages output [Done]
+* Rename files to standard [Done]
+* Add &apos;Docviewer&apos; [Done]
+
+ * Fix Bug #11028: Post Install shows numerous empty variables errors. [tias]
+ * Fix Bug #11029: Post Install Error Message - Depreciated Function Call [tias]
+ * Implement Feature #10887: list-category for channels like pearified.com [tias]</notes>
+    </release>
     <release>
       <date>2007-04-27</date>
       <version>
