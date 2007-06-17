@@ -55,6 +55,7 @@ This frontend&apos;s most valuable features are:
   * Remove CommandForwardCompatible stuff as it has almost all been merged into PEAR
   * Add Command/Categories for the category stuff that was not merged
   * Remove a rogue php notice
+  + Bug #11300  array_walk_recursive() is a PHP 5 only function
   </notes>
   <contents>
     <dir name="/" baseinstalldir="PEAR">

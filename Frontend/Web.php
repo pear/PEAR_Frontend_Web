@@ -931,7 +931,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
      */
     function _outputPackageInfo($data)
     {
-        array_walk_recursive($data['data'], 'htmlentities');
+        $data['data'] = $this->htmlentities_recursive($data['data']);
         if (!isset($data['raw']['channel'])) {
             // package1.xml, channel by default pear
             $channel = 'pear.php.net';
@@ -1223,7 +1223,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
      */
     function _outputChannelInfo($data)
     {
-        array_walk_recursive($data['main']['data'], 'htmlentities');
+        $data['main']['data'] = $this->htmlentities_recursive($data['main']['data']);
         $channel = $data['main']['data']['server'][1];
         $output = '';
 
@@ -2269,6 +2269,21 @@ class PEAR_Frontend_Web extends PEAR_Frontend
         }
 
         return $out;
+    }
+
+    /**
+     * apply 'htmlentities' to every value of the array
+     * array_walk_recursive($array, 'htmlentities') in PHP5
+     */
+    function htmlentities_recursive($data) {
+        foreach($data as $key => $value) {
+            if (is_array($value)) {
+                $data[$key] = $this->htmlentities_recursive($value);
+            } else {
+                $data[$key] = htmlentities($value);
+            }
+        }
+        return $data;
     }
 }
 
