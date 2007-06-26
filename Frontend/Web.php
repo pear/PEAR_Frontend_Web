@@ -671,10 +671,12 @@ class PEAR_Frontend_Web extends PEAR_Frontend
      */
     function _outputListCategory($data)
     {
-        // create place for install/uninstall icon:
-        $summary = array_pop($data['headline']);
-        $data['headline'][] = '&nbsp;'; // icon
-        $data['headline'][] = $summary; // restore summary
+        if (isset($data['headline'])) {
+            // create place for install/uninstall icon:
+            $summary = array_pop($data['headline']);
+            $data['headline'][] = '&nbsp;'; // icon
+            $data['headline'][] = $summary; // restore summary
+        }
         $tpl = $this->_prepareListCategories($data);
         $channel = $data['channel'];
 
@@ -1317,6 +1319,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                 break;
             case 'install':
             case 'upgrade':
+            case 'upgrade-all':
             case 'uninstall':
             case 'channel-delete':
             case 'package':
@@ -1328,10 +1331,6 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                 } else {
                     print($data.'<br />');
                 }
-                break;
-            case 'upgrade-all':
-                // for simple-array-ed data
-                print($data['data'].'<br />');
                 break;
             default:
                 if ($this->_installScript) {
@@ -1869,7 +1868,59 @@ class PEAR_Frontend_Web extends PEAR_Frontend
         if ($text == '.') {
             print($text);
         } else {
-            print($text.'<br />');
+            // filter some log output:
+            // color some things, drop some others
+            $styled = false;
+
+            // color:warning {Failed to download pear/MDB2_Schema within preferred state "stable", latest release is version 0.7.2, stability "beta", use "channel://pear.php.net/MDB2_Schema-0.7.2" to install}
+            // make hyperlink the 'channel://...' part
+            $pattern = 'Failed to download';
+            if (substr($text, 0, strlen($pattern)) == $pattern) {
+                // hyperlink
+                if (preg_match('/use "channel:\/\/([\S]+)" to install/', $text, $matches)) {
+                    $pkg = $matches[1];
+                    $url = sprintf('<a href="%s?command=install&pkg=%s" onClick="return installPkg(\'%s\');" class="green">channel://%s</a>',
+                                $_SERVER['PHP_SELF'],
+                                urlencode($pkg),
+                                $pkg,
+                                $pkg);
+                    $text = preg_replace('/channel:\/\/'.addcslashes($pkg, '/').'/',
+                                         $url,
+                                         $text);
+                }
+                // color
+                $text = '<div id="error">'.$text.'</div>';
+                $styled = true;
+            }
+
+            // color:error {chiara/Chiara_Bugs requires package "chiara/Chiara_PEAR_Server" (version >= 0.18.4) || chiara/Chiara_Bugs requires package "channel://savant.pearified.com/Savant3" (version >= 3.0.0)}
+            // make hyperlink the 'ch/pkg || channel://ch/pkg' part
+            $pattern = ' requires package "';
+            if (!$styled && strpos($text, $pattern) !== false) {
+                // hyperlink
+                if (preg_match('/ package "([\S]+)" \(version /', $text, $matches)) {
+                    $pkg = $matches[1];
+                    if (substr($pkg, 0, strlen('channel://')) == 'channel://') {
+                        $pkg = substr($pkg, strlen('channel://'));
+                    }
+                    $url = sprintf('<a href="%s?command=info&pkg=%s" class="green">%s</a>',
+                                $_SERVER['PHP_SELF'],
+                                urlencode($pkg),
+                                $matches[1]);
+                    $text = preg_replace('/'.addcslashes($matches[1], '/').'/',
+                                         $url,
+                                         $text);
+                }
+                // color
+                $text = '<div id="warning">'.$text.'</div>';
+                $styled = true;
+            }
+            if (!$styled) {
+                $text = '<div id="log">'.$text.'</div>';
+            }
+
+            // and output...
+            print($text);
         }
 
         return true;
