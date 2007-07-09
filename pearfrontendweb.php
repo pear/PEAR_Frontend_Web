@@ -57,18 +57,27 @@ if (!isset($pear_user_config) || $pear_user_config == '') {
         $conf_name = 'pear.conf';
     }
     
-    $default_config_dirs = array(
-        substr(dirname(__FILE__), 0, -strlen('PEAR/PEAR')), // strip PEAR/PEAR
-        dirname($_SERVER['SCRIPT_FILENAME']),
-        PEAR_CONFIG_SYSCONFDIR,
-                );
-    // set the default: __FILE__ without PEAR/PEAR/
-    $pear_user_config = $default_config_dirs[0].DIRECTORY_SEPARATOR.$conf_name;
+    // default backup config: the one from the installer (if available).
+    $install_config = '@pear_install_config@'; // filled in on install
+    // TODO: doesn't work yet ! There is no way to find the system config
+    if (file_exists($install_config)) {
+        $pear_user_config = $install_config;
+    } else {
 
-    foreach ($default_config_dirs as $confdir) {
-        if (file_exists($confdir.DIRECTORY_SEPARATOR.$conf_name)) {
-            $pear_user_config = $confdir.DIRECTORY_SEPARATOR.$conf_name;
-            break;
+        // find other config file location
+        $default_config_dirs = array(
+            substr(dirname(__FILE__), 0, -strlen('PEAR/PEAR')), // strip PEAR/PEAR
+            dirname($_SERVER['SCRIPT_FILENAME']),
+            PEAR_CONFIG_SYSCONFDIR,
+                    );
+        // set the default: __FILE__ without PEAR/PEAR/
+        $pear_user_config = $default_config_dirs[0].DIRECTORY_SEPARATOR.$conf_name;
+
+        foreach ($default_config_dirs as $confdir) {
+            if (file_exists($confdir.DIRECTORY_SEPARATOR.$conf_name)) {
+                $pear_user_config = $confdir.DIRECTORY_SEPARATOR.$conf_name;
+                break;
+            }
         }
     }
     unset($conf_name, $default_config_dirs, $confdir);
@@ -78,9 +87,15 @@ if (!isset($pear_user_config) || $pear_user_config == '') {
 PEAR_Frontend::setFrontendClass('PEAR_Frontend_Web');
 // Init PEAR Installer Code and WebFrontend
 $GLOBALS['_PEAR_Frontend_Web_config'] = &PEAR_Config::singleton($pear_user_config, '');
-$config  = &$GLOBALS['_PEAR_Frontend_Web_config'];
+$config = &$GLOBALS['_PEAR_Frontend_Web_config'];
+if (PEAR::isError($config)) {
+    trigger_error($config->getMessage(), E_USER_ERROR);
+}
 
 $ui = &PEAR_Command::getFrontendObject();
+if (PEAR::isError($ui)) {
+    trigger_error($ui->getMessage(), E_USER_ERROR);
+}
 $ui->setConfig($config);
 
 PEAR::setErrorHandling(PEAR_ERROR_CALLBACK, array($ui, "displayFatalError"));
@@ -102,30 +117,29 @@ $cmdopts = array();
 $opts    = array();
 $params  = array();
 
+// create $pear_user_config if it doesn't exit yet
 if (!file_exists($pear_user_config)) {
     // I think PEAR_Frontend_Web is running for the first time!
     // Create config and install it properly ...
     $ui->outputBegin(null);
     print('<h3>Preparing PEAR_Frontend_Web for its first time use...</h3>');
 
-    // probable base_dir:
-    $dir = dirname(__FILE__); // eg .../example/PEAR/PEAR/WebInstaller.php
-    $dir = substr($dir, 0, strrpos($dir, DIRECTORY_SEPARATOR)); // eg .../example/PEAR
-    $dir = substr($dir, 0, strrpos($dir, DIRECTORY_SEPARATOR)); // eg .../example
-    $dir = '';
-    // if it doesn\'t work because of symlinks or who knows what,
-    // try with $pear_dir, it is set in the default frontend inclusion file
-    if (isset($pear_dir) && (!is_dir($dir) || !is_writable($dir))) {
+    // find pear_dir:
+    if (isset($pear_dir) && file_exists($pear_dir)) {
         $dir = $pear_dir;
-        if (substr($pear_dir, -1) == DIRECTORY_SEPARATOR) {
-            $dir = substr($pear_dir, 0, -1); // strip trailing /
-        }
-        $dir = substr($dir, 0, strrpos($dir, DIRECTORY_SEPARATOR)); // eg .../example
+    } else {
+        $dir = dirname(__FILE__); // eg .../example/PEAR/PEAR/WebInstaller.php
+        $dir = substr($dir, 0, strrpos($dir, DIRECTORY_SEPARATOR)); // eg .../example/PEAR
     }
+    // extract base_dir from pear_dir
+    if (substr($pear_dir, -1) == DIRECTORY_SEPARATOR) {
+        $dir = substr($pear_dir, 0, -1); // strip trailing /
+    }
+    $dir = substr($dir, 0, strrpos($dir, DIRECTORY_SEPARATOR)); // eg .../example
 
     $dir .= DIRECTORY_SEPARATOR;
     if (!is_dir($dir)) {
-        trigger_error('Can not find a base installation directory of PEAR ('.$dir.' doesn\'t work), so we can\'t create a config for it. Please supply it in the variable \'$pear_dir\'. The $pear_dir must have at least the subdirectory PEAR/ and be writable by this frontend.', E_USER_ERROR);
+        PEAR::raiseError('Can not find a base installation directory of PEAR ('.$dir.' doesn\'t work), so we can\'t create a config for it. Please supply it in the variable \'$pear_dir\'. The $pear_dir must have at least the subdirectory PEAR/ and be writable by this frontend.');
         die();
     }
 

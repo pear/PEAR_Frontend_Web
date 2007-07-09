@@ -141,7 +141,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
         // Errors here can not be displayed using the UI
         PEAR::staticPushErrorHandling(PEAR_ERROR_PRINT);
 
-        $tpl = new HTML_Template_IT($this->config->get('data_dir').'/PEAR_Frontend_Web/data/templates');
+        $tpl = new HTML_Template_IT($this->config->get('data_dir').DIRECTORY_SEPARATOR.'PEAR_Frontend_Web'.DIRECTORY_SEPARATOR.'data'.DIRECTORY_SEPARATOR.'templates');
         $tpl->loadTemplateFile($file);
         $tpl->setVariable("InstallerURL", $_SERVER["PHP_SELF"]);
 
