@@ -1872,14 +1872,14 @@ class PEAR_Frontend_Web extends PEAR_Frontend
             // color some things, drop some others
             $styled = false;
 
-            // color:warning {Failed to download pear/MDB2_Schema within preferred state "stable", latest release is version 0.7.2, stability "beta", use "channel://pear.php.net/MDB2_Schema-0.7.2" to install}
+            // color:error {Failed to download pear/MDB2_Schema within preferred state "stable", latest release is version 0.7.2, stability "beta", use "channel://pear.php.net/MDB2_Schema-0.7.2" to install}
             // make hyperlink the 'channel://...' part
             $pattern = 'Failed to download';
             if (substr($text, 0, strlen($pattern)) == $pattern) {
                 // hyperlink
                 if (preg_match('/use "channel:\/\/([\S]+)" to install/', $text, $matches)) {
                     $pkg = $matches[1];
-                    $url = sprintf('<a href="%s?command=install&pkg=%s" onClick="return installPkg(\'%s\');" class="green">channel://%s</a>',
+                    $url = sprintf('<a href="%s?command=upgrade&pkg=%s" onClick="return installPkg(\'%s\');" class="green">channel://%s</a>',
                                 $_SERVER['PHP_SELF'],
                                 urlencode($pkg),
                                 $pkg,
@@ -1893,7 +1893,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                 $styled = true;
             }
 
-            // color:error {chiara/Chiara_Bugs requires package "chiara/Chiara_PEAR_Server" (version >= 0.18.4) || chiara/Chiara_Bugs requires package "channel://savant.pearified.com/Savant3" (version >= 3.0.0)}
+            // color:warning {chiara/Chiara_Bugs requires package "chiara/Chiara_PEAR_Server" (version >= 0.18.4) || chiara/Chiara_Bugs requires package "channel://savant.pearified.com/Savant3" (version >= 3.0.0)}
             // make hyperlink the 'ch/pkg || channel://ch/pkg' part
             $pattern = ' requires package "';
             if (!$styled && strpos($text, $pattern) !== false) {
@@ -1915,11 +1915,27 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                 $text = '<div id="warning">'.$text.'</div>';
                 $styled = true;
             }
-            if (!$styled) {
-                $text = '<div id="log">'.$text.'</div>';
+
+            // color:warning {Could not download from "http://pear.php.net/get/HTML_QuickForm-3.2.9.tgz", cannot download "pear/html_quickform" (could not open /home/tias/WASP/pear/cvs//temp/download/HTML_QuickForm-3.2.9.tgz for writing)}
+            $pattern = 'Could not download from';
+            if (substr($text, 0, strlen($pattern)) == $pattern) {
+                // color
+                $text = '<div id="warning">'.$text.'</div>';
+                $styled = true;
+            }
+
+            // color:error {Error: cannot download "pear/HTML_QuickForm"}
+            $pattern = 'Error:';
+            if (substr($text, 0, strlen($pattern)) == $pattern) {
+                // color
+                $text = '<div id="error">'.$text.'</div>';
+                $styled = true;
             }
 
             // and output...
+            if (!$styled) {
+                $text = '<div id="log">'.$text.'</div>';
+            }
             print($text);
         }
 
