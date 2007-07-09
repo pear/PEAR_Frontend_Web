@@ -89,12 +89,12 @@ PEAR_Frontend::setFrontendClass('PEAR_Frontend_Web');
 $GLOBALS['_PEAR_Frontend_Web_config'] = &PEAR_Config::singleton($pear_user_config, '');
 $config = &$GLOBALS['_PEAR_Frontend_Web_config'];
 if (PEAR::isError($config)) {
-    trigger_error($config->getMessage(), E_USER_ERROR);
+    die('<b>Error:</b> '.$config->getMessage());
 }
 
 $ui = &PEAR_Command::getFrontendObject();
 if (PEAR::isError($ui)) {
-    trigger_error($ui->getMessage(), E_USER_ERROR);
+    die('<b>Error:</b> '.$ui->getMessage());
 }
 $ui->setConfig($config);
 

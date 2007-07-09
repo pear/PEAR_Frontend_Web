@@ -139,9 +139,13 @@ class PEAR_Frontend_Web extends PEAR_Frontend
     function _initTemplate($file)
     {
         // Errors here can not be displayed using the UI
-        PEAR::staticPushErrorHandling(PEAR_ERROR_PRINT);
+        PEAR::staticPushErrorHandling(PEAR_ERROR_DIE);
 
-        $tpl = new HTML_Template_IT($this->config->get('data_dir').DIRECTORY_SEPARATOR.'PEAR_Frontend_Web'.DIRECTORY_SEPARATOR.'data'.DIRECTORY_SEPARATOR.'templates');
+        $tpl_dir = $this->config->get('data_dir').DIRECTORY_SEPARATOR.'PEAR_Frontend_Web'.DIRECTORY_SEPARATOR.'data'.DIRECTORY_SEPARATOR.'templates';
+        if (!file_exists($tpl_dir) || !is_readable($tpl_dir)) {
+            PEAR::raiseError('<b>Error:</b> the template directory <i>('.$tpl_dir.')</i> is not a directory, or not readable. Make sure the \'data_dir\' of your config file <i>('.$this->config->get('data_dir').')</i> points to the correct location !');
+        }
+        $tpl = new HTML_Template_IT($tpl_dir);
         $tpl->loadTemplateFile($file);
         $tpl->setVariable("InstallerURL", $_SERVER["PHP_SELF"]);
 
