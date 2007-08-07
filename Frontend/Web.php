@@ -1359,7 +1359,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                         $data = '<br /><i>'.$data.'</i>';
                     }
                     // Use "pear run-scripts pearified/Role_Web" to run
-                    if (preg_match('/^Use "pear run-scripts ([\S]+)" to run$/', $data, $matches)) {
+                    if (preg_match('/^Use "pear run-scripts ([\S]+)"$/', $data, $matches)) {
                         $pkg = $matches[1];
                         $url = sprintf('<a href="%s?command=run-scripts&pkg=%s" class="green">pear run-scripts %s</a>',
                                 $_SERVER['PHP_SELF'],
