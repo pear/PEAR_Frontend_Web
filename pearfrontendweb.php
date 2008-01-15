@@ -73,11 +73,17 @@ if (!isset($pear_user_config) || $pear_user_config == '') {
         // set the default: __FILE__ without PEAR/PEAR/
         $pear_user_config = $default_config_dirs[0].DIRECTORY_SEPARATOR.$conf_name;
 
+        $found = false;
         foreach ($default_config_dirs as $confdir) {
             if (file_exists($confdir.DIRECTORY_SEPARATOR.$conf_name)) {
                 $pear_user_config = $confdir.DIRECTORY_SEPARATOR.$conf_name;
+                $found = true;
                 break;
             }
+        }
+
+        if (!$found) {
+            print('<p><b>Warning:</b> Can not find config file, please specify the $pear_user_config variable in '.$_SERVER['PHP_SELF'].'</p>');
         }
     }
     unset($conf_name, $default_config_dirs, $confdir);
