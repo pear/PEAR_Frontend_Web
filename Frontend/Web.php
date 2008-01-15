@@ -2286,6 +2286,11 @@ class PEAR_Frontend_Web extends PEAR_Frontend
         if (!empty($_SERVER['PHP_AUTH_DIGEST'])) {
             return true;
         }
+        
+        // Anybody knows which reasonable values this takes, when using authentication ? Just checking its existence seems ugly.
+        if (!empty($_SERVER['AUTH_TYPE'])) {
+            return true;
+        }
 
         return false;
     }
