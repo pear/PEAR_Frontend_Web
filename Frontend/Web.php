@@ -359,8 +359,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                         $_SERVER["PHP_SELF"], $pkgFull),
                     'remote-info' => sprintf('%s?command=remote-info&pkg=%s',
                         $_SERVER["PHP_SELF"], $pkgFull),
-                    'infoExt' => 'http://' . $this->config->get('preferred_mirror')
-                         . '/package/' . $row[0],
+                    'infoExt' => 'http://' . $this->config->get('preferred_mirror').'/package/'.$pkgName,
                     );
 
                 $compare = version_compare($pkgVersionLatest, $pkgVersionInstalled);

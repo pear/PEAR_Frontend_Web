@@ -66,7 +66,7 @@ if (!isset($pear_user_config) || $pear_user_config == '') {
 
         // find other config file location
         $default_config_dirs = array(
-            substr(dirname(__FILE__), 0, strrpos(dirname(__FILE__), DIRECTORY_SEPARATOR)); // strip eg PEAR from .../example/PEAR(/pearfrontendweb.php)
+            substr(dirname(__FILE__), 0, strrpos(dirname(__FILE__), DIRECTORY_SEPARATOR)), // strip eg PEAR from .../example/PEAR(/pearfrontendweb.php)
             dirname($_SERVER['SCRIPT_FILENAME']),
             PEAR_CONFIG_SYSCONFDIR,
                     );
