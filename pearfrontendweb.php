@@ -66,11 +66,11 @@ if (!isset($pear_user_config) || $pear_user_config == '') {
 
         // find other config file location
         $default_config_dirs = array(
-            substr(dirname(__FILE__), 0, -strlen('PEAR/PEAR')), // strip PEAR/PEAR
+            substr(dirname(__FILE__), 0, -strlen('PEAR')), // strip PEAR dir
             dirname($_SERVER['SCRIPT_FILENAME']),
             PEAR_CONFIG_SYSCONFDIR,
                     );
-        // set the default: __FILE__ without PEAR/PEAR/
+        // set the default: __FILE__ without PEAR/
         $pear_user_config = $default_config_dirs[0].DIRECTORY_SEPARATOR.$conf_name;
 
         $found = false;
@@ -131,17 +131,15 @@ if (!file_exists($pear_user_config)) {
     print('<h3>Preparing PEAR_Frontend_Web for its first time use...</h3>');
 
     // find pear_dir:
-    if (isset($pear_dir) && file_exists($pear_dir)) {
-        $dir = $pear_dir;
-    } else {
-        $dir = dirname(__FILE__); // eg .../example/PEAR/PEAR/WebInstaller.php
-        $dir = substr($dir, 0, strrpos($dir, DIRECTORY_SEPARATOR)); // eg .../example/PEAR
+    if (!isset($pear_dir) || !file_exists($pear_dir)) {
+        // __FILE__ is eg .../example/PEAR/pearfrontendweb.php
+        $pear_dir = dirname(__FILE__); // eg .../example/PEAR
+    }
+    if (substr($pear_dir, -1) == DIRECTORY_SEPARATOR) {
+        $pear_dir = substr($pear_dir, 0, -1); // strip trailing /
     }
     // extract base_dir from pear_dir
-    if (substr($pear_dir, -1) == DIRECTORY_SEPARATOR) {
-        $dir = substr($pear_dir, 0, -1); // strip trailing /
-    }
-    $dir = substr($dir, 0, strrpos($dir, DIRECTORY_SEPARATOR)); // eg .../example
+    $dir = substr($pear_dir, 0, strrpos($pear_dir, DIRECTORY_SEPARATOR)); // eg .../example
 
     $dir .= DIRECTORY_SEPARATOR;
     if (!is_dir($dir)) {
