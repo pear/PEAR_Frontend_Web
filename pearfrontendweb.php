@@ -413,7 +413,7 @@ $ui->outputBegin($command);
 
             break;
         case 'channel-discover':
-            if (isset($_GET['chan']))
+            if (isset($_GET['chan']) && $_GET['chan'] != '')
                 $params[] = $_GET['chan'];
             $cmd = PEAR_Command::factory($command, $config);
             $ui->startSession();
