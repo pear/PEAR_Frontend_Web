@@ -243,8 +243,15 @@ $ui->outputBegin($command);
             $cmd = PEAR_Command::factory($command, $config);
             $ok = $cmd->run($command, $opts, $params);
 
-            $ui->finishOutput('Back', array('link' => $_SERVER['PHP_SELF'].'?command=info&pkg='.$_GET['pkg'],
-                'text' => 'View package information'));
+            $reg = &$config->getRegistry();
+            PEAR::staticPushErrorHandling(PEAR_ERROR_RETURN);
+            $err = $reg->parsePackageName($_GET['pkg']);
+            PEAR::staticPopErrorHandling(); // reset error handling
+
+            if (!PEAR::isError($err)) {
+                $ui->finishOutput('Back', array('link' => $_SERVER['PHP_SELF'].'?command=info&pkg='.$_GET['pkg'],
+                    'text' => 'View package information'));
+            }
             break;
         case 'run-scripts' :
             $params = array($_GET['pkg']);
