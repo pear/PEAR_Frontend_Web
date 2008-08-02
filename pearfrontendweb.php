@@ -44,9 +44,10 @@ define('PEAR_Frontend_Web',1);
  * base frontend class
  */
 require_once 'PEAR/Frontend.php';
-require_once 'PEAR/Registry.php';
-require_once 'PEAR/Config.php';
 require_once 'PEAR/Command.php';
+
+// for the open_basedir prisoners, don't allow PEAR to search for a temp dir (would use /tmp), see bug #13167
+putenv('TMPDIR='.dirname(__FILE__).'/temp');
 
 // set $pear_user_config if it isn't set yet
 // finds an existing file, or proposes the default location
@@ -88,6 +89,9 @@ if (!isset($pear_user_config) || $pear_user_config == '') {
     }
     unset($conf_name, $default_config_dirs, $confdir);
 }
+
+require_once 'PEAR/Registry.php';
+require_once 'PEAR/Config.php';
 
 // moving this here allows startup messages and errors to work properly
 PEAR_Frontend::setFrontendClass('PEAR_Frontend_Web');
