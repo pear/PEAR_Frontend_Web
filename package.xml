@@ -40,10 +40,10 @@ This frontend&apos;s most valuable features are:
     <email>pajoye@pearfr.org</email>
     <active>no</active>
   </lead>
- <date>2008-01-20</date>
- <time>12:36:35</time>
+ <date>2008-08-03</date>
+ <time>15:57:00</time>
  <version>
-  <release>0.7.2</release>
+  <release>0.7.3</release>
   <api>0.7.0</api>
  </version>
  <stability>
@@ -52,11 +52,9 @@ This frontend&apos;s most valuable features are:
  </stability>
  <license uri="http://www.php.net/license">PHP License</license>
  <notes>
-  * more robust path detection
-  + Bug #11485 directory separator
-  + Bug #11525 cannot read the template file error
-  + Bug #11487 recursive errors
-  + Bug #12403 Incorrect path search for config.conf file
+  * Fix bug #13703 no empty channel url
+  * fix bug #13714 'package information' link on installing local file
+  * for the open_basedir prisoners, don't allow PEAR to search for a temp dir (would use /tmp), see bug #13167
   </notes>
   <contents>
     <dir name="/" baseinstalldir="PEAR">
@@ -151,6 +149,25 @@ This frontend&apos;s most valuable features are:
   </dependencies>
   <phprelease/>
   <changelog>
+    <release>
+      <date>2008-01-20</date>
+      <version>
+        <release>0.7.2</release>
+        <api>0.7.0</api>
+      </version>
+      <stability>
+        <release>beta</release>
+        <api>beta</api>
+      </stability>
+      <license uri="http://www.php.net/license">PHP License</license>
+      <notes>
+  * more robust path detection
+  + Bug #11485 directory separator
+  + Bug #11525 cannot read the template file error
+  + Bug #11487 recursive errors
+  + Bug #12403 Incorrect path search for config.conf file
+      </notes>
+    </release>
     <release>
       <date>2007-06-26</date>
       <version>
