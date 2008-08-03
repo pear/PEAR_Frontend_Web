@@ -359,7 +359,8 @@ class PEAR_Frontend_Web extends PEAR_Frontend
                         $_SERVER["PHP_SELF"], $pkgFull),
                     'remote-info' => sprintf('%s?command=remote-info&pkg=%s',
                         $_SERVER["PHP_SELF"], $pkgFull),
-                    'infoExt' => 'http://' . $this->config->get('preferred_mirror').'/package/'.$pkgName,
+                    'infoExt' => 'http://' . $this->config->get('preferred_mirror')
+                         . '/package/' . $row[0],
                     );
 
                 $compare = version_compare($pkgVersionLatest, $pkgVersionInstalled);
@@ -2281,12 +2282,8 @@ class PEAR_Frontend_Web extends PEAR_Frontend
         if (isset($_SERVER['PHP_AUTH_USER'])) {
             return true;
         }
-
-        if (isset($_SERVER['AUTH_TYPE']) && !empty($_SERVER['AUTH_TYPE'])) {
-            return true;
-        }
             
-        if (isset($_SERVER['PHP_AUTH_DIGEST']) && !empty($_SERVER['PHP_AUTH_DIGEST'])) {
+        if (!empty($_SERVER['PHP_AUTH_DIGEST'])) {
             return true;
         }
 
