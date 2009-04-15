@@ -43,6 +43,8 @@ define('PEAR_Frontend_Web',1);
 /**
  * base frontend class
  */
+require_once 'PEAR.php';
+require_once 'PEAR/Config.php';
 require_once 'PEAR/Frontend.php';
 require_once 'PEAR/Command.php';
 

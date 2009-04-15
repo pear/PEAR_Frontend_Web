@@ -31,8 +31,9 @@
 /**
  * base class
  */
+require_once "PEAR.php";
+require_once "PEAR/Config.php";
 require_once "PEAR/Frontend.php";
-require_once "PEAR/Remote.php";
 require_once "HTML/Template/IT.php";
 
 /**
@@ -91,6 +92,7 @@ class PEAR_Frontend_Web extends PEAR_Frontend
         'pear.php.net/PEAR',
         'pear.php.net/PEAR_Frontend_Web',
         'pear.php.net/Structures_Graph',
+        'pear.php.net/XML_Util',
     );
 
     /**

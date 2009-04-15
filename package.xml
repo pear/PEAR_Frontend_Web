@@ -40,10 +40,10 @@ This frontend&apos;s most valuable features are:
     <email>pajoye@pearfr.org</email>
     <active>no</active>
   </lead>
- <date>2008-08-03</date>
- <time>15:57:00</time>
+ <date>2009-04-14</date>
+ <time>22:35:00</time>
  <version>
-  <release>0.7.3</release>
+  <release>0.7.4</release>
   <api>0.7.0</api>
  </version>
  <stability>
@@ -52,9 +52,7 @@ This frontend&apos;s most valuable features are:
  </stability>
  <license uri="http://www.php.net/license">PHP License</license>
  <notes>
-  * Fix bug #13703 no empty channel url
-  * fix bug #13714 'package information' link on installing local file
-  * for the open_basedir prisoners, don't allow PEAR to search for a temp dir (would use /tmp), see bug #13167
+  * Fix Bug #16087  Failed opening required 'PEAR/Remote.php' [saltybeagle]
   </notes>
   <contents>
     <dir name="/" baseinstalldir="PEAR">
@@ -149,6 +147,23 @@ This frontend&apos;s most valuable features are:
   </dependencies>
   <phprelease/>
   <changelog>
+    <release>
+      <date>2008-08-03</date>
+	  <version>
+        <release>0.7.3</release>
+	    <api>0.7.0</api>
+      </version>
+	  <stability>
+        <release>beta</release>
+        <api>beta</api>
+      </stability>
+      <license uri="http://www.php.net/license">PHP License</license>
+     <notes>
+  * Fix bug #13703 no empty channel url
+  * fix bug #13714 'package information' link on installing local file
+  * for the open_basedir prisoners, don't allow PEAR to search for a temp dir (would use /tmp), see bug #13167
+    </notes>
+    </release>
     <release>
       <date>2008-01-20</date>
       <version>
