@@ -759,7 +759,11 @@ class PEAR_Frontend_Web extends PEAR_Frontend
             }
         } else {
             $tpl->setCurrentBlock('Headline');
-            $tpl->setVariable('Text', $data['data']);
+            if (is_array($data['data']) && isset($data['data'][0])) {
+                $tpl->setVariable('Text', $data['data'][0][0]);
+            } else {
+                $tpl->setVariable('Text', $data['data']);
+            }
             $tpl->parseCurrentBlock();
             unset($data['data']); //clear
         }
