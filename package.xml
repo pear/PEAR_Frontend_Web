@@ -52,7 +52,9 @@ This frontend&apos;s most valuable features are:
  </stability>
  <license uri="http://www.php.net/license">PHP License</license>
  <notes>
+ Bugfix release for PEAR >= 1.8.0
   * Fix Bug #16087  Failed opening required 'PEAR/Remote.php' [saltybeagle]
+  * Fix Bug #16089  Installed packages overview shows "Array" [saltybeagle]
   </notes>
   <contents>
     <dir name="/" baseinstalldir="PEAR">
