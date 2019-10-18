@@ -968,7 +968,8 @@ class PEAR_Frontend_Web extends PEAR_Frontend
         $output = '';
         // More: Local Documentation
         require_once('PEAR/Frontend/Web/Docviewer.php');
-        if (count(PEAR_Frontend_Web_Docviewer::getDocFiles($package_name, $channel)) !== 0) {
+        $docviewer = new PEAR_Frontend_Web_Docviewer($this);
+        if (count($docviewer->getDocFiles($package_name, $channel)) !== 0) {
             $image = sprintf('<img src="%s?img=manual" border="0" alt="manual">', $_SERVER["PHP_SELF"]);
             $output .= sprintf(
                     '<a href="%s?command=list-docs&pkg=%s" class="green">%s Package Documentation</a>',
